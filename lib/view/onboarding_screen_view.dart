@@ -1,6 +1,5 @@
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
 import 'package:credbird/viewmodel/onboarding_page_provider.dart';
-import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:credbird/viewmodel/usage_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
@@ -21,23 +20,45 @@ class OnboardingScreenView extends StatelessWidget {
   Widget build(BuildContext context) {
     final onboardingScreens = context.watch<OnboardPageProvider>().list;
 
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final theme = themeProvider.themeConfig;
-
     return Scaffold(
-      backgroundColor: theme["scaffoldBackground"],
-      body: Center(
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.9,
-          child: IntroductionScreen(
-            pages: onboardingScreens,
-            globalBackgroundColor: theme["scaffoldBackground"],
-            showBackButton: false,
-            showNextButton: false,
-            done: Text('Done', style: TextStyle(color: theme["textColor"])),
-            onDone: () => completeOnboarding(context),
+      backgroundColor: Colors.white,
+      body: IntroductionScreen(
+        pages: onboardingScreens,
+        showSkipButton: true,
+        skip: Text(
+          'Skip',
+          style: TextStyle(
+            color: Colors.black87,
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w300,
           ),
         ),
+        next: Icon(Icons.arrow_forward, color: Colors.black87),
+        back: Icon(Icons.arrow_back, color: Colors.black87),
+        done: Text(
+          'Get Started',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+            fontFamily: 'Roboto',
+          ),
+        ),
+        onDone: () => completeOnboarding(context),
+        dotsDecorator: DotsDecorator(
+          size: const Size.square(10.0),
+          activeSize: const Size(20.0, 10.0),
+          activeColor: Colors.black87,
+          color: Colors.black54,
+          spacing: const EdgeInsets.symmetric(horizontal: 3.0),
+          activeShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25.0),
+          ),
+        ),
+        globalBackgroundColor: Colors.white,
+        skipOrBackFlex: 0,
+        nextFlex: 0,
+        animationDuration: 300,
+        baseBtnStyle: TextButton.styleFrom(backgroundColor: Colors.white),
       ),
     );
   }

@@ -1,108 +1,467 @@
-import 'package:credbird/view/homePage%20components/account_card_view.dart';
-import 'package:credbird/view/homePage%20components/tab_item_view.dart';
+import 'package:credbird/model/transaction_model.dart';
+import 'package:credbird/view/authentication%20view/login_signup_view.dart';
+import 'package:credbird/view/card_view.dart';
+import 'package:credbird/view/home_page_views/forex_rates_view.dart';
+import 'package:credbird/view/home_page_views/international_tourist_view.dart';
+import 'package:credbird/view/receive_page_view.dart';
+import 'package:credbird/view/send_page_view.dart';
+import 'package:credbird/viewmodel/authentication_provider.dart';
+import 'package:credbird/viewmodel/card_provider.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/forex_rates_provider.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/international_tourist_provider.dart';
 import 'package:credbird/viewmodel/home_provider.dart';
+import 'package:credbird/viewmodel/receive_money_provider.dart';
+import 'package:credbird/viewmodel/send_money_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
-class HomePageView extends StatelessWidget {
+class HomePageView extends StatefulWidget {
   const HomePageView({super.key});
 
   @override
+  State<HomePageView> createState() => _HomePageViewState();
+}
+
+class _HomePageViewState extends State<HomePageView> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final theme = themeProvider.themeConfig;
-    return Scaffold(
-      backgroundColor: theme["scaffoldBackground"],
-      appBar: AppBar(
+    final theme = Provider.of<ThemeProvider>(context).themeConfig;
+    final homeViewModel = Provider.of<HomeViewModel>(context);
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: theme["scaffoldBackground"],
-        elevation: 0,
-        title: Consumer<HomeViewModel>(
-          builder: (context, viewModel, child) {
-            return Text(
-              viewModel.isBalanceVisible ? "\$${viewModel.balance}" : "****",
-              style: TextStyle(color: theme["buttonHighlight"], fontSize: 20),
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: theme["buttonHighlight"]),
-            onPressed: () {},
+        drawer: _buildDrawer(context, theme, homeViewModel, authViewModel),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.menu, color: theme["textColor"]),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
-        ],
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Balance",
+                style: TextStyle(
+                  color: theme["secondaryText"], 
+                  fontSize: 14,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                homeViewModel.isBalanceVisible
+                    ? "\$${homeViewModel.balance.toStringAsFixed(2)}"
+                    : "****",
+                style: TextStyle(
+                  color: theme["textColor"],
+                  fontSize: 28,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: FaIcon(
+                homeViewModel.isBalanceVisible
+                    ? FontAwesomeIcons.eye
+                    : FontAwesomeIcons.eyeSlash,
+                color: theme["buttonHighlight"],
+                size: 20,
+              ),
+              onPressed: homeViewModel.toggleBalanceVisibility,
+            ),
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        _buildActionButton(
+                          context,
+                          "Request",
+                          FontAwesomeIcons.handHoldingDollar,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider(
+                                  create: (_) => ReceiveMoneyViewModel(),
+                                  child: const ReceivePageView(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionButton(
+                          context,
+                          "Send",
+                          FontAwesomeIcons.paperPlane,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider(
+                                  create: (_) => SendMoneyViewModel(),
+                                  child: const SendPageView(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionButton(
+                          context,
+                          "Virtual Card",
+                          FontAwesomeIcons.creditCard,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider(
+                                  create: (_) => CardViewModel(),
+                                  child: const CardView(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _buildActionButton(
+                          context,
+                          "International Tourist",
+                          FontAwesomeIcons.earthAsia,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider(
+                                  create: (_) => InternationalTouristViewModel(),
+                                  child: const InternationalTouristView(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionButton(
+                          context,
+                          "Forex Rates",
+                          FontAwesomeIcons.chartLine,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider(
+                                  create: (_) => ForexRatesViewModel(),
+                                  child: const ForexRatesView(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionButton(
+                          context,
+                          "Support",
+                          FontAwesomeIcons.headset,
+                          theme,
+                          onPressed: () => homeViewModel.contactSupport(context),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await Future.delayed(const Duration(seconds: 1));
+                  },
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      Text(
+                        "Transactions",
+                        style: TextStyle(
+                          color: theme["textColor"],
+                          fontSize: 18,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ...homeViewModel.transactions.map(
+                        (transaction) => _buildTransactionItem(transaction, theme),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
+    );
+  }
+
+  Widget _buildDrawer(
+    BuildContext context,
+    Map<String, dynamic> theme,
+    HomeViewModel homeViewModel,
+    AuthViewModel authViewModel,
+  ) {
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: SafeArea(
         child: Column(
           children: [
-            SizedBox(
-              height: 50,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: const [
-                  TabItem(title: "Send Money"),
-                  TabItem(title: "Get Virtual Card"),
-                  TabItem(title: "Pay2Remit"),
-                  TabItem(title: "KYC"),
-                  TabItem(title: "Forex Rate"),
-                  TabItem(title: "Support"),
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: theme["primaryColor"],
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: theme["buttonHighlight"],
+                    child: Icon(
+                      Icons.person,
+                      size: 40,
+                      color: theme["textColor"],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    authViewModel.userName ?? "User",
+                    style: TextStyle(
+                      color: theme["textColor"],
+                      fontSize: 20,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    authViewModel.userEmail ?? "user@credbird.com",
+                    style: TextStyle(
+                      color: theme["secondaryText"],
+                      fontSize: 14,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Consumer<HomeViewModel>(
-                builder: (context, viewModel, child) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Welcome, ${viewModel.userName}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  _buildDrawerItem(
+                    context,
+                    Icons.home,
+                    "Home",
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    Icons.credit_card,
+                    "Cards",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChangeNotifierProvider(
+                            create: (_) => CardViewModel(),
+                            child: const CardView(),
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          viewModel.isBalanceVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                          color: Colors.white,
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    Icons.history,
+                    "Transaction History",
+                    onTap: () {
+                      Navigator.pop(context);
+                      homeViewModel.showTransactionHistory(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    Icons.help_outline,
+                    "Help & Support",
+                    onTap: () {
+                      Navigator.pop(context);
+                      homeViewModel.contactSupport(context);
+                    },
+                  ),
+                  const Divider(),
+                  _buildDrawerItem(
+                    context,
+                    Icons.logout,
+                    "Logout",
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await authViewModel.logout();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginSignupView(),
                         ),
-                        onPressed: viewModel.toggleBalanceVisibility,
-                      ),
-                    ],
-                  );
-                },
+                        (route) => false,
+                      );
+                    },
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 20),
-            const AccountCard(
-              title: "Neo Credit",
-              amount: "-\$20.99",
-              cardNumber: "8907",
-            ),
-            const AccountCard(
-              title: "Everyday Spending",
-              amount: "\$0.00",
-              cardNumber: "3114",
-            ),
-            const AccountCard(
-              title: "High-Interest Savings",
-              amount: "Hidden",
-              cardNumber: "****",
-            ),
-            const AccountCard(
-              title: "Neo Mortgage",
-              amount: "Hidden",
-              cardNumber: "****",
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildDrawerItem(
+    BuildContext context,
+    IconData icon,
+    String title, {
+    required VoidCallback onTap,
+  }) {
+    final theme = Provider.of<ThemeProvider>(context).themeConfig;
+
+    return ListTile(
+      leading: Icon(icon, color: theme["textColor"]),
+      title: Text(
+        title, 
+        style: TextStyle(
+          color: theme["textColor"],
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
+Widget _buildActionButton(
+  BuildContext context,
+  String label,
+  IconData icon,
+  Map<String, dynamic> theme, {
+  required VoidCallback onPressed,
+}) {
+  return Expanded(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: theme["buttonBackground"],
+          foregroundColor: theme["buttonHighlight"],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        icon: FaIcon(icon, size: 16),
+        label: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: theme["textColor"],
+          ),
+        ),
+        onPressed: onPressed,
+      ),
+    ),
+  );
+}
+
+Widget _buildTransactionItem(Transaction transaction, Map<String, dynamic> theme) {
+  return Card(
+    margin: const EdgeInsets.only(bottom: 12),
+    elevation: 0,
+    color: theme["cardBackground"],
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: transaction.isIncoming 
+                  ? Colors.green.withOpacity(0.2)
+                  : Colors.red.withOpacity(0.2),
+            ),
+            child: Icon(
+              transaction.isIncoming 
+                  ? Icons.arrow_downward 
+                  : Icons.arrow_upward,
+              color: transaction.isIncoming ? Colors.green : Colors.red,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.recipient,
+                  style: TextStyle(
+                    color: theme["textColor"],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  transaction.date,
+                  style: TextStyle(
+                    color: theme["secondaryText"],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '${transaction.isIncoming ? '+' : '-'}\$${transaction.amount.toStringAsFixed(2)}',
+            style: TextStyle(
+              color: transaction.isIncoming ? Colors.green : Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 }

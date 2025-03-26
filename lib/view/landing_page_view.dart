@@ -1,6 +1,7 @@
 import 'package:credbird/viewmodel/pages_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class LandingPageView extends StatelessWidget {
@@ -10,6 +11,7 @@ class LandingPageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final theme = themeProvider.themeConfig;
+
     return Consumer<PagesProvider>(
       builder: (context, pagesProvider, child) {
         return Scaffold(
@@ -19,40 +21,92 @@ class LandingPageView extends StatelessWidget {
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
             ),
-            child: BottomNavigationBar(
-              showUnselectedLabels: true,
-              backgroundColor: theme["backgroundColor"],
-              selectedItemColor: theme["buttonHighlight"],
-              unselectedItemColor: theme["unhighlightedButton"],
-              enableFeedback: false,
-              currentIndex: pagesProvider.selectedIndex,
-              onTap: pagesProvider.onPageTapped,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_filled, size: 30),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.arrow_upward_sharp, size: 30),
-                  label: 'Send',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.arrow_downward_sharp, size: 30),
-                  label: 'Receive',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.credit_card_sharp, size: 30),
-                  label: 'Card',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_2_sharp, size: 30),
-                  label: 'Profile',
-                ),
-              ],
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                showUnselectedLabels: true,
+                backgroundColor: theme["backgroundColor"],
+                selectedItemColor: theme["buttonHighlight"],
+                unselectedItemColor: theme["unhighlightedButton"],
+                type: BottomNavigationBarType.fixed,
+                elevation: 10,
+                enableFeedback: false,
+                currentIndex: pagesProvider.selectedIndex,
+                onTap: pagesProvider.onPageTapped,
+                items: [
+                  _buildBottomNavigationBarItem(
+                    icon: FontAwesomeIcons.house,
+                    label: 'Home',
+                    isSelected: pagesProvider.selectedIndex == 0,
+                    theme: theme,
+                  ),
+                  _buildBottomNavigationBarItem(
+                    icon: FontAwesomeIcons.paperPlane,
+                    label: 'Send',
+                    isSelected: pagesProvider.selectedIndex == 1,
+                    theme: theme,
+                  ),
+                  _buildBottomNavigationBarItem(
+                    icon: FontAwesomeIcons.handHoldingDollar,
+                    label: 'Receive',
+                    isSelected: pagesProvider.selectedIndex == 2,
+                    theme: theme,
+                  ),
+                  _buildBottomNavigationBarItem(
+                    icon: FontAwesomeIcons.creditCard,
+                    label: 'Card',
+                    isSelected: pagesProvider.selectedIndex == 3,
+                    theme: theme,
+                  ),
+                  _buildBottomNavigationBarItem(
+                    icon: FontAwesomeIcons.user,
+                    label: 'Profile',
+                    isSelected: pagesProvider.selectedIndex == 4,
+                    theme: theme,
+                  ),
+                ],
+              ),
             ),
           ),
         );
       },
+    );
+  }
+
+  BottomNavigationBarItem _buildBottomNavigationBarItem({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required Map<String, dynamic> theme,
+  }) {
+    return BottomNavigationBarItem(
+      icon: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        decoration:
+            isSelected
+                ? BoxDecoration(
+                  color: theme["buttonHighlight"]?.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                )
+                : null,
+        child: FaIcon(
+          icon,
+          size: 22,
+          color:
+              isSelected
+                  ? theme["buttonHighlight"]
+                  : theme["unhighlightedButton"],
+        ),
+      ),
+      label: label,
     );
   }
 }

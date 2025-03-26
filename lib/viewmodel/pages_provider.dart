@@ -3,16 +3,16 @@ import 'package:credbird/view/home_page_view.dart';
 import 'package:credbird/view/profile_page_view.dart';
 import 'package:credbird/view/receive_page_view.dart';
 import 'package:credbird/view/send_page_view.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 class PagesProvider extends ChangeNotifier {
   int _selectedIndex = 0;
   final List<Widget> _pages = [
-    HomePageView(),
-    SendPageView(),
-    ReceivePageView(),
-    CardView(),
-    ProfilePageView(),
+    const HomePageView(),
+    const SendPageView(),
+    const ReceivePageView(),
+    const CardView(),
+    const ProfilePageView(),
   ];
 
   void onPageTapped(int index) {
@@ -21,6 +21,13 @@ class PagesProvider extends ChangeNotifier {
   }
 
   int get selectedIndex => _selectedIndex;
-
   List<Widget> get pages => _pages;
+
+  double _bottomBarHeight = 60;
+  double get bottomBarHeight => _bottomBarHeight;
+
+  void animateBottomBar(bool isExpanded) {
+    _bottomBarHeight = isExpanded ? 80 : 60;
+    notifyListeners();
+  }
 }

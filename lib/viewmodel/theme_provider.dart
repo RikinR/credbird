@@ -5,30 +5,21 @@ class ThemeProvider extends ChangeNotifier {
 
   bool get isDarkMode => _isDarkMode;
 
-  Map<String, dynamic> get themeConfig =>
-      _isDarkMode
-          ? {
-            "scaffoldBackground": const Color(0xFF0B0B0B),
-            "containerColor": const Color(0xFF161616),
-            "backgroundColor": const Color(0xFF101010),
-            "highlightColor": const Color(0xFF252525),
-            "switchActiveColor": const Color(0xFF303030),
-            "switchInactiveColor": const Color(0xFF1A1A1A),
-            "buttonHighlight": Colors.white,
-            "textColor": Colors.white,
-            "unhighlightedButton": Colors.grey.shade800,
-          }
-          : {
-            "scaffoldBackground": const Color(0xFF0E1B33),
-            "containerColor": const Color(0xFF162A4C),
-            "backgroundColor": const Color(0xFF1C315E),
-            "highlightColor": const Color(0xFF2A4B8D),
-            "switchActiveColor": const Color(0xFF4C73B5),
-            "switchInactiveColor": const Color(0xFF36598A),
-            "buttonHighlight": Colors.white,
-            "textColor": Colors.white,
-            "unhighlightedButton": Colors.grey.shade600,
-          };
+  Map<String, dynamic> get themeConfig => {
+        "scaffoldBackground": const Color(0xFF121212),
+        "backgroundColor": const Color(0xFF1E1E1E),
+        "cardBackground": const Color(0xFF242424),
+        "buttonHighlight": const Color(0xFFBB86FC),
+        "unhighlightedButton": Colors.grey[600],
+        "textColor": Colors.white,
+        "secondaryText": Colors.grey[400],
+        "positiveAmount": const Color(0xFF4CAF50),
+        "negativeAmount": const Color(0xFFF44336),
+        "cardGradient": const [
+          Color(0xFFBB86FC),
+          Color(0xFF03DAC6),
+        ],
+      };
 
   void toggleTheme() {
     _isDarkMode = !_isDarkMode;

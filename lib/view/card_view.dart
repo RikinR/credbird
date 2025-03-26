@@ -1,8 +1,9 @@
 import 'package:credbird/utils/card_view_utils.dart';
 import 'package:credbird/viewmodel/card_provider.dart';
+import 'package:credbird/viewmodel/home_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
-import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class CardView extends StatelessWidget {
@@ -10,109 +11,125 @@ class CardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<FlipCardState> cardKey = GlobalKey<FlipCardState>();
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final theme = themeProvider.themeConfig;
+    final theme = Provider.of<ThemeProvider>(context).themeConfig;
+    final viewModel = Provider.of<CardViewModel>(context);
 
     return Scaffold(
       backgroundColor: theme["scaffoldBackground"],
-      body: Center(
-        child: Consumer<CardViewModel>(
-          builder: (context, viewModel, child) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+      appBar: AppBar(
+        title: Text(
+          "My Card",
+          style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: theme["textColor"],
+        actions: [
+          IconButton(
+            icon: const FaIcon(FontAwesomeIcons.plus),
+            onPressed:
+                () => Provider.of<HomeViewModel>(
+                  context,
+                  listen: false,
+                ).requestVirtualCard(context),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 220,
+              child: PageView(
+                onPageChanged: (index) {
+                  viewModel.toggleCardSide();
+                },
+                children: [
+                  buildCardFront(viewModel, theme),
+                  buildCardBack(viewModel, theme),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                const SizedBox(height: 20),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () => cardKey.currentState?.toggleCard(),
-                      child: SizedBox(
-                        height: 200,
-                        width: 350,
-                        child: FlipCard(
-                          key: cardKey,
-                          direction: FlipDirection.HORIZONTAL,
-                          front: buildCardFront(),
-                          back: buildCardBack(),
-                        ),
-                      ),
-                    ),
-                  ],
+                buildCardAction(
+                  viewModel.isCardActive
+                      ? FontAwesomeIcons.lock
+                      : FontAwesomeIcons.lockOpen,
+                  "Freeze",
+                  theme,
+                  onPressed: viewModel.toggleCardActivation,
                 ),
-
-                const SizedBox(height: 20),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    buildIconButton(Icons.ac_unit, "Freeze"),
-                    buildIconButton(Icons.remove_red_eye, "View"),
-                    buildIconButton(Icons.settings, "Settings"),
-                    buildIconButton(Icons.more_horiz, "More"),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                buildWalletButton(
-                  icon: Icons.apple,
-                  text: "Add to Apple Wallet",
+                buildCardAction(
+                  FontAwesomeIcons.qrcode,
+                  "Pay",
+                  theme,
                   onPressed: () {},
                 ),
-
-                const SizedBox(height: 10),
-
-                buildWalletButton(
-                  icon: Icons.credit_card,
-                  text: "Add to Google Wallet",
+                buildCardAction(
+                  FontAwesomeIcons.wallet,
+                  "Add to Wallet",
+                  theme,
+                  onPressed: () => showWalletOptions(context, viewModel),
+                ),
+                buildCardAction(
+                  FontAwesomeIcons.ellipsis,
+                  "More",
+                  theme,
                   onPressed: () {},
-                ),
-
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    "Tap to activate or deactivate the card",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: GestureDetector(
-                    onTap: viewModel.toggleCardActivation,
-                    child: Container(
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color:
-                            viewModel.isCardActive
-                                ? Colors.green[800]
-                                : Colors.red[800],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.info_outline, color: Colors.white),
-                          const SizedBox(width: 10),
-                          Text(
-                            viewModel.isCardActive
-                                ? "Your virtual card is active"
-                                : "Your card is deactivated",
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ),
               ],
-            );
-          },
+            ),
+            const SizedBox(height: 32),
+            GestureDetector(
+              onTap: viewModel.toggleCardActivation,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme["cardBackground"],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      viewModel.isCardActive
+                          ? Icons.check_circle
+                          : Icons.remove_circle,
+                      color:
+                          viewModel.isCardActive
+                              ? theme["positiveAmount"]
+                              : theme["negativeAmount"],
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      viewModel.isCardActive
+                          ? "Card is active"
+                          : "Card is frozen",
+                      style: TextStyle(
+                        color: theme["textColor"],
+                        fontSize: 16,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      viewModel.isCardActive ? "Freeze" : "Activate",
+                      style: TextStyle(
+                        color: theme["buttonHighlight"],
+                        fontSize: 16,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

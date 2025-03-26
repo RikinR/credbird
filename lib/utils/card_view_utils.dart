@@ -1,93 +1,278 @@
+import 'package:credbird/viewmodel/card_provider.dart';
+import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
-Widget buildCardFront() {
+Widget buildCardFront(CardViewModel viewModel, Map<String, dynamic> theme) {
   return Container(
     decoration: BoxDecoration(
-      color: Colors.grey[800],
-      borderRadius: BorderRadius.circular(15),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          theme["buttonHighlight"]!.withOpacity(0.8),
+          const Color(0xFF03DAC6),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(16),
     ),
-    child: Stack(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Positioned(
-          top: 20,
-          left: 20,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "CredBird",
+              style: TextStyle(
+                color: theme["scaffoldBackground"],
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              "VISA",
+              style: TextStyle(
+                color: theme["scaffoldBackground"],
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              viewModel.cardNumber
+                  .replaceAllMapped(
+                    RegExp(r'.{4}'),
+                    (match) => '${match.group(0)} ',
+                  )
+                  .trim(),
+              style: TextStyle(
+                color: theme["scaffoldBackground"],
+                fontSize: 24,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "CARD HOLDER",
+                      style: TextStyle(
+                        color: theme["scaffoldBackground"]!.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      viewModel.cardHolder,
+                      style: TextStyle(
+                        color: theme["scaffoldBackground"],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "EXPIRES",
+                      style: TextStyle(
+                        color: theme["scaffoldBackground"]!.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      viewModel.expiryDate,
+                      style: TextStyle(
+                        color: theme["scaffoldBackground"],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Widget buildCardBack(CardViewModel viewModel, Map<String, dynamic> theme) {
+  return Container(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          theme["buttonHighlight"]!.withOpacity(0.8),
+          const Color(0xFF03DAC6),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 40,
+          color: Colors.black,
+          margin: const EdgeInsets.only(bottom: 20),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Card Number",
+              style: TextStyle(
+                color: theme["scaffoldBackground"]!.withOpacity(0.7),
+                fontSize: 12,
+              ),
+            ),
+            Text(
+              viewModel.cardNumber
+                  .replaceAllMapped(
+                    RegExp(r'.{4}'),
+                    (match) => '${match.group(0)} ',
+                  )
+                  .trim(),
+              style: TextStyle(
+                color: theme["scaffoldBackground"],
+                fontSize: 16,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "EXPIRY DATE",
+                      style: TextStyle(
+                        color: theme["scaffoldBackground"]!.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      viewModel.expiryDate,
+                      style: TextStyle(
+                        color: theme["scaffoldBackground"],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "CVV",
+                      style: TextStyle(
+                        color: theme["scaffoldBackground"]!.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      viewModel.cvv,
+                      style: TextStyle(
+                        color: theme["scaffoldBackground"],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+        const Spacer(),
+        Align(
+          alignment: Alignment.centerRight,
           child: Text(
-            "neo",
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 30,
+            "VISA",
+            style: TextStyle(
+              color: theme["scaffoldBackground"],
+              fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        Positioned(
-          top: 20,
-          right: 20,
-          child: Text(
-            "credit",
-            style: const TextStyle(color: Colors.white, fontSize: 16),
-          ),
-        ),
-        Positioned(
-          bottom: 20,
-          left: 20,
-          child: Text(
-            "•••• 8907",
-            style: const TextStyle(color: Colors.white, fontSize: 18),
-          ),
-        ),
-        Positioned(
-          bottom: 20,
-          right: 20,
-          child: Image.asset("assets/mastercardLogo.png", height: 40),
-        ),
       ],
     ),
   );
 }
 
-Widget buildCardBack() {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.grey[700],
-      borderRadius: BorderRadius.circular(15),
-    ),
-    child: const Center(
-      child: Text(
-        "Card Details",
-        style: TextStyle(color: Colors.white, fontSize: 18),
-      ),
-    ),
-  );
-}
-
-Widget buildIconButton(IconData icon, String label) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 10),
-    child: Column(
-      children: [
-        IconButton(icon: Icon(icon, color: Colors.white), onPressed: () {}),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
-      ],
-    ),
-  );
-}
-
-Widget buildWalletButton({
-  required IconData icon,
-  required String text,
+Widget buildCardAction(
+  IconData icon,
+  String text,
+  Map<String, dynamic> theme, {
   required VoidCallback onPressed,
 }) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 20),
-    child: ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[800],
-        minimumSize: const Size(double.infinity, 50),
+  return Column(
+    children: [
+      IconButton(
+        icon: FaIcon(icon),
+        color: theme["buttonHighlight"],
+        iconSize: 24,
+        onPressed: onPressed,
       ),
-      onPressed: onPressed,
-      icon: Icon(icon, color: Colors.white),
-      label: Text(text, style: const TextStyle(color: Colors.white)),
+      const SizedBox(height: 8),
+      Text(text, style: TextStyle(color: theme["textColor"])),
+    ],
+  );
+}
+
+void showWalletOptions(BuildContext context, CardViewModel viewModel) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor:
+        Provider.of<ThemeProvider>(
+          context,
+          listen: false,
+        ).themeConfig["cardBackground"],
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
+    builder:
+        (context) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.apple),
+                title: const Text("Add to Apple Pay"),
+                onTap: () {
+                  viewModel.addToApplePay(context);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.google),
+                title: const Text("Add to Google Pay"),
+                onTap: () {
+                  viewModel.addToGooglePay(context);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
   );
 }

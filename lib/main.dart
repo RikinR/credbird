@@ -1,8 +1,8 @@
-import 'package:credbird/view/authentication%20view/login_signup_view.dart';
-import 'package:credbird/view/landing_page_view.dart';
-import 'package:credbird/view/onboarding_screen_view.dart';
+import 'package:credbird/view/splash_screen_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/card_provider.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/forex_rates_provider.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/international_tourist_provider.dart';
 import 'package:credbird/viewmodel/home_provider.dart';
 import 'package:credbird/viewmodel/onboarding_page_provider.dart';
 import 'package:credbird/viewmodel/pages_provider.dart';
@@ -30,6 +30,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SendMoneyViewModel()),
         ChangeNotifierProvider(create: (_) => ReceiveMoneyViewModel()),
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => InternationalTouristViewModel()),
+        ChangeNotifierProvider(create: (_) => ForexRatesViewModel()),
       ],
       child: const MyApp(),
     ),
@@ -41,18 +43,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = Provider.of<AuthViewModel>(context);
-    final usageProvider = Provider.of<UsageProvider>(context);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       darkTheme: ThemeData.dark(),
-      themeMode: context.watch<ThemeProvider>().isDarkMode
-          ? ThemeMode.dark
-          : ThemeMode.light,
-      home: usageProvider.isFirstTime
-          ? const OnboardingScreenView()
-          : (authViewModel.isLoggedIn ? const LandingPageView() : const LoginSignupView()),
+      themeMode:
+          context.watch<ThemeProvider>().isDarkMode
+              ? ThemeMode.dark
+              : ThemeMode.light,
+      home: const SplashScreen(),
     );
   }
 }
