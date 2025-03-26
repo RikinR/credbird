@@ -29,10 +29,10 @@ class AuthViewModel extends ChangeNotifier {
     if (email.isNotEmpty && password.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('userName', "User"); 
+      await prefs.setString('userName', "User");
       await prefs.setString('userEmail', email);
       await prefs.setString('userId', "@${email.split('@')[0]}");
-      
+
       _isLoggedIn = true;
       _userName = "User";
       _userEmail = email;
@@ -41,18 +41,46 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);
-    _isLoggedIn = false;
-    notifyListeners();
+  Future<bool> logout(BuildContext context) async {
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Logout'),
+                content: const Text('Are you sure you want to logout?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
+
+    if (confirmed) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', false);
+      _isLoggedIn = false;
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   Future<void> updateProfile(String name, String email) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userName', name);
     await prefs.setString('userEmail', email);
-    
+
     _userName = name;
     _userEmail = email;
     notifyListeners();

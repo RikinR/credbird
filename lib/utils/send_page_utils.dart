@@ -1,4 +1,4 @@
-import 'package:credbird/viewmodel/send_money_provider.dart';
+import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -188,6 +188,7 @@ Widget buildNumberPad(
     children: [
       const SizedBox(height: 24),
       GridView.count(
+        physics: NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         crossAxisCount: 3,
         childAspectRatio: 2,
@@ -219,40 +220,43 @@ Widget buildConfirmButton(
   Map<String, dynamic> theme,
   SendMoneyViewModel viewModel,
 ) {
-  return Column(
-    children: [
-      const SizedBox(height: 16),
-      SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: theme["buttonHighlight"],
-            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+  return Padding(
+    padding: const EdgeInsets.only(top: 8),
+    child: Column(
+      children: [
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme["buttonHighlight"],
+              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () async {
+              await viewModel.sendMoney(context);
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Confirm Payment",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: theme["textColor"],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.arrow_forward, color: theme["textColor"]),
+              ],
             ),
           ),
-          onPressed: () async {
-            await viewModel.sendMoney(context);
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Confirm Payment",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: theme["textColor"],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.arrow_forward, color: theme["textColor"]),
-            ],
-          ),
         ),
-      ),
-    ],
+      ],
+    ),
   );
 }
 

@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:credbird/viewmodel/pages_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';

@@ -1,6 +1,6 @@
 import 'package:credbird/utils/card_view_utils.dart';
 import 'package:credbird/viewmodel/card_provider.dart';
-import 'package:credbird/viewmodel/home_provider.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -74,12 +74,6 @@ class CardView extends StatelessWidget {
                   "Add to Wallet",
                   theme,
                   onPressed: () => showWalletOptions(context, viewModel),
-                ),
-                buildCardAction(
-                  FontAwesomeIcons.ellipsis,
-                  "More",
-                  theme,
-                  onPressed: () {},
                 ),
               ],
             ),

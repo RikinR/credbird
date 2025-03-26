@@ -61,7 +61,7 @@ class InternationalTouristView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 50),
               decoration: BoxDecoration(
                 color: theme["cardBackground"],
                 borderRadius: BorderRadius.circular(12),
@@ -105,7 +105,8 @@ class InternationalTouristView extends StatelessWidget {
             Expanded(
               child: GridView.count(
                 crossAxisCount: 3,
-                childAspectRatio: 1.5,
+                physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: 1.7,
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
                 padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -124,6 +125,7 @@ class InternationalTouristView extends StatelessWidget {
                 ],
               ),
             ),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

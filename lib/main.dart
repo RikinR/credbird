@@ -3,11 +3,12 @@ import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/card_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/forex_rates_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/international_tourist_provider.dart';
-import 'package:credbird/viewmodel/home_provider.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
 import 'package:credbird/viewmodel/onboarding_page_provider.dart';
 import 'package:credbird/viewmodel/pages_provider.dart';
 import 'package:credbird/viewmodel/receive_money_provider.dart';
-import 'package:credbird/viewmodel/send_money_provider.dart';
+import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
+import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:credbird/viewmodel/usage_provider.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => InternationalTouristViewModel()),
         ChangeNotifierProvider(create: (_) => ForexRatesViewModel()),
+        ChangeNotifierProvider(create: (_) => BeneficiaryProvider()),
       ],
       child: const MyApp(),
     ),

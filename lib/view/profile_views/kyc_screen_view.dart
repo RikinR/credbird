@@ -126,7 +126,11 @@ class _KYCForm extends StatelessWidget {
                         : () => kycProvider.submitKYC(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme["buttonHighlight"],
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 26,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -137,7 +141,7 @@ class _KYCForm extends StatelessWidget {
                         : Text(
                           "Submit KYC",
                           style: TextStyle(
-                            color: theme["buttonText"],
+                            color: theme["textColor"],
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
