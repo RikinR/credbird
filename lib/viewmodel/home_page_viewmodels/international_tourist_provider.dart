@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 
 class InternationalTouristViewModel extends ChangeNotifier {
@@ -15,6 +13,14 @@ class InternationalTouristViewModel extends ChangeNotifier {
     "Sunidhi Mittal",
     "Alex Smith",
   ];
+  final List<Map<String, dynamic>> _transactions = [];
+  bool _hasTravelCard = false;
+  String? _travelCardCurrency;
+  String? _travelCardCountry;
+
+  bool get hasTravelCard => _hasTravelCard;
+  String? get travelCardCurrency => _travelCardCurrency;
+  String? get travelCardCountry => _travelCardCountry;
 
   String get selectedFromCurrency => _selectedFromCurrency;
   String get selectedToCurrency => _selectedToCurrency;
@@ -23,6 +29,7 @@ class InternationalTouristViewModel extends ChangeNotifier {
   double get convertedAmount => _amount * _exchangeRate;
   String? get selectedContact => _selectedContact;
   List<String> get recentContacts => _recentContacts;
+  List<Map<String, dynamic>> get transactions => _transactions;
 
   final List<String> _currencies = [
     'USD',
@@ -42,6 +49,17 @@ class InternationalTouristViewModel extends ChangeNotifier {
     _selectedFromCurrency = currency;
     _updateExchangeRate();
     notifyListeners();
+  }
+
+  Future<void> generateTravelCard(BuildContext context, String currency, String country) async {
+    _hasTravelCard = true;
+    _travelCardCurrency = currency;
+    _travelCardCountry = country;
+    notifyListeners();
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Travel card for $country generated successfully!')),
+    );
   }
 
   void setToCurrency(String currency) {
@@ -107,6 +125,15 @@ class InternationalTouristViewModel extends ChangeNotifier {
     );
 
     if (confirmed == true) {
+      _transactions.insert(0, {
+        "recipient": _selectedContact,
+        "amount": _amount,
+        "currency": _selectedFromCurrency,
+        "date": DateTime.now().toString().substring(0, 10),
+        "convertedAmount": convertedAmount,
+        "toCurrency": _selectedToCurrency,
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -114,7 +141,8 @@ class InternationalTouristViewModel extends ChangeNotifier {
           ),
         ),
       );
-      Navigator.pop(context);
+      _amount = 0.0;
+      notifyListeners();
     }
   }
 

@@ -14,18 +14,31 @@ class AddBeneficiaryPage extends StatefulWidget {
 class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _credBirdIdController = TextEditingController();
-  final _bankAccountController = TextEditingController();
+  final _accountNumberController = TextEditingController();
   final _bankNameController = TextEditingController();
+  final _branchNameController = TextEditingController();
   final _ifscCodeController = TextEditingController();
+  final _swiftCodeController = TextEditingController();
+  final _ibanController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _mobileNumberController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _transferLimitController = TextEditingController();
+  bool _isInternational = false;
 
   @override
   void dispose() {
     _nameController.dispose();
-    _credBirdIdController.dispose();
-    _bankAccountController.dispose();
+    _accountNumberController.dispose();
     _bankNameController.dispose();
+    _branchNameController.dispose();
     _ifscCodeController.dispose();
+    _swiftCodeController.dispose();
+    _ibanController.dispose();
+    _addressController.dispose();
+    _mobileNumberController.dispose();
+    _emailController.dispose();
+    _transferLimitController.dispose();
     super.dispose();
   }
 
@@ -55,9 +68,31 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                Row(
+                  children: [
+                    Text(
+                      "International Beneficiary",
+                      style: TextStyle(
+                        color: theme["textColor"],
+                        fontSize: 16,
+                      ),
+                    ),
+                    const Spacer(),
+                    Switch(
+                      value: _isInternational,
+                      onChanged: (value) {
+                        setState(() {
+                          _isInternational = value;
+                        });
+                      },
+                      activeColor: theme["buttonHighlight"],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 _buildTextField(
                   controller: _nameController,
-                  label: "Full Name",
+                  label: "Beneficiary's Full Name",
                   theme: theme,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -68,33 +103,100 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  controller: _credBirdIdController,
-                  label: "CredBird ID",
+                  controller: _accountNumberController,
+                  label: _isInternational ? "Account Number/IBAN" : "Bank Account Number",
                   theme: theme,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter CredBird ID';
+                      return 'Please enter account number';
+                    }
+                    return null;
+                  },
+                ),
+                if (!_isInternational) ...[
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _ifscCodeController,
+                    label: "IFSC Code",
+                    theme: theme,
+                    validator: (value) {
+                      if (!_isInternational && (value == null || value.isEmpty)) {
+                        return 'Please enter IFSC code';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _bankNameController,
+                  label: "Bank Name",
+                  theme: theme,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter bank name';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  controller: _bankAccountController,
-                  label: "Bank Account Number (Optional)",
+                  controller: _branchNameController,
+                  label: "Branch Name",
+                  theme: theme,
+                  validator: (value) {
+                    if (!_isInternational && (value == null || value.isEmpty)) {
+                      return 'Please enter branch name';
+                    }
+                    return null;
+                  },
+                ),
+                if (_isInternational) ...[
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _swiftCodeController,
+                    label: "SWIFT/BIC Code",
+                    theme: theme,
+                    validator: (value) {
+                      if (_isInternational && (value == null || value.isEmpty)) {
+                        return 'Please enter SWIFT code';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _ibanController,
+                    label: "IBAN (if different from account number)",
+                    theme: theme,
+                  ),
+                ],
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _addressController,
+                  label: "Address (Optional)",
                   theme: theme,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  controller: _bankNameController,
-                  label: "Bank Name (Optional)",
+                  controller: _mobileNumberController,
+                  label: "Mobile Number (Optional)",
                   theme: theme,
+                  keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  controller: _ifscCodeController,
-                  label: "IFSC Code (Optional)",
+                  controller: _emailController,
+                  label: "Email (Optional)",
                   theme: theme,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _transferLimitController,
+                  label: "Transfer Limit (Optional)",
+                  theme: theme,
+                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
@@ -105,19 +207,19 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                         final beneficiary = Beneficiary(
                           id: DateTime.now().millisecondsSinceEpoch.toString(),
                           name: _nameController.text,
-                          credBirdId: _credBirdIdController.text,
-                          bankAccount:
-                              _bankAccountController.text.isEmpty
-                                  ? null
-                                  : _bankAccountController.text,
-                          bankName:
-                              _bankNameController.text.isEmpty
-                                  ? null
-                                  : _bankNameController.text,
-                          ifscCode:
-                              _ifscCodeController.text.isEmpty
-                                  ? null
-                                  : _ifscCodeController.text,
+                          accountNumber: _accountNumberController.text,
+                          bankName: _bankNameController.text,
+                          branchName: _branchNameController.text,
+                          ifscCode: _isInternational ? null : _ifscCodeController.text,
+                          swiftCode: _isInternational ? _swiftCodeController.text : null,
+                          iban: _isInternational ? _ibanController.text : null,
+                          address: _addressController.text.isEmpty ? null : _addressController.text,
+                          mobileNumber: _mobileNumberController.text.isEmpty ? null : _mobileNumberController.text,
+                          email: _emailController.text.isEmpty ? null : _emailController.text,
+                          transferLimit: _transferLimitController.text.isEmpty
+                              ? null
+                              : double.tryParse(_transferLimitController.text),
+                          isInternational: _isInternational,
                         );
 
                         beneficiaryProvider.addBeneficiary(beneficiary);
@@ -164,10 +266,12 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
     required String label,
     required Map<String, dynamic> theme,
     String? Function(String?)? validator,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return TextFormField(
       controller: controller,
       style: TextStyle(color: theme["textColor"]),
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: theme["secondaryText"]),

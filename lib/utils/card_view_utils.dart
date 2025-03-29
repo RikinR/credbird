@@ -276,3 +276,180 @@ void showWalletOptions(BuildContext context, CardViewModel viewModel) {
         ),
   );
 }
+
+Widget buildCardCarousel(
+  BuildContext context,
+  CardViewModel viewModel,
+  Map<String, dynamic> theme,
+) {
+  return SizedBox(
+    height: 220,
+    child: PageView(
+      onPageChanged: (index) => viewModel.toggleCardSide(),
+      children: [
+        buildCardFront(viewModel, theme),
+        buildCardBack(viewModel, theme),
+      ],
+    ),
+  );
+}
+
+Widget buildQuickActionsRow(
+  BuildContext context,
+  CardViewModel viewModel,
+  Map<String, dynamic> theme,
+) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceAround,
+    children: [
+      _buildActionButton(
+        icon:
+            viewModel.isCardActive
+                ? FontAwesomeIcons.lock
+                : FontAwesomeIcons.lockOpen,
+        label: viewModel.isCardActive ? "Freeze" : "Unfreeze",
+        theme: theme,
+        onPressed: viewModel.toggleCardActivation,
+      ),
+      _buildActionButton(
+        icon: FontAwesomeIcons.qrcode,
+        label: "Pay",
+        theme: theme,
+        onPressed: () => _showPaymentOptions(context),
+      ),
+      _buildActionButton(
+        icon: FontAwesomeIcons.wallet,
+        label: "Wallet",
+        theme: theme,
+        onPressed: () => showWalletOptions(context, viewModel),
+      ),
+    ],
+  );
+}
+
+Widget _buildActionButton({
+  required IconData icon,
+  required String label,
+  required Map<String, dynamic> theme,
+  required VoidCallback onPressed,
+}) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      IconButton(
+        icon: FaIcon(icon),
+        color: theme["buttonHighlight"],
+        onPressed: onPressed,
+        iconSize: 24,
+      ),
+      const SizedBox(height: 4),
+      Text(label, style: TextStyle(color: theme["textColor"], fontSize: 12)),
+    ],
+  );
+}
+
+Widget buildCardStatusTile(
+  CardViewModel viewModel,
+  Map<String, dynamic> theme,
+) {
+  return ListTile(
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      side: BorderSide(color: theme["cardBorder"] ?? Colors.grey.shade300),
+    ),
+    leading: Icon(
+      viewModel.isCardActive ? Icons.check_circle : Icons.remove_circle,
+      color:
+          viewModel.isCardActive
+              ? theme["positiveAmount"]
+              : theme["negativeAmount"],
+    ),
+    title: Text(
+      viewModel.isCardActive ? "Card is active" : "Card is frozen",
+      style: TextStyle(color: theme["textColor"], fontWeight: FontWeight.w500),
+    ),
+    trailing: TextButton(
+      onPressed: viewModel.toggleCardActivation,
+      child: Text(
+        viewModel.isCardActive ? "FREEZE CARD" : "ACTIVATE CARD",
+        style: TextStyle(
+          color: theme["buttonHighlight"],
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  );
+}
+
+void showCountrySelectionDialog(BuildContext context) {
+  final viewModel = Provider.of<CardViewModel>(context, listen: false);
+  final countries = ['USA', 'UK', 'Canada', 'Australia', 'Germany', 'France'];
+
+  showDialog(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          title: const Text('Select Country for Virtual Card'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: countries.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(countries[index]),
+                  onTap: () {
+                    viewModel.selectCountry(countries[index]);
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Virtual card for ${countries[index]} generated',
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+  );
+}
+
+void _showPaymentOptions(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    builder:
+        (context) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.qr_code),
+                title: const Text('Show QR Code'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.copy),
+                title: const Text('Copy Card Details'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
+  );
+}

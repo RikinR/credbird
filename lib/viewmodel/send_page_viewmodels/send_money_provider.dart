@@ -1,11 +1,13 @@
+
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:credbird/model/transaction_model.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
+import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-enum PaymentMethod { contact, credBirdId }
+enum PaymentMethod { contact, credBirdId, beneficiary }
 
 class SendMoneyViewModel extends ChangeNotifier {
   double _amount = 0.0;
@@ -70,6 +72,8 @@ class SendMoneyViewModel extends ChangeNotifier {
     }
 
     String recipient;
+    String? recipientDetails;
+
     if (_paymentMethod == PaymentMethod.contact) {
       if (_selectedContact == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -78,7 +82,19 @@ class SendMoneyViewModel extends ChangeNotifier {
         return false;
       }
       recipient = _selectedContact!;
-    } else {
+    } 
+    else if (_paymentMethod == PaymentMethod.beneficiary) {
+      final beneficiary = Provider.of<BeneficiaryProvider>(context, listen: false).selectedBeneficiary;
+      if (beneficiary == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select a beneficiary")),
+        );
+        return false;
+      }
+      recipient = beneficiary.name;
+      recipientDetails = "${beneficiary.bankName} • ${beneficiary.accountNumber}";
+    }
+    else {
       if (credBirdIdController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please enter a CredBird ID")),
@@ -92,7 +108,20 @@ class SendMoneyViewModel extends ChangeNotifier {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Confirm Payment"),
-        content: Text("Send \$${_amount.toStringAsFixed(2)} to $recipient?"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Send \$${_amount.toStringAsFixed(2)} to $recipient?"),
+            if (recipientDetails != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                recipientDetails,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -115,6 +144,7 @@ class SendMoneyViewModel extends ChangeNotifier {
         date: DateTime.now().toString(),
         amount: _amount,
         isIncoming: false,
+        details: recipientDetails,
       ),
     );
     homeViewModel.addFunds(-_amount);
@@ -127,6 +157,7 @@ class SendMoneyViewModel extends ChangeNotifier {
     amountController.clear();
     _selectedContact = null;
     credBirdIdController.clear();
+    Provider.of<BeneficiaryProvider>(context, listen: false).clearSelection();
     notifyListeners();
 
     return true;

@@ -1,3 +1,4 @@
+import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -7,66 +8,31 @@ Widget buildPaymentMethodSelector(
   Map<String, dynamic> theme,
   SendMoneyViewModel viewModel,
 ) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        "Payment Method",
-        style: TextStyle(
-          color: theme["textColor"],
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Row(
+  return Container(
+    decoration: BoxDecoration(
+      color: theme["cardBackground"],
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: DefaultTabController(
+      length: 3,
+      child: Column(
         children: [
-          Expanded(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    viewModel.paymentMethod == PaymentMethod.contact
-                        ? theme["buttonHighlight"]
-                        : theme["cardBackground"],
-                foregroundColor:
-                    viewModel.paymentMethod == PaymentMethod.contact
-                        ? theme["scaffoldBackground"]
-                        : theme["textColor"],
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed:
-                  () => viewModel.setPaymentMethod(PaymentMethod.contact),
-              child: const Text("Contact"),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    viewModel.paymentMethod == PaymentMethod.credBirdId
-                        ? theme["buttonHighlight"]
-                        : theme["cardBackground"],
-                foregroundColor:
-                    viewModel.paymentMethod == PaymentMethod.credBirdId
-                        ? theme["scaffoldBackground"]
-                        : theme["textColor"],
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed:
-                  () => viewModel.setPaymentMethod(PaymentMethod.credBirdId),
-              child: const Text("CredBird ID"),
-            ),
+          TabBar(
+            onTap: (index) {
+              viewModel.setPaymentMethod(PaymentMethod.values[index]);
+            },
+            labelColor: theme["buttonHighlight"],
+            unselectedLabelColor: theme["secondaryText"],
+            indicatorColor: theme["buttonHighlight"],
+            tabs: const [
+              Tab(text: "Contacts"),
+              Tab(text: "CredBird ID"),
+              Tab(text: "Beneficiary"),
+            ],
           ),
         ],
       ),
-    ],
+    ),
   );
 }
 
@@ -353,3 +319,97 @@ Widget buildActionButton(
     child: FaIcon(icon, size: 24),
   );
 }
+
+ Widget buildBeneficiarySelector(
+    BuildContext context,
+    BeneficiaryProvider beneficiaryProvider,
+    Map<String, dynamic> theme,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text(
+          "Select Beneficiary",
+          style: TextStyle(
+            color: theme["textColor"],
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (beneficiaryProvider.beneficiaries.isEmpty)
+          Text(
+            "No beneficiaries added yet",
+            style: TextStyle(color: theme["secondaryText"]),
+          )
+        else
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: beneficiaryProvider.beneficiaries.length,
+              itemBuilder: (context, index) {
+                final beneficiary = beneficiaryProvider.beneficiaries[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      beneficiaryProvider.selectBeneficiary(beneficiary);
+                    },
+                    child: Container(
+                      width: 150,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme["cardBackground"],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color:
+                              beneficiaryProvider.selectedBeneficiary?.id ==
+                                      beneficiary.id
+                                  ? theme["buttonHighlight"]!
+                                  : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            beneficiary.name,
+                            style: TextStyle(
+                              color: theme["textColor"],
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            beneficiary.accountNumber,
+                            style: TextStyle(
+                              color: theme["secondaryText"],
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            beneficiary.bankName,
+                            style: TextStyle(
+                              color: theme["secondaryText"],
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }

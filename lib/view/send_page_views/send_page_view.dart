@@ -1,6 +1,7 @@
 import 'package:credbird/utils/send_page_utils.dart';
 import 'package:credbird/view/send_page_views/beneficiary_view.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
+import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,7 @@ class SendPageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
     final viewModel = Provider.of<SendMoneyViewModel>(context);
+    final beneficiaryProvider = Provider.of<BeneficiaryProvider>(context);
 
     return Scaffold(
       backgroundColor: theme["scaffoldBackground"],
@@ -35,6 +37,13 @@ class SendPageView extends StatelessWidget {
               );
             },
           ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Add Benefiicary',
+              style: TextStyle(fontFamily: 'Roboto'),
+            ),
+          ),
         ],
       ),
       body: Padding(
@@ -48,6 +57,13 @@ class SendPageView extends StatelessWidget {
                 children: [
                   if (viewModel.paymentMethod == PaymentMethod.contact) ...[
                     buildContactSelector(theme, viewModel, context),
+                  ] else if (viewModel.paymentMethod ==
+                      PaymentMethod.beneficiary) ...[
+                    buildBeneficiarySelector(
+                      context,
+                      beneficiaryProvider,
+                      theme,
+                    ),
                   ] else ...[
                     buildCredBirdIdInput(theme, viewModel),
                   ],

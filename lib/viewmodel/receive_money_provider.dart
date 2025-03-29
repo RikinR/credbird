@@ -79,19 +79,20 @@ class ReceiveMoneyViewModel extends ChangeNotifier {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Requested \$$amount from $_selectedContact")),
-    );}
+    );
+  }
 
-    void addContact(String name) {
-      if (name.isNotEmpty && !_contacts.contains(name)) {
-        _contacts.add(name);
-        notifyListeners();
-      }
-    }
-
-    Future<void> updateUserId(String newId) async {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userId', newId);
-      _userId = newId;
+  void addContact(String name) {
+    if (name.isNotEmpty && !_contacts.contains(name)) {
+      _contacts.add(name);
       notifyListeners();
     }
   }
+
+  Future<void> updateUserId(String newId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userId', newId);
+    _userId = newId;
+    notifyListeners();
+  }
+}

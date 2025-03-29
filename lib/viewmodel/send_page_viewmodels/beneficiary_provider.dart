@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 
 class BeneficiaryProvider extends ChangeNotifier {
   final List<Beneficiary> _beneficiaries = [];
+  Beneficiary? _selectedBeneficiary;
 
   List<Beneficiary> get beneficiaries => _beneficiaries;
+  Beneficiary? get selectedBeneficiary => _selectedBeneficiary;
 
   void addBeneficiary(Beneficiary beneficiary) {
     _beneficiaries.add(beneficiary);
@@ -13,6 +15,16 @@ class BeneficiaryProvider extends ChangeNotifier {
 
   void removeBeneficiary(String id) {
     _beneficiaries.removeWhere((beneficiary) => beneficiary.id == id);
+    notifyListeners();
+  }
+
+  void selectBeneficiary(Beneficiary beneficiary) {
+    _selectedBeneficiary = beneficiary;
+    notifyListeners();
+  }
+
+  void clearSelection() {
+    _selectedBeneficiary = null;
     notifyListeners();
   }
 }
