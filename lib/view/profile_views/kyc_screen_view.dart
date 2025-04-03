@@ -73,13 +73,6 @@ class _KYCForm extends StatelessWidget {
             const SizedBox(height: 16),
             _buildTextField(
               context,
-              "Bank Name",
-              "Enter your bank name",
-              (value) => kycProvider.updateBankDetails(bankName: value),
-            ),
-            const SizedBox(height: 12),
-            _buildTextField(
-              context,
               "Account Number",
               "Enter your account number",
               (value) => kycProvider.updateBankDetails(accountNumber: value),
@@ -90,7 +83,14 @@ class _KYCForm extends StatelessWidget {
               context,
               "IFSC Code",
               "Enter your bank's IFSC code",
-              (value) => kycProvider.updateBankDetails(ifscCode: value),
+              (value) => kycProvider.updateBankDetails(ifsc: value),
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              context,
+              "Account Name",
+              "Enter account holder name",
+              (value) => kycProvider.updateBankDetails(accountName: value),
             ),
             const SizedBox(height: 24),
             Text(
@@ -125,8 +125,7 @@ class _KYCForm extends StatelessWidget {
                         ? null
                         : () => kycProvider.submitKYC(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: theme["buttonHighlight"],
-
+                  backgroundColor: theme["textColor"],
                   padding: const EdgeInsets.symmetric(
                     horizontal: 26,
                     vertical: 12,
@@ -141,7 +140,7 @@ class _KYCForm extends StatelessWidget {
                         : Text(
                           "Submit KYC",
                           style: TextStyle(
-                            color: theme["textColor"],
+                            color: theme["backgroundColor"],
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -161,7 +160,8 @@ class _KYCForm extends StatelessWidget {
     Function(String) onChanged, {
     TextInputType keyboardType = TextInputType.text,
   }) {
-    final theme = Provider.of<ThemeProvider>(context).themeConfig;
+    final theme =
+        Provider.of<ThemeProvider>(context, listen: false).themeConfig;
 
     return TextField(
       onChanged: onChanged,
@@ -187,7 +187,8 @@ class _KYCForm extends StatelessWidget {
   }
 
   Widget _buildDocumentUpload(BuildContext context) {
-    final theme = Provider.of<ThemeProvider>(context).themeConfig;
+    final theme =
+        Provider.of<ThemeProvider>(context, listen: false).themeConfig;
     final kycProvider = Provider.of<KYCProvider>(context);
 
     return GestureDetector(
@@ -225,7 +226,7 @@ class _KYCForm extends StatelessWidget {
                       child: Icon(
                         Icons.description,
                         size: 40,
-                        color: theme["buttonHighlight"],
+                        color: theme["textColor"],
                       ),
                     ),
                     Positioned(
@@ -246,7 +247,8 @@ class _KYCForm extends StatelessWidget {
   }
 
   void _showDocumentTypePicker(BuildContext context) {
-    final theme = Provider.of<ThemeProvider>(context).themeConfig;
+    final theme =
+        Provider.of<ThemeProvider>(context, listen: false).themeConfig;
     final kycProvider = Provider.of<KYCProvider>(context, listen: false);
 
     showModalBottomSheet(
@@ -271,10 +273,7 @@ class _KYCForm extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: Icon(
-                  Icons.credit_card,
-                  color: theme["buttonHighlight"],
-                ),
+                leading: Icon(Icons.credit_card, color: theme["textColor"]),
                 title: Text(
                   "PAN Card",
                   style: TextStyle(color: theme["textColor"]),
@@ -288,10 +287,7 @@ class _KYCForm extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(
-                  Icons.perm_identity,
-                  color: theme["buttonHighlight"],
-                ),
+                leading: Icon(Icons.perm_identity, color: theme["textColor"]),
                 title: Text(
                   "Aadhaar Card",
                   style: TextStyle(color: theme["textColor"]),
@@ -307,7 +303,7 @@ class _KYCForm extends StatelessWidget {
               ListTile(
                 leading: Icon(
                   Icons.drive_file_rename_outline,
-                  color: theme["buttonHighlight"],
+                  color: theme["textColor"],
                 ),
                 title: Text(
                   "Passport",

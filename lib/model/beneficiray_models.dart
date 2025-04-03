@@ -26,6 +26,6 @@ class Beneficiary {
     this.mobileNumber,
     this.email,
     this.transferLimit,
-    this.isInternational = false,
+    this.isInternational = false, required String city, required String country, required String bankAddress, required String ibanBsbAba,
   });
 }

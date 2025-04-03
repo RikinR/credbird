@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:credbird/viewmodel/pages_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +37,7 @@ class LandingPageView extends StatelessWidget {
               child: BottomNavigationBar(
                 showUnselectedLabels: true,
                 backgroundColor: theme["backgroundColor"],
-                selectedItemColor: theme["buttonHighlight"],
+                selectedItemColor: theme["textColor"],
                 unselectedItemColor: theme["unhighlightedButton"],
                 type: BottomNavigationBarType.fixed,
                 elevation: 10,
@@ -102,7 +104,7 @@ class LandingPageView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: theme["buttonHighlight"]!.withOpacity(0.3),
+                      color: theme["textColor"]!.withOpacity(0.3),
                       blurRadius: 10,
                       spreadRadius: 2,
                     ),
@@ -131,7 +133,7 @@ class LandingPageView extends StatelessWidget {
                 height: 3,
                 width: 20,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.grey,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ).animate().scaleX(begin: 0, end: 1),

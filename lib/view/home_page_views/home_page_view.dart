@@ -44,7 +44,7 @@ class _HomePageViewState extends State<HomePageView> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.menu, color: theme["buttonHighlight"]),
+            icon: Icon(Icons.menu, color: theme["textColor"]),
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
           title: Column(
@@ -79,7 +79,7 @@ class _HomePageViewState extends State<HomePageView> {
                 homeViewModel.isBalanceVisible
                     ? FontAwesomeIcons.eye
                     : FontAwesomeIcons.eyeSlash,
-                color: theme["buttonHighlight"],
+                color: theme["textColor"],
                 size: 20,
               ),
               onPressed: homeViewModel.toggleBalanceVisibility,
@@ -87,7 +87,7 @@ class _HomePageViewState extends State<HomePageView> {
             IconButton(
               icon: FaIcon(
                 FontAwesomeIcons.bell,
-                color: theme["buttonHighlight"],
+                color: theme["textColor"],
                 size: 20,
               ),
               onPressed: () {},
@@ -129,7 +129,7 @@ class _HomePageViewState extends State<HomePageView> {
                               ),
                               _buildActionButton(
                                 context,
-                                "Send",
+                                "Send Money Abroad",
                                 FontAwesomeIcons.paperPlane,
                                 theme,
                                 onPressed: () {
@@ -272,14 +272,14 @@ class _HomePageViewState extends State<HomePageView> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: theme["buttonHighlight"]),
+              decoration: BoxDecoration(color: theme["backgroundColor"]),
 
               child: Column(
                 children: [
                   const SizedBox(height: 20),
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: theme["buttonHighlight"],
+                    backgroundColor: theme["textColor"],
                     child: Icon(
                       Icons.person,
                       size: 40,
@@ -418,7 +418,7 @@ class _HomePageViewState extends State<HomePageView> {
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: theme["buttonBackground"],
-              foregroundColor: theme["buttonHighlight"],
+              foregroundColor: theme["textColor"],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

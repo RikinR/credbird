@@ -23,14 +23,16 @@ class KYCProvider with ChangeNotifier {
   }
 
   void updateBankDetails({
-    String? bankName,
     String? accountNumber,
-    String? ifscCode,
+    String? ifsc,
+    String? accountName,
+    bool? refundAccount,
   }) {
     _kycData = _kycData.copyWith(
-      bankName: bankName,
       accountNumber: accountNumber,
-      ifscCode: ifscCode,
+      ifsc: ifsc,
+      accountName: accountName,
+      refundAccount: refundAccount,
     );
     notifyListeners();
   }
@@ -50,8 +52,6 @@ class KYCProvider with ChangeNotifier {
       
       try {
         await Future.delayed(const Duration(seconds: 2));
-        
-  
         
         _isLoading = false;
         notifyListeners();
@@ -80,11 +80,6 @@ class KYCProvider with ChangeNotifier {
       notifyListeners();
       return false;
     }
-    if (_kycData.bankName == null || _kycData.bankName!.isEmpty) {
-      _errorMessage = 'Please enter your bank name';
-      notifyListeners();
-      return false;
-    }
     if (_kycData.accountNumber == null || _kycData.accountNumber!.isEmpty) {
       _errorMessage = 'Please enter your account number';
       notifyListeners();
@@ -104,18 +99,24 @@ extension KYCModelExtension on KYCModel {
   KYCModel copyWith({
     String? firstName,
     String? lastName,
-    String? bankName,
     String? accountNumber,
-    String? ifscCode,
+    String? ifsc,
+    String? accountName,
+    bool? refundAccount,
+    String? verifiedStatus,
+    String? status,
     String? documentType,
     String? documentPath,
   }) {
     return KYCModel(
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-      bankName: bankName ?? this.bankName,
       accountNumber: accountNumber ?? this.accountNumber,
-      ifscCode: ifscCode ?? this.ifscCode,
+      ifsc: ifsc ?? this.ifsc,
+      accountName: accountName ?? this.accountName,
+      refundAccount: refundAccount ?? this.refundAccount,
+      verifiedStatus: verifiedStatus ?? this.verifiedStatus,
+      status: status ?? this.status,
       documentType: documentType ?? this.documentType,
       documentPath: documentPath ?? this.documentPath,
     );

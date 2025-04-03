@@ -18,8 +18,12 @@ class _LoginSignupViewState extends State<LoginSignupView>
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   bool isLogin = true;
   bool _isPasswordVisible = false;
+  bool _rememberMe = false;
+  String _dialCode = '+91';
+  String _userType = 'STUDENT';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
@@ -28,8 +32,9 @@ class _LoginSignupViewState extends State<LoginSignupView>
   void initState() {
     super.initState();
 
-    _emailController.text = 'test@example.com';
-    _passwordController.text = 'password123';
+    _emailController.text = 'user@credbird.com';
+    _passwordController.text = '12345';
+    _phoneController.text = '9999999999';
 
     timeDilation = 2.0;
 
@@ -58,6 +63,7 @@ class _LoginSignupViewState extends State<LoginSignupView>
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -77,7 +83,7 @@ class _LoginSignupViewState extends State<LoginSignupView>
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.blue.shade900.withOpacity(0.8), Colors.black],
+                  colors: [Colors.black, Colors.black],
                 ),
               ),
             ),
@@ -186,6 +192,100 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                 theme: theme,
                               ),
                               const SizedBox(height: 16),
+
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade900.withOpacity(
+                                        0.5,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    child: DropdownButton<String>(
+                                      value: _dialCode,
+                                      dropdownColor: Colors.grey.shade900,
+                                      underline: const SizedBox(),
+                                      isExpanded: true,
+                                      items:
+                                          <String>[
+                                            '+91',
+                                            '+1',
+                                            '+44',
+                                            '+81',
+                                          ].map((String value) {
+                                            return DropdownMenuItem<String>(
+                                              value: value,
+                                              child: Text(
+                                                value,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          _dialCode = newValue!;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _buildTextField(
+                                      controller: _phoneController,
+                                      hintText: "Phone Number",
+                                      prefixIcon: Icons.phone,
+                                      theme: theme,
+                                      keyboardType: TextInputType.phone,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade900.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: DropdownButton<String>(
+                                  value: _userType,
+                                  dropdownColor: Colors.grey.shade900,
+                                  underline: const SizedBox(),
+                                  isExpanded: true,
+                                  items:
+                                      <String>[
+                                        'STUDENT',
+                                        'TEACHER',
+                                        'PARENT',
+                                      ].map((String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(
+                                            value,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                  onChanged: (newValue) {
+                                    setState(() {
+                                      _userType = newValue!;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 16),
                             ],
 
                             _buildTextField(
@@ -217,7 +317,38 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                 },
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
+
+                            if (isLogin) ...[
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _rememberMe,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _rememberMe = value!;
+                                      });
+                                    },
+                                    fillColor:
+                                        MaterialStateProperty.resolveWith<
+                                          Color
+                                        >((Set<MaterialState> states) {
+                                          if (states.contains(
+                                            MaterialState.selected,
+                                          )) {
+                                            return Colors.blueAccent;
+                                          }
+                                          return Colors.grey;
+                                        }),
+                                  ),
+                                  const Text(
+                                    "Remember me",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                            ],
 
                             ElevatedButton(
                               onPressed: () async {
@@ -225,6 +356,7 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                 final password =
                                     _passwordController.text.trim();
                                 final name = _nameController.text.trim();
+                                final phone = _phoneController.text.trim();
 
                                 if (isLogin) {
                                   if (email.isEmpty || password.isEmpty) {
@@ -235,7 +367,15 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                     return;
                                   }
 
-                                  await authViewModel.login(email, password);
+                                  await authViewModel.login(
+                                    email,
+                                    password,
+                                    _dialCode,
+                                    phone,
+                                    _userType,
+                                    _rememberMe,
+                                  );
+
                                   if (!authViewModel.isLoggedIn) {
                                     _showErrorSnackbar(
                                       context,
@@ -257,7 +397,8 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                 } else {
                                   if (name.isEmpty ||
                                       email.isEmpty ||
-                                      password.isEmpty) {
+                                      password.isEmpty ||
+                                      phone.isEmpty) {
                                     _showErrorSnackbar(
                                       context,
                                       "Please fill all fields",
@@ -265,8 +406,21 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                     return;
                                   }
 
-                                  await authViewModel.login(email, password);
-                                  authViewModel.updateProfile(name, email);
+                                  await authViewModel.login(
+                                    email,
+                                    password,
+                                    _dialCode,
+                                    phone,
+                                    _userType,
+                                    false,
+                                  );
+                                  authViewModel.updateProfile(
+                                    name,
+                                    email,
+                                    _dialCode,
+                                    phone,
+                                    _userType,
+                                  );
 
                                   _showSuccessSnackbar(
                                     context,

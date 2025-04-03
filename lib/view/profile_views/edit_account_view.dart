@@ -133,7 +133,7 @@ class _AccountEditFormState extends State<_AccountEditForm> {
               right: 0,
               child: Container(
                 decoration: BoxDecoration(
-                  color: theme["buttonHighlight"],
+                  color: theme["textColor"],
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: theme["scaffoldBackground"],
@@ -142,7 +142,7 @@ class _AccountEditFormState extends State<_AccountEditForm> {
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.camera_alt, size: 20),
-                  color: theme["textColor"],
+                  color: theme["backgroundColor"],
                   onPressed: () async {
                     await homeViewModel.pickAndUploadImage();
                   },
@@ -178,7 +178,7 @@ class _AccountEditFormState extends State<_AccountEditForm> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, color: theme["buttonHighlight"]),
+        prefixIcon: Icon(icon, color: theme["textColor"]),
         labelStyle: TextStyle(color: theme["secondaryText"]),
         hintStyle: TextStyle(color: theme["secondaryText"]?.withOpacity(0.6)),
         filled: true,
@@ -224,7 +224,7 @@ class _AccountEditFormState extends State<_AccountEditForm> {
                   }
                 },
         style: ElevatedButton.styleFrom(
-          backgroundColor: theme["buttonHighlight"],
+          backgroundColor: theme["textColor"],
           padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -236,7 +236,7 @@ class _AccountEditFormState extends State<_AccountEditForm> {
                 : Text(
                   "Save Changes",
                   style: TextStyle(
-                    color: theme["textColor"],
+                    color: theme["backgroundColor"],
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),

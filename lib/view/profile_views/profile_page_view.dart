@@ -51,7 +51,7 @@ class ProfilePageView extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: theme["buttonHighlight"],
+                          color: theme["textColor"],
                           width: 2,
                         ),
                       ),
@@ -247,10 +247,10 @@ class ProfilePageView extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: theme["buttonHighlight"].withOpacity(0.1),
+          color: theme["textColor"].withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: theme["buttonHighlight"], size: 20),
+        child: Icon(icon, color: theme["textColor"], size: 20),
       ),
       title: Text(
         text,
@@ -353,10 +353,10 @@ class ProfilePageView extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: theme["buttonHighlight"].withOpacity(0.1),
+          color: theme["textColor"].withOpacity(0.1),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Icon(icon, color: theme["buttonHighlight"], size: 20),
+        child: Icon(icon, color: theme["textColor"], size: 20),
       ),
       title: Text(
         title,
@@ -393,12 +393,12 @@ class ProfilePageView extends StatelessWidget {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: theme["buttonHighlight"].withOpacity(0.1),
+                      color: theme["textColor"].withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.verified_outlined,
-                      color: theme["buttonHighlight"],
+                      color: theme["textColor"],
                       size: 40,
                     ),
                   ),

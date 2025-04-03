@@ -31,8 +31,8 @@ class ReceivePageView extends StatelessWidget {
           elevation: 0,
           foregroundColor: theme["textColor"],
           bottom: TabBar(
-            indicatorColor: theme["buttonHighlight"],
-            labelColor: theme["buttonHighlight"],
+            indicatorColor: theme["textColor"],
+            labelColor: theme["textColor"],
             unselectedLabelColor: theme["secondaryText"],
             tabs: const [
               Tab(text: "Request Money"),
@@ -83,7 +83,7 @@ class ReceivePageView extends StatelessWidget {
                         child: Text(
                           "Clear",
                           style: TextStyle(
-                            color: theme["buttonHighlight"],
+                            color: theme["textColor"],
                             fontFamily: 'Roboto',
                             fontWeight: FontWeight.w300,
                           ),
@@ -133,7 +133,7 @@ class ReceivePageView extends StatelessWidget {
                       ),
                       prefixIcon: Icon(
                         Icons.attach_money,
-                        color: theme["buttonHighlight"],
+                        color: theme["textColor"],
                       ),
                     ),
                     style: TextStyle(
@@ -147,7 +147,7 @@ class ReceivePageView extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: theme["buttonHighlight"],
+                        backgroundColor: theme["textColor"],
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -186,7 +186,7 @@ class ReceivePageView extends StatelessWidget {
                       child: Icon(
                         Icons.qr_code,
                         size: 100,
-                        color: theme["buttonHighlight"],
+                        color: theme["textColor"],
                       ),
                     ),
                   ),
@@ -220,7 +220,7 @@ class ReceivePageView extends StatelessWidget {
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: Icon(Icons.copy, color: theme["buttonHighlight"]),
+                        icon: Icon(Icons.copy, color: theme["textColor"]),
                         onPressed: () {
                           FlutterClipboard.copy(viewModel.userId).then((_) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -234,7 +234,7 @@ class ReceivePageView extends StatelessWidget {
                       Text(
                         "Copy ID",
                         style: TextStyle(
-                          color: theme["buttonHighlight"],
+                          color: theme["textColor"],
                           fontFamily: 'Roboto',
                           fontWeight: FontWeight.w300,
                         ),
@@ -250,7 +250,7 @@ class ReceivePageView extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: theme["buttonHighlight"],
+                    backgroundColor: theme["textColor"],
                     padding: const EdgeInsets.symmetric(
                       horizontal: 26,
                       vertical: 12,
@@ -268,7 +268,7 @@ class ReceivePageView extends StatelessWidget {
                   child: Text(
                     "Share Your ID",
                     style: TextStyle(
-                      color: theme["textColor"],
+                      color: theme["backgroundColor"],
                       fontSize: 18,
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.bold,

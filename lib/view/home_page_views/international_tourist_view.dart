@@ -29,8 +29,8 @@ class InternationalTouristView extends StatelessWidget {
           elevation: 0,
           foregroundColor: theme["textColor"],
           bottom: TabBar(
-            indicatorColor: theme["buttonHighlight"],
-            labelColor: theme["buttonHighlight"],
+            indicatorColor: theme["textColor"],
+            labelColor: theme["textColor"],
             unselectedLabelColor: theme["secondaryText"],
             tabs: const [Tab(text: "Send Money"), Tab(text: "Transactions")],
           ),
@@ -52,7 +52,7 @@ class InternationalTouristView extends StatelessWidget {
     InternationalTouristViewModel viewModel,
   ) {
     return PopupMenuButton<String>(
-      icon: Icon(Icons.credit_card, color: theme["buttonHighlight"]),
+      icon: Icon(Icons.credit_card, color: theme["textColor"]),
       onSelected: (value) {
         final parts = value.split('|');
         viewModel.generateTravelCard(context, parts[0], parts[1]);
@@ -120,7 +120,7 @@ class InternationalTouristView extends StatelessWidget {
                 value: 'view',
                 child: Row(
                   children: [
-                    Icon(Icons.visibility, color: theme["buttonHighlight"]),
+                    Icon(Icons.visibility, color: theme["textColor"]),
                     const SizedBox(width: 8),
                     const Text('View Travel Card'),
                   ],
@@ -250,7 +250,7 @@ class InternationalTouristView extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: theme["buttonHighlight"],
+                  backgroundColor: theme["textColor"],
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -418,13 +418,13 @@ class InternationalTouristView extends StatelessWidget {
                           decoration: BoxDecoration(
                             color:
                                 viewModel.selectedContact == contact
-                                    ? theme["buttonHighlight"]?.withOpacity(0.2)
+                                    ? theme["textColor"]?.withOpacity(0.2)
                                     : theme["cardBackground"],
                             shape: BoxShape.circle,
                             border: Border.all(
                               color:
                                   viewModel.selectedContact == contact
-                                      ? theme["buttonHighlight"]!
+                                      ? theme["textColor"]!
                                       : Colors.transparent,
                               width: 2,
                             ),
@@ -469,14 +469,14 @@ class InternationalTouristView extends StatelessWidget {
                           color: theme["cardBackground"],
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: theme["buttonHighlight"]!,
+                            color: theme["textColor"]!,
                             width: 2,
                           ),
                         ),
                         child: Center(
                           child: Icon(
                             Icons.add,
-                            color: theme["buttonHighlight"],
+                            color: theme["textColor"],
                             size: 24,
                           ),
                         ),

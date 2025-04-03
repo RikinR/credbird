@@ -30,7 +30,7 @@ class ForexRatesView extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme["buttonHighlight"]),
+          icon: Icon(Icons.arrow_back, color: theme["textColor"]),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -68,11 +68,11 @@ class ForexRatesView extends StatelessWidget {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: theme["buttonHighlight"].withOpacity(0.2),
+                          color: theme["textColor"].withOpacity(0.2),
                         ),
                         child: Icon(
                           FontAwesomeIcons.arrowRightArrowLeft,
-                          color: theme["buttonHighlight"],
+                          color: theme["textColor"],
                           size: 16,
                         ),
                       ),
@@ -109,7 +109,7 @@ class ForexRatesView extends StatelessWidget {
                         Text(
                           "1 ${viewModel.baseCurrency} = ${rate.toStringAsFixed(4)} ${viewModel.targetCurrency}",
                           style: TextStyle(
-                            color: theme["buttonHighlight"],
+                            color: theme["textColor"],
                             fontSize: 22,
                             fontFamily: 'Roboto',
                             fontWeight: FontWeight.bold,
@@ -245,7 +245,7 @@ class ForexRatesView extends StatelessWidget {
                               height: 30,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: theme["buttonHighlight"].withOpacity(
+                                color: theme["textColor"].withOpacity(
                                   0.1,
                                 ),
                               ),
@@ -280,7 +280,7 @@ class ForexRatesView extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: theme["buttonHighlight"].withOpacity(0.3),
+                  color: theme["textColor"].withOpacity(0.3),
                 ),
                 color: theme["cardBackground"],
               ),
@@ -288,7 +288,7 @@ class ForexRatesView extends StatelessWidget {
             iconStyleData: IconStyleData(
               icon: Icon(
                 Icons.arrow_drop_down,
-                color: theme["buttonHighlight"],
+                color: theme["textColor"],
               ),
               iconSize: 24,
             ),
@@ -338,7 +338,7 @@ class ForexRatesView extends StatelessWidget {
                   height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: theme["buttonHighlight"].withOpacity(0.2),
+                    color: theme["textColor"].withOpacity(0.2),
                   ),
                   child: Center(
                     child: Text(
@@ -375,7 +375,7 @@ class ForexRatesView extends StatelessWidget {
             Text(
               rate.toStringAsFixed(4),
               style: TextStyle(
-                color: theme["buttonHighlight"],
+                color: theme["textColor"],
                 fontSize: 16,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.bold,
