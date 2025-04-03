@@ -1,10 +1,9 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:credbird/viewmodel/pages_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class LandingPageView extends StatelessWidget {
   const LandingPageView({super.key});
@@ -95,17 +94,48 @@ class LandingPageView extends StatelessWidget {
         decoration:
             isSelected
                 ? BoxDecoration(
-                  color: theme["buttonHighlight"]?.withOpacity(0.2),
+                  gradient: LinearGradient(
+                    colors: theme["buttonGradient"],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme["buttonHighlight"]!.withOpacity(0.3),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
                 )
                 : null,
-        child: FaIcon(
-          icon,
-          size: 22,
-          color:
-              isSelected
-                  ? theme["buttonHighlight"]
-                  : theme["unhighlightedButton"],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FaIcon(
+                  icon,
+                  size: 22,
+                  color:
+                      isSelected ? Colors.white : theme["unhighlightedButton"],
+                )
+                .animate(onPlay: (controller) => controller.repeat())
+                .then(delay: 100.ms)
+                .shake(
+                  hz: isSelected ? 4 : 0,
+                  rotation: isSelected ? 0.05 : 0,
+                  duration: 500.ms,
+                ),
+            if (isSelected)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                height: 3,
+                width: 20,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ).animate().scaleX(begin: 0, end: 1),
+          ],
         ),
       ),
       label: label,

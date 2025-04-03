@@ -142,131 +142,134 @@ class InternationalTouristView extends StatelessWidget {
             AppBar().preferredSize.height -
             kToolbarHeight,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildContactSelector(theme, viewModel, context),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCurrencyDropdown(
-                  context,
-                  "From",
-                  viewModel.selectedFromCurrency,
-                  (value) => viewModel.setFromCurrency(value!),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildCurrencyDropdown(
-                  context,
-                  "To",
-                  viewModel.selectedToCurrency,
-                  (value) => viewModel.setToCurrency(value!),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "1 ${viewModel.selectedFromCurrency} = ${viewModel.exchangeRate.toStringAsFixed(4)} ${viewModel.selectedToCurrency}",
-            style: TextStyle(
-              color: theme["secondaryText"],
-              fontSize: 16,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 50),
-            decoration: BoxDecoration(
-              color: theme["cardBackground"],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildContactSelector(theme, viewModel, context),
+            const SizedBox(height: 20),
+            Row(
               children: [
-                Text(
-                  "Amount to send",
-                  style: TextStyle(
-                    color: theme["secondaryText"],
-                    fontSize: 14,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w300,
+                Expanded(
+                  child: _buildCurrencyDropdown(
+                    context,
+                    "From",
+                    viewModel.selectedFromCurrency,
+                    (value) => viewModel.setFromCurrency(value!),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  "${viewModel.selectedFromCurrency} ${viewModel.amount.toStringAsFixed(2)}",
-                  style: TextStyle(
-                    color: theme["textColor"],
-                    fontSize: 24,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "≈ ${viewModel.selectedToCurrency} ${viewModel.convertedAmount.toStringAsFixed(2)}",
-                  style: TextStyle(
-                    color: theme["secondaryText"],
-                    fontSize: 16,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w300,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildCurrencyDropdown(
+                    context,
+                    "To",
+                    viewModel.selectedToCurrency,
+                    (value) => viewModel.setToCurrency(value!),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 20),
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.7,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            children: [
-              for (int i = 1; i <= 9; i++)
-                _buildNumberButton(i.toString(), theme, () {
-                  viewModel.setAmount(viewModel.amount * 10 + i);
-                }),
-              _buildNumberButton(".", theme, () {}),
-              _buildNumberButton("0", theme, () {
-                viewModel.setAmount(viewModel.amount * 10);
-              }),
-              _buildNumberButton("⌫", theme, () {
-                viewModel.setAmount((viewModel.amount ~/ 10).toDouble());
-              }),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme["buttonHighlight"],
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            const SizedBox(height: 20),
+            Text(
+              "1 ${viewModel.selectedFromCurrency} = ${viewModel.exchangeRate.toStringAsFixed(4)} ${viewModel.selectedToCurrency}",
+              style: TextStyle(
+                color: theme["secondaryText"],
+                fontSize: 16,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w300,
               ),
-              onPressed: () => viewModel.sendInternationalPayment(context),
-              child: Text(
-                "Send Payment",
-                style: TextStyle(
-                  color: theme["textColor"],
-                  fontSize: 16,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 50),
+              decoration: BoxDecoration(
+                color: theme["cardBackground"],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Amount to send",
+                    style: TextStyle(
+                      color: theme["secondaryText"],
+                      fontSize: 14,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "${viewModel.selectedFromCurrency} ${viewModel.amount.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      color: theme["textColor"],
+                      fontSize: 24,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "≈ ${viewModel.selectedToCurrency} ${viewModel.convertedAmount.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      color: theme["secondaryText"],
+                      fontSize: 16,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            GridView.count(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              crossAxisCount: 3,
+              childAspectRatio: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              children: [
+                for (int i = 1; i <= 9; i++)
+                  _buildNumberButton(i.toString(), theme, () {
+                    viewModel.setAmount(viewModel.amount * 10 + i);
+                  }),
+                _buildNumberButton(".", theme, () {}),
+                _buildNumberButton("0", theme, () {
+                  viewModel.setAmount(viewModel.amount * 10);
+                }),
+                _buildNumberButton("⌫", theme, () {
+                  viewModel.setAmount((viewModel.amount ~/ 10).toDouble());
+                }),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme["buttonHighlight"],
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => viewModel.sendInternationalPayment(context),
+                child: Text(
+                  "Send Payment",
+                  style: TextStyle(
+                    color: theme["textColor"],
+                    fontSize: 16,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
