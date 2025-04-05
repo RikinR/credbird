@@ -28,6 +28,8 @@ class HomePageView extends StatefulWidget {
 
 class _HomePageViewState extends State<HomePageView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String? _selectedRecipientName;
+  String? _selectedActionButton;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +221,7 @@ class _HomePageViewState extends State<HomePageView> {
                   color: theme["cardBackground"],
                   borderRadius: BorderRadius.circular(16),
                 ),
-                margin: const EdgeInsets.symmetric(horizontal: 16),
+                margin: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
                     Padding(
@@ -282,7 +284,7 @@ class _HomePageViewState extends State<HomePageView> {
                   color: theme["cardBackground"],
                   borderRadius: BorderRadius.circular(16),
                 ),
-                margin: const EdgeInsets.symmetric(horizontal: 16),
+                margin: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -292,8 +294,8 @@ class _HomePageViewState extends State<HomePageView> {
                         "Add New Contact",
                         style: TextStyle(
                           color: theme["textColor"],
-                          fontSize: 15,
                           fontWeight: FontWeight.w600,
+                          fontSize: 15,
                         ),
                       ),
                     ),
@@ -543,6 +545,7 @@ class _HomePageViewState extends State<HomePageView> {
     Map<String, dynamic> theme, {
     required VoidCallback onPressed,
   }) {
+    final bool isSelected = _selectedActionButton == label;
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -551,14 +554,20 @@ class _HomePageViewState extends State<HomePageView> {
           width: 50,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: theme["buttonBackground"],
-              foregroundColor: theme["textColor"],
+              backgroundColor:
+                  isSelected
+                      ? theme["buttonHighlight"]
+                      : theme["buttonBackground"],
+              foregroundColor: isSelected ? Colors.white : theme["textColor"],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
             ),
-            onPressed: onPressed,
+            onPressed: () {
+              setState(() => _selectedActionButton = label);
+              onPressed();
+            },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -570,7 +579,8 @@ class _HomePageViewState extends State<HomePageView> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 11,
-                      color: theme["textColor"],
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? Colors.white : theme["textColor"],
                       height: 1.1,
                     ),
                     maxLines: 2,
@@ -656,64 +666,78 @@ class _HomePageViewState extends State<HomePageView> {
     Map<String, dynamic> theme, {
     required VoidCallback onTap,
   }) {
+    final bool isSelected = _selectedRecipientName == name;
     return Container(
       width: 70,
       margin: const EdgeInsets.symmetric(horizontal: 4),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Column(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
-                  width: 1.5,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() => _selectedRecipientName = name);
+            onTap();
+          },
+          borderRadius: BorderRadius.circular(12),
+          splashColor: theme["glassEffect"],
+          highlightColor: theme["glassEffect"],
+          child: Column(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color:
+                        isSelected
+                            ? Colors.grey[500]
+                            : theme["textColor"]?.withOpacity(0.1) ??
+                                Colors.grey,
+                    width: isSelected ? 2 : 1.5,
+                  ),
                 ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: theme["textColor"],
+                          value:
+                              loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.person,
+                        size: 25,
                         color: theme["textColor"],
-                        value:
-                            loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      Icons.person,
-                      size: 25,
-                      color: theme["textColor"],
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              name,
-              style: TextStyle(
-                color: theme["textColor"],
-                fontSize: 11,
-                fontWeight: FontWeight.w400,
+              const SizedBox(height: 6),
+              Text(
+                name,
+                style: TextStyle(
+                  color: theme["textColor"],
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -727,76 +751,94 @@ class _HomePageViewState extends State<HomePageView> {
     Map<String, dynamic> theme,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Column(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
-                width: 1,
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder:
-                    (context, error, stackTrace) =>
-                        Icon(Icons.person, color: theme["textColor"]),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: theme["textColor"],
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
+                    width: 1,
                   ),
                 ),
-                Text(
-                  phone,
-                  style: TextStyle(
-                    color: theme["textColor"]?.withOpacity(0.5),
-                    fontSize: 12,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (context, error, stackTrace) =>
+                            Icon(Icons.person, color: theme["textColor"]),
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        color: theme["textColor"],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      phone,
+                      style: TextStyle(
+                        color: theme["textColor"]?.withOpacity(0.5),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      isInvited
+                          ? theme["glassEffect"]
+                          : theme["unhighlightedButton"],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(90, 24), // Set minimum size
+                  tapTargetSize:
+                      MaterialTapTargetSize.shrinkWrap, // Reduce tap target
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    isInvited ? "Invited" : "Invite",
+                    style: TextStyle(
+                      color:
+                          isInvited
+                              ? theme["textColor"]?.withOpacity(0.8)
+                              : Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  isInvited
-                      ? theme["buttonBackground"]
-                      : theme["unhighlightedButton"],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            ),
-            child: Text(
-              isInvited ? "Invited" : "Invite",
-              style: TextStyle(
-                color:
-                    isInvited
-                        ? theme["textColor"]?.withOpacity(0.5)
-                        : Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+          Divider(
+            color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
+            height: 8,
+            thickness: 1,
           ),
         ],
       ),
