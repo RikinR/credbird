@@ -41,6 +41,7 @@ class _HomePageViewState extends State<HomePageView> {
         backgroundColor: theme["scaffoldBackground"],
         drawer: _buildDrawer(context, theme, homeViewModel, authViewModel),
         appBar: AppBar(
+          scrolledUnderElevation: 0,
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
@@ -50,27 +51,27 @@ class _HomePageViewState extends State<HomePageView> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Balance",
-                style: TextStyle(
-                  color: theme["secondaryText"],
-                  fontSize: 14,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                homeViewModel.isBalanceVisible
-                    ? "\$${homeViewModel.balance.toStringAsFixed(2)}"
-                    : "****",
-                style: TextStyle(
-                  color: theme["textColor"],
-                  fontSize: 28,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              // Text(
+              //   "Balance",
+              //   style: TextStyle(
+              //     color: theme["secondaryText"],
+              //     fontSize: 14,
+              //     fontFamily: 'Roboto',
+              //     fontWeight: FontWeight.w300,
+              //   ),
+              // ),
+              // const SizedBox(height: 4),
+              // Text(
+              //   homeViewModel.isBalanceVisible
+              //       ? "\$${homeViewModel.balance.toStringAsFixed(2)}"
+              //       : "****",
+              //   style: TextStyle(
+              //     color: theme["textColor"],
+              //     fontSize: 28,
+              //     fontFamily: 'Roboto',
+              //     fontWeight: FontWeight.bold,
+              //   ),
+              // ),
             ],
           ),
           actions: [
@@ -94,165 +95,298 @@ class _HomePageViewState extends State<HomePageView> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            Divider(thickness: 1, height: 20),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: Column(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Divider(thickness: 1, height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              _buildActionButton(
-                                context,
-                                "Request",
-                                FontAwesomeIcons.handHoldingDollar,
-                                theme,
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => ChangeNotifierProvider(
-                                            create:
-                                                (_) => ReceiveMoneyViewModel(),
-                                            child: const ReceivePageView(),
-                                          ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildActionButton(
-                                context,
-                                "Send Money Abroad",
-                                FontAwesomeIcons.paperPlane,
-                                theme,
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => ChangeNotifierProvider(
-                                            create: (_) => SendMoneyViewModel(),
-                                            child: const SendPageView(),
-                                          ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildActionButton(
-                                context,
-                                "Virtual Card",
-                                FontAwesomeIcons.creditCard,
-                                theme,
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => ChangeNotifierProvider(
-                                            create: (_) => CardViewModel(),
-                                            child: const CardView(),
-                                          ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              _buildActionButton(
-                                context,
-                                "International Tourist",
-                                FontAwesomeIcons.earthAsia,
-                                theme,
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => ChangeNotifierProvider(
-                                            create:
-                                                (_) =>
-                                                    InternationalTouristViewModel(),
-                                            child:
-                                                const InternationalTouristView(),
-                                          ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildActionButton(
-                                context,
-                                "Forex Rates",
-                                FontAwesomeIcons.chartLine,
-                                theme,
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => ChangeNotifierProvider(
-                                            create:
-                                                (_) => ForexRatesViewModel(),
-                                            child: const ForexRatesView(),
-                                          ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildActionButton(
-                                context,
-                                "Support",
-                                FontAwesomeIcons.headset,
-                                theme,
-                                onPressed:
-                                    () => homeViewModel.contactSupport(context),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: () async {
-                          await Future.delayed(const Duration(seconds: 1));
-                        },
-                        child: ListView(
-                          padding: const EdgeInsets.all(16),
-                          children: [
-                            Text(
-                              "Transactions",
-                              style: TextStyle(
-                                color: theme["textColor"],
-                                fontSize: 18,
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ...homeViewModel.transactions.map(
-                              (transaction) =>
-                                  _buildTransactionItem(transaction, theme),
-                            ),
-                          ],
-                        ),
+                    Text(
+                      "Send Money",
+                      style: TextStyle(
+                        color: theme["textColor"],
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Select Option",
+                    style: TextStyle(
+                      color: theme["textColor"],
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                height: MediaQuery.of(context).size.height * 0.15,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    _buildActionButton(
+                      context,
+                      "Send Money Abroad",
+                      FontAwesomeIcons.paperPlane,
+                      theme,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ChangeNotifierProvider(
+                                  create: (_) => SendMoneyViewModel(),
+                                  child: const SendPageView(),
+                                ),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildActionButton(
+                      context,
+                      "Virtual Card",
+                      FontAwesomeIcons.creditCard,
+                      theme,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ChangeNotifierProvider(
+                                  create: (_) => CardViewModel(),
+                                  child: const CardView(),
+                                ),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildActionButton(
+                      context,
+                      "International Tourist",
+                      FontAwesomeIcons.earthAsia,
+                      theme,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ChangeNotifierProvider(
+                                  create:
+                                      (_) => InternationalTouristViewModel(),
+                                  child: const InternationalTouristView(),
+                                ),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildActionButton(
+                      context,
+                      "Forex",
+                      FontAwesomeIcons.chartLine,
+                      theme,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ChangeNotifierProvider(
+                                  create: (_) => ForexRatesViewModel(),
+                                  child: const ForexRatesView(),
+                                ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                decoration: BoxDecoration(
+                  color: theme["cardBackground"],
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+                      child: Row(
+                        children: [
+                          Text(
+                            "Recent Recipients",
+                            style: TextStyle(
+                              color: theme["textColor"],
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(
+                        left: 8,
+                        right: 8,
+                        bottom: 16,
+                      ),
+                      child: Row(
+                        children: [
+                          _buildRecipientItem(
+                            "https://randomuser.me/api/portraits/men/32.jpg",
+                            "John Doe",
+                            theme,
+                            onTap: () {},
+                          ),
+                          _buildRecipientItem(
+                            "https://randomuser.me/api/portraits/women/44.jpg",
+                            "Sarah Kim",
+                            theme,
+                            onTap: () {},
+                          ),
+                          _buildRecipientItem(
+                            "https://randomuser.me/api/portraits/men/55.jpg",
+                            "Mike Ross",
+                            theme,
+                            onTap: () {},
+                          ),
+                          _buildRecipientItem(
+                            "https://randomuser.me/api/portraits/women/67.jpg",
+                            "Emma Watson",
+                            theme,
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: theme["cardBackground"],
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                      child: Text(
+                        "Add New Contact",
+                        style: TextStyle(
+                          color: theme["textColor"],
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: TextField(
+                        style: TextStyle(color: theme["textColor"]),
+                        decoration: InputDecoration(
+                          hintText: "Search contacts...",
+                          hintStyle: TextStyle(
+                            color: theme["textColor"]?.withOpacity(0.5),
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: theme["textColor"]?.withOpacity(0.5),
+                          ),
+                          filled: true,
+                          fillColor: theme["buttonBackground"],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.3,
+                      ),
+                      child: ListView(
+                        shrinkWrap: true,
+                        physics: const ClampingScrollPhysics(),
+                        children: [
+                          _buildContactItem(
+                            "https://randomuser.me/api/portraits/men/92.jpg",
+                            "Robert Fox",
+                            "+1 234 567 890",
+                            false,
+                            theme,
+                          ),
+                          _buildContactItem(
+                            "https://randomuser.me/api/portraits/women/72.jpg",
+                            "Jenny Wilson",
+                            "+1 345 678 901",
+                            true,
+                            theme,
+                          ),
+                          _buildContactItem(
+                            "https://randomuser.me/api/portraits/men/45.jpg",
+                            "Jacob Jones",
+                            "+1 456 789 012",
+                            false,
+                            theme,
+                          ),
+                          _buildContactItem(
+                            "https://randomuser.me/api/portraits/women/28.jpg",
+                            "Esther Howard",
+                            "+1 567 890 123",
+                            true,
+                            theme,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Transactions",
+                      style: TextStyle(
+                        color: theme["textColor"],
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ...homeViewModel.transactions.map(
+                      (transaction) =>
+                          _buildTransactionItem(transaction, theme),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -273,7 +407,6 @@ class _HomePageViewState extends State<HomePageView> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: theme["backgroundColor"]),
-
               child: Column(
                 children: [
                   const SizedBox(height: 20),
@@ -414,30 +547,31 @@ class _HomePageViewState extends State<HomePageView> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: SizedBox(
-          height: 80,
+          height: 100,
+          width: 50,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: theme["buttonBackground"],
               foregroundColor: theme["textColor"],
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
             ),
             onPressed: onPressed,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                FaIcon(icon, size: 16),
-                const SizedBox(height: 8),
+                FaIcon(icon, size: 20),
+                const SizedBox(height: 12),
                 Flexible(
                   child: Text(
                     label,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: theme["textColor"],
-                      height: 1.2,
+                      height: 1.1,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -512,6 +646,159 @@ class _HomePageViewState extends State<HomePageView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildRecipientItem(
+    String imageUrl,
+    String name,
+    Map<String, dynamic> theme, {
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: 70,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
+                  width: 1.5,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(25),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: theme["textColor"],
+                        value:
+                            loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      Icons.person,
+                      size: 25,
+                      color: theme["textColor"],
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              name,
+              style: TextStyle(
+                color: theme["textColor"],
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactItem(
+    String imageUrl,
+    String name,
+    String phone,
+    bool isInvited,
+    Map<String, dynamic> theme,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
+                width: 1,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder:
+                    (context, error, stackTrace) =>
+                        Icon(Icons.person, color: theme["textColor"]),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: theme["textColor"],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  phone,
+                  style: TextStyle(
+                    color: theme["textColor"]?.withOpacity(0.5),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  isInvited
+                      ? theme["buttonBackground"]
+                      : theme["unhighlightedButton"],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            ),
+            child: Text(
+              isInvited ? "Invited" : "Invite",
+              style: TextStyle(
+                color:
+                    isInvited
+                        ? theme["textColor"]?.withOpacity(0.5)
+                        : Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +50,30 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      darkTheme: ThemeData.dark(),
+      darkTheme: ThemeData.dark().copyWith(
+        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+        primaryTextTheme: GoogleFonts.interTextTheme(
+          ThemeData.dark().primaryTextTheme,
+        ),
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(elevation: 0),
+        ),
+        appBarTheme: const AppBarTheme(elevation: 0, scrolledUnderElevation: 0),
+        cardTheme: const CardTheme(elevation: 0),
+      ),
+      theme: ThemeData.light().copyWith(
+        textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
+        primaryTextTheme: GoogleFonts.interTextTheme(
+          ThemeData.light().primaryTextTheme,
+        ),
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(elevation: 0),
+        ),
+        appBarTheme: const AppBarTheme(elevation: 0, scrolledUnderElevation: 0),
+        cardTheme: const CardTheme(elevation: 0),
+      ),
       themeMode:
           context.watch<ThemeProvider>().isDarkMode
               ? ThemeMode.dark

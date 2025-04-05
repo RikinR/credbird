@@ -1,6 +1,6 @@
 name: credbird
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
@@ -27,6 +27,7 @@ dependencies:
   rename_app: ^1.6.2
   flutter_svg: ^2.0.17
   flutter_animate: ^4.5.2
+  google_fonts:
 
 dev_dependencies:
   flutter_test:
