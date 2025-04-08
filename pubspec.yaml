@@ -5,7 +5,7 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.7.2
+  sdk: ^3.7.0-323.0.dev
 
 dependencies:
   flutter:
@@ -27,7 +27,7 @@ dependencies:
   rename_app: ^1.6.2
   flutter_svg: ^2.0.17
   flutter_animate: ^4.5.2
-  google_fonts:
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
