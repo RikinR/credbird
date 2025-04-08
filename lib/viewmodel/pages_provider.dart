@@ -12,7 +12,7 @@ class PagesProvider extends ChangeNotifier {
     const SendPageView(),
     const ReceivePageView(),
     const CardView(),
-    const ProfilePageView(),
+    // const ProfilePageView(),
   ];
 
   void onPageTapped(int index) {

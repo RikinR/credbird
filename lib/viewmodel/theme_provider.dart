@@ -37,7 +37,7 @@ class ThemeProvider extends ChangeNotifier {
     "backgroundColor": const Color(0xFFF8F8F8),
     "cardBackground": const Color(0xFFFFFFFF),
     "buttonBackground": const Color(0xFFFFFFFF),
-    "buttonHighlight": const Color.fromARGB(255, 111, 42, 231),
+    "buttonHighlight": const Color.fromARGB(255, 99, 37, 207),
     "unhighlightedButton": const Color(0xFF8B5CF6),
     "textColor": const Color.fromARGB(233, 24, 24, 27),
     "secondaryText": const Color.fromARGB(255, 111, 42, 231),

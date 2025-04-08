@@ -5,6 +5,7 @@ import 'package:credbird/view/authentication%20view/login_signup_view.dart';
 import 'package:credbird/view/card_view.dart';
 import 'package:credbird/view/home_page_views/forex_rates_view.dart';
 import 'package:credbird/view/home_page_views/international_tourist_view.dart';
+import 'package:credbird/view/profile_views/profile_page_view.dart';
 import 'package:credbird/view/receive_page_view.dart';
 import 'package:credbird/view/send_page_views/send_page_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
@@ -18,6 +19,7 @@ import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 
 class HomePageView extends StatefulWidget {
   const HomePageView({super.key});
@@ -26,10 +28,40 @@ class HomePageView extends StatefulWidget {
   State<HomePageView> createState() => _HomePageViewState();
 }
 
-class _HomePageViewState extends State<HomePageView> {
+class _HomePageViewState extends State<HomePageView>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final ScrollController _scrollController = ScrollController();
+  late AnimationController _appBarController;
+  final int _profileImageNumber = DateTime.now().microsecond % 100;
   String? _selectedRecipientName;
   String? _selectedActionButton;
+  double get _appBarOpacity => _appBarController.value;
+
+  @override
+  void initState() {
+    super.initState();
+    _appBarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+      value: 0,
+    );
+
+    _scrollController.addListener(() {
+      if (!mounted) return;
+      final scrollPosition = _scrollController.position.pixels;
+      final maxScroll = MediaQuery.of(context).size.height * 0.15;
+      final targetOpacity = (scrollPosition / maxScroll).clamp(0.0, 1.0);
+      _appBarController.animateTo(targetOpacity);
+    });
+  }
+
+  @override
+  void dispose() {
+    _appBarController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,359 +69,373 @@ class _HomePageViewState extends State<HomePageView> {
     final homeViewModel = Provider.of<HomeViewModel>(context);
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
-    return SafeArea(
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: theme["scaffoldBackground"],
-        drawer: _buildDrawer(context, theme, homeViewModel, authViewModel),
-        appBar: AppBar(
-          scrolledUnderElevation: 0,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.menu, color: theme["textColor"]),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Text(
-              //   "Balance",
-              //   style: TextStyle(
-              //     color: theme["secondaryText"],
-              //     fontSize: 14,
-              //     fontFamily: 'Roboto',
-              //     fontWeight: FontWeight.w300,
-              //   ),
-              // ),
-              // const SizedBox(height: 4),
-              // Text(
-              //   homeViewModel.isBalanceVisible
-              //       ? "\$${homeViewModel.balance.toStringAsFixed(2)}"
-              //       : "****",
-              //   style: TextStyle(
-              //     color: theme["textColor"],
-              //     fontSize: 28,
-              //     fontFamily: 'Roboto',
-              //     fontWeight: FontWeight.bold,
-              //   ),
-              // ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: FaIcon(
-                homeViewModel.isBalanceVisible
-                    ? FontAwesomeIcons.eye
-                    : FontAwesomeIcons.eyeSlash,
-                color: theme["textColor"],
-                size: 20,
-              ),
-              onPressed: homeViewModel.toggleBalanceVisibility,
-            ),
-            IconButton(
-              icon: FaIcon(
-                FontAwesomeIcons.bell,
-                color: theme["textColor"],
-                size: 20,
-              ),
-              onPressed: () {},
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Divider(thickness: 1, height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
+    return Scaffold(
+      key: _scaffoldKey,
+      extendBody: true,
+      backgroundColor: theme["scaffoldBackground"],
+      extendBodyBehindAppBar: true,
+      drawer: _buildDrawer(context, theme, homeViewModel, authViewModel),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ValueListenableBuilder<double>(
+          valueListenable: _appBarController,
+          builder: (context, value, child) {
+            return ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: value * 15,
+                  sigmaY: value * 15,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Send Money",
-                      style: TextStyle(
-                        color: theme["textColor"],
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                child: Container(
+                  height: kToolbarHeight + MediaQuery.of(context).padding.top,
+                  decoration: BoxDecoration(
+                    color: theme["cardBackground"]?.withOpacity(value * 0.5),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withOpacity(value * 0.1),
+                        Colors.white.withOpacity(value * 0.05),
+                      ],
+                    ),
+                  ),
+                  child: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    leading: IconButton(
+                      icon: Icon(Icons.menu, color: theme["textColor"]),
+                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    ),
+                    actions: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 8.0,
+                          bottom: 8.0,
+                          left: 8.0,
+                          right: 16.0,
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ProfilePageView(),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.network(
+                              'https://randomuser.me/api/portraits/men/$_profileImageNumber.jpg',
+                              width: 35,
+                              height: 35,
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (context, error, stackTrace) => Icon(
+                                    Icons.person,
+                                    color: theme["textColor"],
+                                  ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Select Option",
-                    style: TextStyle(
-                      color: theme["textColor"],
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    ],
                   ),
                 ),
               ),
-              Container(
-                height: MediaQuery.of(context).size.height * 0.15,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    _buildActionButton(
-                      context,
-                      "Send Money Abroad",
-                      FontAwesomeIcons.paperPlane,
-                      theme,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => ChangeNotifierProvider(
-                                  create: (_) => SendMoneyViewModel(),
-                                  child: const SendPageView(),
-                                ),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildActionButton(
-                      context,
-                      "Virtual Card",
-                      FontAwesomeIcons.creditCard,
-                      theme,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => ChangeNotifierProvider(
-                                  create: (_) => CardViewModel(),
-                                  child: const CardView(),
-                                ),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildActionButton(
-                      context,
-                      "International Tourist",
-                      FontAwesomeIcons.earthAsia,
-                      theme,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => ChangeNotifierProvider(
-                                  create:
-                                      (_) => InternationalTouristViewModel(),
-                                  child: const InternationalTouristView(),
-                                ),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildActionButton(
-                      context,
-                      "Forex",
-                      FontAwesomeIcons.chartLine,
-                      theme,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => ChangeNotifierProvider(
-                                  create: (_) => ForexRatesViewModel(),
-                                  child: const ForexRatesView(),
-                                ),
-                          ),
-                        );
-                      },
-                    ),
+            );
+          },
+        ),
+      ),
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.0, 0.4, 0.7, 1.0],
+                  colors: [
+                    theme["buttonHighlight"]?.withOpacity(0.4) ??
+                        const Color(0xFF9747FF).withOpacity(0.4),
+                    theme["buttonHighlight"]?.withOpacity(0.2) ??
+                        const Color(0xFF8E9AFF).withOpacity(0.2),
+                    theme["buttonHighlight"]?.withOpacity(0.05) ??
+                        const Color(0xFF8E9AFF).withOpacity(0.05),
+                    Colors.transparent,
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              Container(
-                decoration: BoxDecoration(
-                  color: theme["cardBackground"],
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
-                      child: Row(
-                        children: [
-                          Text(
-                            "Recent Recipients",
-                            style: TextStyle(
-                              color: theme["textColor"],
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(
-                        left: 8,
-                        right: 8,
-                        bottom: 16,
-                      ),
-                      child: Row(
-                        children: [
-                          _buildRecipientItem(
-                            "https://randomuser.me/api/portraits/men/32.jpg",
-                            "John Doe",
-                            theme,
-                            onTap: () {},
-                          ),
-                          _buildRecipientItem(
-                            "https://randomuser.me/api/portraits/women/44.jpg",
-                            "Sarah Kim",
-                            theme,
-                            onTap: () {},
-                          ),
-                          _buildRecipientItem(
-                            "https://randomuser.me/api/portraits/men/55.jpg",
-                            "Mike Ross",
-                            theme,
-                            onTap: () {},
-                          ),
-                          _buildRecipientItem(
-                            "https://randomuser.me/api/portraits/women/67.jpg",
-                            "Emma Watson",
-                            theme,
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+            ),
+          ),
+          ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
               ),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: theme["cardBackground"],
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            ),
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).padding.top + kToolbarHeight,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Hi, Raihan👋",
+                          style: TextStyle(
+                            color: theme["textColor"],
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
                       child: Text(
-                        "Add New Contact",
+                        "Select Option",
                         style: TextStyle(
                           color: theme["textColor"],
-                          fontWeight: FontWeight.w600,
                           fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: TextField(
-                        style: TextStyle(color: theme["textColor"]),
-                        decoration: InputDecoration(
-                          hintText: "Search contacts...",
-                          hintStyle: TextStyle(
-                            color: theme["textColor"]?.withOpacity(0.5),
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: theme["textColor"]?.withOpacity(0.5),
-                          ),
-                          filled: true,
-                          fillColor: theme["buttonBackground"],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                  ),
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.15,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        _buildActionButton(
+                          context,
+                          "Send Money Abroad",
+                          FontAwesomeIcons.paperPlane,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ChangeNotifierProvider(
+                                      create: (_) => SendMoneyViewModel(),
+                                      child: const SendPageView(),
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionButton(
+                          context,
+                          "Virtual Card",
+                          FontAwesomeIcons.creditCard,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ChangeNotifierProvider(
+                                      create: (_) => CardViewModel(),
+                                      child: const CardView(),
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionButton(
+                          context,
+                          "International Tourist",
+                          FontAwesomeIcons.earthAsia,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ChangeNotifierProvider(
+                                      create:
+                                          (_) =>
+                                              InternationalTouristViewModel(),
+                                      child: const InternationalTouristView(),
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionButton(
+                          context,
+                          "Forex",
+                          FontAwesomeIcons.chartLine,
+                          theme,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ChangeNotifierProvider(
+                                      create: (_) => ForexRatesViewModel(),
+                                      child: const ForexRatesView(),
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: theme["cardBackground"],
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.grey.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+                          child: Row(
+                            children: [
+                              Text(
+                                "Recent Recipients",
+                                style: TextStyle(
+                                  color: theme["textColor"],
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.only(
+                            left: 8,
+                            right: 8,
+                            bottom: 16,
+                          ),
+                          child: Row(
+                            children: [
+                              _buildRecipientItem(
+                                "https://randomuser.me/api/portraits/men/32.jpg",
+                                "John Doe",
+                                theme,
+                                onTap: () {},
+                              ),
+                              _buildRecipientItem(
+                                "https://randomuser.me/api/portraits/women/44.jpg",
+                                "Sarah Kim",
+                                theme,
+                                onTap: () {},
+                              ),
+                              _buildRecipientItem(
+                                "https://randomuser.me/api/portraits/men/55.jpg",
+                                "Mike Ross",
+                                theme,
+                                onTap: () {},
+                              ),
+                              _buildRecipientItem(
+                                "https://randomuser.me/api/portraits/women/67.jpg",
+                                "Emma Watson",
+                                theme,
+                                onTap: () {},
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.3,
-                      ),
-                      child: ListView(
-                        shrinkWrap: true,
-                        physics: const ClampingScrollPhysics(),
-                        children: [
-                          _buildContactItem(
-                            "https://randomuser.me/api/portraits/men/92.jpg",
-                            "Robert Fox",
-                            "+1 234 567 890",
-                            false,
-                            theme,
-                          ),
-                          _buildContactItem(
-                            "https://randomuser.me/api/portraits/women/72.jpg",
-                            "Jenny Wilson",
-                            "+1 345 678 901",
-                            true,
-                            theme,
-                          ),
-                          _buildContactItem(
-                            "https://randomuser.me/api/portraits/men/45.jpg",
-                            "Jacob Jones",
-                            "+1 456 789 012",
-                            false,
-                            theme,
-                          ),
-                          _buildContactItem(
-                            "https://randomuser.me/api/portraits/women/28.jpg",
-                            "Esther Howard",
-                            "+1 567 890 123",
-                            true,
-                            theme,
-                          ),
-                        ],
-                      ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Transactions",
+                              style: TextStyle(
+                                color: theme["textColor"],
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Container(
+                              width: 150,
+                              height: 35,
+                              decoration: BoxDecoration(
+                                color: theme["cardBackground"],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: TextField(
+                                style: TextStyle(
+                                  color: theme["textColor"],
+                                  fontSize: 13,
+                                ),
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 0,
+                                  ),
+                                  border: InputBorder.none,
+                                  hintText: "Search...",
+                                  hintStyle: TextStyle(
+                                    color: theme["textColor"]?.withOpacity(0.5),
+                                    fontSize: 13,
+                                  ),
+                                  suffixIcon: Icon(
+                                    Icons.search,
+                                    color: theme["textColor"]?.withOpacity(0.5),
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        ...homeViewModel.transactions.map(
+                          (transaction) =>
+                              _buildTransactionItem(transaction, theme),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Transactions",
-                      style: TextStyle(
-                        color: theme["textColor"],
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...homeViewModel.transactions.map(
-                      (transaction) =>
-                          _buildTransactionItem(transaction, theme),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -561,6 +607,7 @@ class _HomePageViewState extends State<HomePageView> {
               foregroundColor: isSelected ? Colors.white : theme["textColor"],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
               ),
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
             ),
@@ -602,6 +649,10 @@ class _HomePageViewState extends State<HomePageView> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
+      ),
       color: theme["cardBackground"],
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -612,16 +663,20 @@ class _HomePageViewState extends State<HomePageView> {
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    transaction.isIncoming
-                        ? Colors.green.withOpacity(0.2)
-                        : Colors.red.withOpacity(0.2),
+                border: Border.all(
+                  color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
+                  width: 1.5,
+                ),
               ),
-              child: Icon(
-                transaction.isIncoming
-                    ? Icons.arrow_downward
-                    : Icons.arrow_upward,
-                color: transaction.isIncoming ? Colors.green : Colors.red,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.network(
+                  'https://randomuser.me/api/portraits/${transaction.isIncoming ? 'women' : 'men'}/${transaction.hashCode % 100}.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (context, error, stackTrace) =>
+                          Icon(Icons.person, color: theme["textColor"]),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -811,9 +866,8 @@ class _HomePageViewState extends State<HomePageView> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   padding: EdgeInsets.zero,
-                  minimumSize: const Size(90, 24), // Set minimum size
-                  tapTargetSize:
-                      MaterialTapTargetSize.shrinkWrap, // Reduce tap target
+                  minimumSize: const Size(90, 24),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
