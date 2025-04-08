@@ -1,3 +1,5 @@
+import 'package:credbird/model/auth_models/user_model.dart';
+import 'package:credbird/repositories/auth_repository/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,6 +12,10 @@ class AuthViewModel extends ChangeNotifier {
   String? _phone;
   String? _userType;
   bool _rememberMe = false;
+  User? _user;
+  bool _isLoading = false;
+  String? _error;
+  final AuthRepository authRepository;
 
   bool get isLoggedIn => _isLoggedIn;
   String? get userName => _userName;
@@ -19,46 +25,198 @@ class AuthViewModel extends ChangeNotifier {
   String? get phone => _phone;
   String? get userType => _userType;
   bool get rememberMe => _rememberMe;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  AuthViewModel() {
+  AuthViewModel({required this.authRepository}) {
     _loadUserSession();
   }
 
   Future<void> _loadUserSession() async {
     final prefs = await SharedPreferences.getInstance();
     _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    _userName = prefs.getString('userName') ?? "User";
-    _userEmail = prefs.getString('userEmail') ?? "user@credbird.com";
-    _userId = prefs.getString('userId') ?? "@user";
-    _dialCode = prefs.getString('dialCode') ?? "+91";
-    _phone = prefs.getString('phone') ?? "+91999999999";
-    _userType = prefs.getString('userType') ?? "STUDENT";
     _rememberMe = prefs.getBool('rememberMe') ?? false;
+
+    if (_isLoggedIn) {
+      _user = User(
+        id: prefs.getString('userId') ?? '',
+        name: prefs.getString('userName') ?? '',
+        email: prefs.getString('userEmail') ?? '',
+        phone: prefs.getString('phone') ?? '',
+        userType: prefs.getString('userType') ?? 'STUDENT',
+        token: prefs.getString('token') ?? '',
+        accountVerified: prefs.getBool('accountVerified') ?? false,
+        isActive: prefs.getBool('isActive') ?? false,
+        walletAmount: prefs.getDouble('walletAmount') ?? 0,
+        lastOnline: prefs.getString('lastOnline') != null
+            ? DateTime.tryParse(prefs.getString('lastOnline')!)
+            : null,
+      );
+    }
     notifyListeners();
   }
 
-  Future<void> login(String email, String password, String dialCode, String phone, String userType, bool rememberMe) async {
-    if (email.isNotEmpty && password.isNotEmpty) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('userName', "User");
-      await prefs.setString('userEmail', email);
-      await prefs.setString('userId', "@${email.split('@')[0]}");
-      await prefs.setString('dialCode', dialCode);
-      await prefs.setString('phone', phone);
-      await prefs.setString('userType', userType);
-      await prefs.setBool('rememberMe', rememberMe);
+  Future<void> login({
+    required String username,
+    required String password,
+    required bool rememberMe,
+  }) async {
+    if (username.isEmpty || password.isEmpty) {
+      throw Exception('Username and password are required');
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final user = await authRepository.login(
+        username: username,
+        password: password,
+        rememberMe: rememberMe,
+      );
+
+      await _saveUserData(user, rememberMe);
 
       _isLoggedIn = true;
-      _userName = "User";
-      _userEmail = email;
-      _userId = "@${email.split('@')[0]}";
-      _dialCode = dialCode;
-      _phone = phone;
-      _userType = userType;
+      _user = user;
       _rememberMe = rememberMe;
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<Map<String, dynamic>> verifyOtp({
+    required String username,
+    required String otp,
+  }) async {
+    if (username.isEmpty || otp.isEmpty) {
+      throw Exception('Username and OTP are required');
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await authRepository.verifyOtp(
+        username: username,
+        otp: otp,
+      );
+
+      final user = _user?.copyWith(
+        token: response['token'],
+        userType: response['userType'],
+      );
+
+      if (user != null) {
+        await _saveUserData(user, _rememberMe);
+        _isLoggedIn = true;
+        _user = user;
+      }
+
+      return response;
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> signup({
+    required String email,
+    required String password,
+    required String dialCode,
+    required String phone,
+    required String userType,
+  }) async {
+    if (email.isEmpty || password.isEmpty || phone.isEmpty) {
+      throw Exception('Email, password and phone are required');
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final user = await authRepository.signup(
+        email: email,
+        password: password,
+        dialCode: dialCode,
+        phone: phone,
+        userType: userType,
+      );
+
+      _user = user;
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> signupwithoutOtp({
+    required String email,
+    required String password,
+    required String dialCode,
+    required String phone,
+    required String userType,
+  }) async {
+    if (email.isEmpty || password.isEmpty || phone.isEmpty) {
+      throw Exception('Email, password and phone are required');
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final user = await authRepository.signupwithoutOtp(
+        email: email,
+        password: password,
+        dialCode: dialCode,
+        phone: phone,
+        userType: userType,
+      );
+
+      await _saveUserData(user, false);
+
+      _isLoggedIn = true;
+      _user = user;
+      _rememberMe = false;
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _saveUserData(User user, bool rememberMe) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString('userId', user.id);
+    await prefs.setString('userName', user.name);
+    await prefs.setString('userEmail', user.email);
+    await prefs.setString('phone', user.phone);
+    await prefs.setString('userType', user.userType);
+    await prefs.setString('token', user.token);
+    await prefs.setBool('accountVerified', user.accountVerified);
+    await prefs.setBool('isActive', user.isActive);
+    await prefs.setDouble('walletAmount', user.walletAmount);
+    if (user.lastOnline != null) {
+      await prefs.setString('lastOnline', user.lastOnline!.toIso8601String());
+    }
+    await prefs.setBool('rememberMe', rememberMe);
   }
 
   Future<bool> logout(BuildContext context) async {
@@ -94,7 +252,13 @@ class AuthViewModel extends ChangeNotifier {
     return false;
   }
 
-  Future<void> updateProfile(String name, String email, String dialCode, String phone, String userType) async {
+  Future<void> updateProfile(
+    String name,
+    String email,
+    String dialCode,
+    String phone,
+    String userType,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userName', name);
     await prefs.setString('userEmail', email);

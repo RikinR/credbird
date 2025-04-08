@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
+import 'package:credbird/view/authentication%20view/otp_verification_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,41 +20,36 @@ class _LoginSignupViewState extends State<LoginSignupView>
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-  bool isLogin = true;
-  bool _isPasswordVisible = false;
-  bool _rememberMe = false;
-  String _dialCode = '+91';
-  String _userType = 'STUDENT';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
+  bool isLogin = true;
+  bool _isPasswordVisible = false;
+  bool _rememberMe = false;
+  bool _signupWithoutOtp = false;
+  String _dialCode = '+91';
+  String _userType = 'STUDENT';
 
   @override
   void initState() {
     super.initState();
-
     _emailController.text = 'user@credbird.com';
     _passwordController.text = '12345';
     _phoneController.text = '9999999999';
-
     timeDilation = 2.0;
-
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
       ),
     );
-
     _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-
     _animationController.forward();
   }
 
@@ -88,7 +84,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
               ),
             ),
           ),
-
           Positioned(
             top: size.height * 0.1,
             left: -50,
@@ -112,7 +107,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
               },
             ),
           ),
-
           Positioned(
             bottom: size.height * 0.2,
             right: -30,
@@ -136,7 +130,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
               },
             ),
           ),
-
           SafeArea(
             child: AnimatedBuilder(
               animation: _animationController,
@@ -183,7 +176,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
                               ],
                             ),
                             const SizedBox(height: 40),
-
                             if (!isLogin) ...[
                               _buildTextField(
                                 controller: _nameController,
@@ -192,7 +184,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                 theme: theme,
                               ),
                               const SizedBox(height: 16),
-
                               Row(
                                 children: [
                                   Container(
@@ -212,12 +203,7 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                       underline: const SizedBox(),
                                       isExpanded: true,
                                       items:
-                                          <String>[
-                                            '+91',
-                                            '+1',
-                                            '+44',
-                                            '+81',
-                                          ].map((String value) {
+                                          <String>['+91'].map((String value) {
                                             return DropdownMenuItem<String>(
                                               value: value,
                                               child: Text(
@@ -248,7 +234,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                 ],
                               ),
                               const SizedBox(height: 16),
-
                               Container(
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade900.withOpacity(0.5),
@@ -265,8 +250,14 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                   items:
                                       <String>[
                                         'STUDENT',
-                                        'TEACHER',
-                                        'PARENT',
+                                        'INDIVIDUAL',
+                                        'TRAVEL_AGENT',
+                                        'EDUCATION_CONSULTANT',
+                                        'MONEY_CHANGER',
+                                        'REFERRAL_AGENT',
+                                        'CORPORATE',
+                                        'UNIVERSITY',
+                                        'DMC',
                                       ].map((String value) {
                                         return DropdownMenuItem<String>(
                                           value: value,
@@ -286,8 +277,35 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                 ),
                               ),
                               const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _signupWithoutOtp,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _signupWithoutOtp = value!;
+                                      });
+                                    },
+                                    fillColor:
+                                        MaterialStateProperty.resolveWith<
+                                          Color
+                                        >((Set<MaterialState> states) {
+                                          if (states.contains(
+                                            MaterialState.selected,
+                                          )) {
+                                            return Colors.blueAccent;
+                                          }
+                                          return Colors.grey;
+                                        }),
+                                  ),
+                                  const Text(
+                                    "Sign up without OTP",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
                             ],
-
                             _buildTextField(
                               controller: _emailController,
                               hintText: "Email",
@@ -296,7 +314,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
                               keyboardType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 16),
-
                             _buildTextField(
                               controller: _passwordController,
                               hintText: "Password",
@@ -318,7 +335,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
                               ),
                             ),
                             const SizedBox(height: 16),
-
                             if (isLogin) ...[
                               Row(
                                 children: [
@@ -349,7 +365,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
                               ),
                               const SizedBox(height: 8),
                             ],
-
                             ElevatedButton(
                               onPressed: () async {
                                 final email = _emailController.text.trim();
@@ -366,33 +381,43 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                     );
                                     return;
                                   }
-
-                                  await authViewModel.login(
-                                    email,
-                                    password,
-                                    _dialCode,
-                                    phone,
-                                    _userType,
-                                    _rememberMe,
-                                  );
-
-                                  if (!authViewModel.isLoggedIn) {
-                                    _showErrorSnackbar(
-                                      context,
-                                      "Invalid credentials",
+                                  try {
+                                    await authViewModel.login(
+                                      username: email,
+                                      password: password,
+                                      rememberMe: _rememberMe,
                                     );
-                                    return;
-                                  }
 
-                                  if (authViewModel.isLoggedIn) {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) =>
-                                                const LandingPageView(),
-                                      ),
-                                    );
+                                    if (!authViewModel.isLoggedIn) {
+                                      _showErrorSnackbar(
+                                        context,
+                                        "Invalid credentials",
+                                      );
+                                      return;
+                                    }
+
+                                    if (authViewModel.isLoggedIn) {
+                                      _showSuccessSnackbar(
+                                        context,
+                                        "Login Successful!",
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  const LandingPageView(),
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    String errorMessage =
+                                        e.toString().contains(
+                                              "Invalid Email Id or Password",
+                                            )
+                                            ? "Login failed. Please try again later."
+                                            : "Invalid email or password.";
+                                    _showErrorSnackbar(context, errorMessage);
                                   }
                                 } else {
                                   if (name.isEmpty ||
@@ -406,38 +431,71 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                     return;
                                   }
 
-                                  await authViewModel.login(
-                                    email,
-                                    password,
-                                    _dialCode,
-                                    phone,
-                                    _userType,
-                                    false,
-                                  );
-                                  authViewModel.updateProfile(
-                                    name,
-                                    email,
-                                    _dialCode,
-                                    phone,
-                                    _userType,
-                                  );
-
-                                  _showSuccessSnackbar(
-                                    context,
-                                    "Account created! Logging you in...",
-                                  );
-
-                                  await Future.delayed(
-                                    const Duration(seconds: 1),
-                                  );
-
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => const LandingPageView(),
-                                    ),
-                                  );
+                                  if (_signupWithoutOtp) {
+                                    await authViewModel.signupwithoutOtp(
+                                      email: email,
+                                      password: password,
+                                      dialCode: _dialCode,
+                                      phone: '+91$phone',
+                                      userType: _userType,
+                                    );
+                                    authViewModel.updateProfile(
+                                      name,
+                                      email,
+                                      _dialCode,
+                                      phone,
+                                      _userType,
+                                    );
+                                    _showSuccessSnackbar(
+                                      context,
+                                      "Account created! Logging you in.",
+                                    );
+                                    await Future.delayed(
+                                      const Duration(seconds: 1),
+                                    );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const LandingPageView(),
+                                      ),
+                                    );
+                                  } else {
+                                    try {
+                                      await authViewModel.signup(
+                                        email: email,
+                                        password: password,
+                                        dialCode: _dialCode,
+                                        phone: '+91$phone',
+                                        userType: _userType,
+                                      );
+                                      authViewModel.updateProfile(
+                                        name,
+                                        email,
+                                        _dialCode,
+                                        phone,
+                                        _userType,
+                                      );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => OtpVerificationView(
+                                                email: email,
+                                              ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      String errorMessage =
+                                          e.toString().contains(
+                                                "Email Already Exists",
+                                              )
+                                              ? "Email already exists. Try another."
+                                              : "Signup failed. Please try again.";
+                                      _showErrorSnackbar(context, errorMessage);
+                                    }
+                                  }
                                 }
                               },
                               style: ElevatedButton.styleFrom(
@@ -461,7 +519,6 @@ class _LoginSignupViewState extends State<LoginSignupView>
                               ),
                             ),
                             const SizedBox(height: 20),
-
                             TextButton(
                               onPressed: () {
                                 setState(() {

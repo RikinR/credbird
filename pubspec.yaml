@@ -28,6 +28,8 @@ dependencies:
   flutter_svg: ^2.0.17
   flutter_animate: ^4.5.2
   google_fonts: ^6.2.1
+  flutter_dotenv: ^5.2.1
+  http: ^1.3.0
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +49,7 @@ flutter:
     - assets\flags\gb.svg
     - assets\flags\jp.svg
     - assets\flags\us.svg
+    - .env
 
 flutter_native_splash:
   color: "#BB86FC"

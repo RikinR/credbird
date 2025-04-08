@@ -6,14 +6,12 @@ import 'package:credbird/view/card_view.dart';
 import 'package:credbird/view/home_page_views/forex_rates_view.dart';
 import 'package:credbird/view/home_page_views/international_tourist_view.dart';
 import 'package:credbird/view/profile_views/profile_page_view.dart';
-import 'package:credbird/view/receive_page_view.dart';
 import 'package:credbird/view/send_page_views/send_page_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/card_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/forex_rates_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/international_tourist_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
-import 'package:credbird/viewmodel/receive_money_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +34,6 @@ class _HomePageViewState extends State<HomePageView>
   final int _profileImageNumber = DateTime.now().microsecond % 100;
   String? _selectedRecipientName;
   String? _selectedActionButton;
-  double get _appBarOpacity => _appBarController.value;
 
   @override
   void initState() {
@@ -798,104 +795,4 @@ class _HomePageViewState extends State<HomePageView>
     );
   }
 
-  Widget _buildContactItem(
-    String imageUrl,
-    String name,
-    String phone,
-    bool isInvited,
-    Map<String, dynamic> theme,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
-                    width: 1,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder:
-                        (context, error, stackTrace) =>
-                            Icon(Icons.person, color: theme["textColor"]),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        color: theme["textColor"],
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      phone,
-                      style: TextStyle(
-                        color: theme["textColor"]?.withOpacity(0.5),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      isInvited
-                          ? theme["glassEffect"]
-                          : theme["unhighlightedButton"],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(90, 24),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
-                  ),
-                  child: Text(
-                    isInvited ? "Invited" : "Invite",
-                    style: TextStyle(
-                      color:
-                          isInvited
-                              ? theme["textColor"]?.withOpacity(0.8)
-                              : Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Divider(
-            color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
-            height: 8,
-            thickness: 1,
-          ),
-        ],
-      ),
-    );
-  }
 }

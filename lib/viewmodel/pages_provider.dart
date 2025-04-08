@@ -1,6 +1,5 @@
 import 'package:credbird/view/card_view.dart';
 import 'package:credbird/view/home_page_views/home_page_view.dart';
-import 'package:credbird/view/profile_views/profile_page_view.dart';
 import 'package:credbird/view/receive_page_view.dart';
 import 'package:credbird/view/send_page_views/send_page_view.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +11,6 @@ class PagesProvider extends ChangeNotifier {
     const SendPageView(),
     const ReceivePageView(),
     const CardView(),
-    // const ProfilePageView(),
   ];
 
   void onPageTapped(int index) {

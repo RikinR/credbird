@@ -1,5 +1,7 @@
+import 'package:credbird/repositories/auth_repository/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +22,7 @@ import 'package:credbird/viewmodel/usage_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await dotenv.load(fileName: ".env");
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
@@ -33,7 +36,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CardViewModel()),
         ChangeNotifierProvider(create: (_) => SendMoneyViewModel()),
         ChangeNotifierProvider(create: (_) => ReceiveMoneyViewModel()),
-        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel(authRepository: AuthRepository()),
+        ),
         ChangeNotifierProvider(create: (_) => InternationalTouristViewModel()),
         ChangeNotifierProvider(create: (_) => ForexRatesViewModel()),
         ChangeNotifierProvider(create: (_) => BeneficiaryProvider()),
