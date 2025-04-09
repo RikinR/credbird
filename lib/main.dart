@@ -36,9 +36,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CardViewModel()),
         ChangeNotifierProvider(create: (_) => SendMoneyViewModel()),
         ChangeNotifierProvider(create: (_) => ReceiveMoneyViewModel()),
-        ChangeNotifierProvider(
-          create: (_) => AuthViewModel(authRepository: AuthRepository()),
-        ),
+        ChangeNotifierProvider(create: (_) => AuthViewModel(AuthRepository())),
         ChangeNotifierProvider(create: (_) => InternationalTouristViewModel()),
         ChangeNotifierProvider(create: (_) => ForexRatesViewModel()),
         ChangeNotifierProvider(create: (_) => BeneficiaryProvider()),

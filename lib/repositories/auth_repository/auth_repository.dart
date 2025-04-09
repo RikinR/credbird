@@ -157,4 +157,59 @@ class AuthRepository {
       rethrow;
     }
   }
+
+  Future<void> forgotPassword({required String email}) async {
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/forgotPassword');
+    final headers = {'Content-Type': 'application/json', 'p-key': p_key};
+    final body = jsonEncode({'username': email});
+
+    print('[forgotPassword] Sending POST request to $url with body: $body');
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      print('[forgotPassword] Response status: ${response.statusCode}');
+      final responseData = jsonDecode(response.body);
+      print('[forgotPassword] Response data: $responseData');
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        print('[forgotPassword] Reset link sent to: $email');
+      } else {
+        print('[forgotPassword] Failed: ${responseData['message']}');
+        throw Exception(responseData['message'] ?? 'Failed to send reset link');
+      }
+    } catch (e) {
+      print('[forgotPassword] Error occurred: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword({
+    required String password,
+    required String token,
+  }) async {
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/changePassword');
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': p_key,
+      'Authorization': 'Bearer $token',
+    };
+    final body = jsonEncode({'password': password});
+
+    print('[resetPassword] Sending POST request to $url');
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      print('[resetPassword] Response status: ${response.statusCode}');
+      final responseData = jsonDecode(response.body);
+      print('[resetPassword] Response data: $responseData');
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        print('[resetPassword] Password reset successful');
+      } else {
+        print('[resetPassword] Failed: ${responseData['message']}');
+        throw Exception(responseData['message'] ?? 'Failed to reset password');
+      }
+    } catch (e) {
+      print('[resetPassword] Error occurred: $e');
+      rethrow;
+    }
+  }
 }

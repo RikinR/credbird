@@ -28,7 +28,7 @@ class AuthViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  AuthViewModel({required this.authRepository}) {
+  AuthViewModel(this.authRepository) {
     _loadUserSession();
   }
 
@@ -48,9 +48,10 @@ class AuthViewModel extends ChangeNotifier {
         accountVerified: prefs.getBool('accountVerified') ?? false,
         isActive: prefs.getBool('isActive') ?? false,
         walletAmount: prefs.getDouble('walletAmount') ?? 0,
-        lastOnline: prefs.getString('lastOnline') != null
-            ? DateTime.tryParse(prefs.getString('lastOnline')!)
-            : null,
+        lastOnline:
+            prefs.getString('lastOnline') != null
+                ? DateTime.tryParse(prefs.getString('lastOnline')!)
+                : null,
       );
     }
     notifyListeners();
@@ -220,25 +221,27 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<bool> logout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Logout'),
-            content: const Text('Are you sure you want to logout?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Logout'),
+                content: const Text('Are you sure you want to logout?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text(
-                  'Logout',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
         ) ??
         false;
 
@@ -272,5 +275,48 @@ class AuthViewModel extends ChangeNotifier {
     _phone = phone;
     _userType = userType;
     notifyListeners();
+  }
+
+  Future<void> forgotPassword({required String email}) async {
+    if (email.isEmpty) {
+      throw Exception('Email is required');
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await authRepository.forgotPassword(email: email);
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> resetPassword({
+    required String password,
+    required String token,
+  }) async {
+    if (password.isEmpty) {
+      throw Exception('Password is required');
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await authRepository.resetPassword(password: password, token: token);
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

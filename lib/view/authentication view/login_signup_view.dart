@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
+import 'package:credbird/view/authentication%20view/forgot_password/forgot_password_view.dart';
 import 'package:credbird/view/authentication%20view/otp_verification_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:flutter/material.dart';
@@ -519,6 +520,31 @@ class _LoginSignupViewState extends State<LoginSignupView>
                               ),
                             ),
                             const SizedBox(height: 20),
+                            if (isLogin) ...[
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const ForgotPasswordView(),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Forgot Password?',
+                                    style: TextStyle(
+                                      color: Colors.blueAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
                             TextButton(
                               onPressed: () {
                                 setState(() {
