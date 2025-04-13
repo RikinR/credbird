@@ -1,7 +1,5 @@
-// ignore_for_file: use_build_context_synchronously
-
+import 'package:credbird/model/user_models/kyc_model.dart';
 import 'package:flutter/material.dart';
-import 'package:credbird/model/kyc_model.dart';
 
 class KYCProvider with ChangeNotifier {
   KYCModel _kycData = KYCModel();
@@ -19,21 +17,6 @@ class KYCProvider with ChangeNotifier {
 
   void updateLastName(String value) {
     _kycData = _kycData.copyWith(lastName: value);
-    notifyListeners();
-  }
-
-  void updateBankDetails({
-    String? accountNumber,
-    String? ifsc,
-    String? accountName,
-    bool? refundAccount,
-  }) {
-    _kycData = _kycData.copyWith(
-      accountNumber: accountNumber,
-      ifsc: ifsc,
-      accountName: accountName,
-      refundAccount: refundAccount,
-    );
     notifyListeners();
   }
 
@@ -80,11 +63,6 @@ class KYCProvider with ChangeNotifier {
       notifyListeners();
       return false;
     }
-    if (_kycData.accountNumber == null || _kycData.accountNumber!.isEmpty) {
-      _errorMessage = 'Please enter your account number';
-      notifyListeners();
-      return false;
-    }
     if (_kycData.documentPath == null || _kycData.documentPath!.isEmpty) {
       _errorMessage = 'Please upload a document';
       notifyListeners();
@@ -99,10 +77,6 @@ extension KYCModelExtension on KYCModel {
   KYCModel copyWith({
     String? firstName,
     String? lastName,
-    String? accountNumber,
-    String? ifsc,
-    String? accountName,
-    bool? refundAccount,
     String? verifiedStatus,
     String? status,
     String? documentType,
@@ -111,10 +85,6 @@ extension KYCModelExtension on KYCModel {
     return KYCModel(
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-      accountNumber: accountNumber ?? this.accountNumber,
-      ifsc: ifsc ?? this.ifsc,
-      accountName: accountName ?? this.accountName,
-      refundAccount: refundAccount ?? this.refundAccount,
       verifiedStatus: verifiedStatus ?? this.verifiedStatus,
       status: status ?? this.status,
       documentType: documentType ?? this.documentType,

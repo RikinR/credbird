@@ -2,18 +2,118 @@
 
 import 'package:credbird/viewmodel/home_page_viewmodels/forex_rates_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
-class ForexRatesView extends StatelessWidget {
+class ForexRatesView extends HookWidget {
   const ForexRatesView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
-    final viewModel = Provider.of<ForexRatesViewModel>(context);
+    final viewModel = Provider.of<ForexRatesViewModel>(context, listen: true);
+
+    useEffect(() {
+      viewModel.fetchForexRates();
+      return null;
+    }, []);
+
+    if (viewModel.isLoading) {
+      return _buildLoadingView(theme, context);
+    }
+
+    if (viewModel.error != null) {
+      return _buildErrorView(theme, viewModel.error!, context);
+    }
+
+    return _buildMainView(context, theme, viewModel);
+  }
+
+  Widget _buildLoadingView(Map<String, dynamic> theme, BuildContext context) {
+    return Scaffold(
+      backgroundColor: theme["scaffoldBackground"],
+      appBar: AppBar(
+        title: Text(
+          "Forex Rates",
+          style: TextStyle(
+            color: theme["textColor"],
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme["textColor"]),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Center(
+        child: CircularProgressIndicator(color: theme["primaryColor"]),
+      ),
+    );
+  }
+
+  Widget _buildErrorView(
+    Map<String, dynamic> theme,
+    String error,
+    BuildContext context,
+  ) {
+    return Scaffold(
+      backgroundColor: theme["scaffoldBackground"],
+      appBar: AppBar(
+        title: Text(
+          "Forex Rates",
+          style: TextStyle(
+            color: theme["textColor"],
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme["textColor"]),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Failed to load exchange rates',
+                style: TextStyle(color: theme["textColor"], fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error,
+                style: TextStyle(color: theme["secondaryText"], fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed:
+                    () => context.read<ForexRatesViewModel>().fetchForexRates(),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainView(
+    BuildContext context,
+    Map<String, dynamic> theme,
+    ForexRatesViewModel viewModel,
+  ) {
     final rate = viewModel.getExchangeRate();
 
     return Scaffold(
@@ -148,56 +248,18 @@ class ForexRatesView extends StatelessWidget {
             const SizedBox(height: 16),
             Expanded(
               child: ListView(
-                children: [
-                  _buildRateItem(
-                    context,
-                    "USD",
-                    viewModel.getExchangeRateFor("USD"),
-                    theme,
-                  ),
-                  _buildRateItem(
-                    context,
-                    "EUR",
-                    viewModel.getExchangeRateFor("EUR"),
-                    theme,
-                  ),
-                  _buildRateItem(
-                    context,
-                    "GBP",
-                    viewModel.getExchangeRateFor("GBP"),
-                    theme,
-                  ),
-                  _buildRateItem(
-                    context,
-                    "JPY",
-                    viewModel.getExchangeRateFor("JPY"),
-                    theme,
-                  ),
-                  _buildRateItem(
-                    context,
-                    "AUD",
-                    viewModel.getExchangeRateFor("AUD"),
-                    theme,
-                  ),
-                  _buildRateItem(
-                    context,
-                    "CAD",
-                    viewModel.getExchangeRateFor("CAD"),
-                    theme,
-                  ),
-                  _buildRateItem(
-                    context,
-                    "SGD",
-                    viewModel.getExchangeRateFor("SGD"),
-                    theme,
-                  ),
-                  _buildRateItem(
-                    context,
-                    "AED",
-                    viewModel.getExchangeRateFor("AED"),
-                    theme,
-                  ),
-                ],
+                children:
+                    viewModel.currencies
+                        .where((currency) => currency != viewModel.baseCurrency)
+                        .map(
+                          (currency) => _buildRateItem(
+                            context,
+                            currency,
+                            viewModel.getExchangeRateFor(currency),
+                            theme,
+                          ),
+                        )
+                        .toList(),
               ),
             ),
           ],
@@ -245,9 +307,7 @@ class ForexRatesView extends StatelessWidget {
                               height: 30,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: theme["textColor"].withOpacity(
-                                  0.1,
-                                ),
+                                color: theme["textColor"].withOpacity(0.1),
                               ),
                               child: Center(
                                 child: Text(
@@ -279,17 +339,12 @@ class ForexRatesView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: theme["textColor"].withOpacity(0.3),
-                ),
+                border: Border.all(color: theme["textColor"].withOpacity(0.3)),
                 color: theme["cardBackground"],
               ),
             ),
             iconStyleData: IconStyleData(
-              icon: Icon(
-                Icons.arrow_drop_down,
-                color: theme["textColor"],
-              ),
+              icon: Icon(Icons.arrow_drop_down, color: theme["textColor"]),
               iconSize: 24,
             ),
             dropdownStyleData: DropdownStyleData(
@@ -398,6 +453,14 @@ class ForexRatesView extends StatelessWidget {
       'INR': '🇮🇳',
       'SGD': '🇸🇬',
       'AED': '🇦🇪',
+      'HKD': '🇭🇰',
+      'CHF': '🇨🇭',
+      'NZD': '🇳🇿',
+      'DKK': '🇩🇰',
+      'NOK': '🇳🇴',
+      'SAR': '🇸🇦',
+      'SEK': '🇸🇪',
+      'ZAR': '🇿🇦',
     };
     return flags[currency] ?? '💵';
   }
@@ -413,6 +476,14 @@ class ForexRatesView extends StatelessWidget {
       'INR': 'Indian Rupee',
       'SGD': 'Singapore Dollar',
       'AED': 'UAE Dirham',
+      'HKD': 'Hong Kong Dollar',
+      'CHF': 'Swiss Franc',
+      'NZD': 'New Zealand Dollar',
+      'DKK': 'Danish Krone',
+      'NOK': 'Norwegian Krone',
+      'SAR': 'Saudi Riyal',
+      'SEK': 'Swedish Krona',
+      'ZAR': 'South African Rand',
     };
     return names[currency] ?? 'Currency';
   }

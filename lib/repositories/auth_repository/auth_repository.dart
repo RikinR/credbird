@@ -1,20 +1,34 @@
-// ignore_for_file: non_constant_identifier_names, avoid_print
+// ignore_for_file: avoid_print, non_constant_identifier_names
 
 import 'dart:convert';
 import 'package:credbird/model/auth_models/user_model.dart';
+import 'package:credbird/model/user_models/addtional_details.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthRepository {
   late final String baseUrl;
   late final String apiPrefix;
   late final String p_key;
+  late final Future<String?> token;
 
   AuthRepository() {
     baseUrl = dotenv.get('API_DOMAIN');
     apiPrefix = dotenv.get('API_PREFIX');
     p_key = dotenv.get('P_KEY');
     print('[AuthRepository] Initialized with baseUrl: $baseUrl');
+    token = _loadToken();
+  }
+
+  Future<void> _saveToken(String token) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  Future<String?> _loadToken() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
   }
 
   Future<User> login({
@@ -39,7 +53,9 @@ class AuthRepository {
 
       if (response.statusCode == 200 && responseData['success'] == true) {
         print('[login] Login successful for user: $username');
-        return User.fromJson(responseData['data']);
+        User user = User.fromJson(responseData['data']);
+        _saveToken(user.token);
+        return user;
       } else {
         print('[login] Login failed: ${responseData['message']}');
         throw Exception(responseData['message'] ?? 'Login failed');
@@ -182,10 +198,8 @@ class AuthRepository {
     }
   }
 
-  Future<void> resetPassword({
-    required String password,
-    required String token,
-  }) async {
+  Future<void> resetPassword({required String password}) async {
+    final token = await _loadToken();
     final url = Uri.parse('$baseUrl$apiPrefix/p-access/changePassword');
     final headers = {
       'Content-Type': 'application/json',
@@ -209,6 +223,136 @@ class AuthRepository {
       }
     } catch (e) {
       print('[resetPassword] Error occurred: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getUserDetails() async {
+    final token = await _loadToken();
+    print('token value is : $token');
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/myProfile');
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': p_key,
+      'Authorization': 'Bearer $token',
+    };
+
+    print('[getUserDetails] Sending GET request to $url');
+    try {
+      final response = await http.get(url, headers: headers);
+      print('[getUserDetails] Response status: ${response.statusCode}');
+      final responseData = jsonDecode(response.body);
+      print('[getUserDetails] Response data: $responseData');
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        print('[getUserDetails] User details fetched successfully');
+        return responseData['data'];
+      } else {
+        print('[getUserDetails] Failed: ${responseData['message']}');
+        throw Exception(
+          responseData['message'] ?? 'Failed to fetch user details',
+        );
+      }
+    } catch (e) {
+      print('[getUserDetails] Error occurred: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateAdditionalDetails(AdditionalDetailsModel details) async {
+    final token = await _loadToken();
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/updateAdditionalDetail');
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': p_key,
+      'Authorization': 'Bearer $token',
+    };
+
+    final body = {
+      'businessAddress': details.businessAddress,
+      'businessCity': details.businessCity,
+      'businessCountry': details.businessCountry?.toUpperCase(),
+      'businessPin': details.businessPin,
+      'businessState': details.businessState,
+    };
+
+    print('DEBUG: updateAdditionalDetails ');
+    print('URL: $url');
+    print('Token: $token');
+    print('Headers: ${jsonEncode(headers)}');
+    print('Request Body: ${jsonEncode(body)}');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('Response Status Code: ${response.statusCode}');
+      print('Raw Response Body: ${response.body}');
+
+      final responseData = jsonDecode(response.body);
+      print('Parsed Response Data: $responseData');
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        print('[updateAdditionalDetails] Success');
+      } else {
+        print(
+          '[updateAdditionalDetails] Failed: ${responseData['error']?['msg'] ?? responseData['message']}',
+        );
+        throw Exception(
+          responseData['error']?['msg'] ??
+              responseData['message'] ??
+              'Failed to update additional details',
+        );
+      }
+    } catch (e) {
+      print('[updateAdditionalDetails]  Error occurred: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateContactDetails({
+    required String name,
+    required String email,
+    required String mobile,
+    required String id,
+  }) async {
+    final token = await _loadToken();
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/addUpdateContactDetail');
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': p_key,
+      'Authorization': 'Bearer $token',
+    };
+    final body = jsonEncode({
+      'name': name,
+      'email': email,
+      'mobile': mobile,
+      '_id': id,
+      'status': 'ACTIVE',
+    });
+
+    print(
+      '[updateContactDetails] Sending POST request to $url with body: $body',
+    );
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      print('[updateContactDetails] Response status: ${response.statusCode}');
+      final responseData = jsonDecode(response.body);
+      print('[updateContactDetails] Response data: $responseData');
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        print('[updateContactDetails] Contact details updated successfully');
+      } else {
+        print('[updateContactDetails] Failed: ${responseData['message']}');
+        throw Exception(
+          responseData['message'] ?? 'Failed to update contact details',
+        );
+      }
+    } catch (e) {
+      print('[updateContactDetails] Error occurred: $e');
       rethrow;
     }
   }

@@ -1,4 +1,5 @@
 import 'package:credbird/model/auth_models/user_model.dart';
+import 'package:credbird/model/user_models/addtional_details.dart';
 import 'package:credbird/repositories/auth_repository/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,8 @@ class AuthViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   final AuthRepository authRepository;
+  AdditionalDetailsModel? _additionalDetails;
+  String? _contactId;
 
   bool get isLoggedIn => _isLoggedIn;
   String? get userName => _userName;
@@ -27,6 +30,8 @@ class AuthViewModel extends ChangeNotifier {
   bool get rememberMe => _rememberMe;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  AdditionalDetailsModel? get additionalDetails => _additionalDetails;
+  String? get contactId => _contactId;
 
   AuthViewModel(this.authRepository) {
     _loadUserSession();
@@ -36,6 +41,7 @@ class AuthViewModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     _rememberMe = prefs.getBool('rememberMe') ?? false;
+    _contactId = prefs.getString('contactId');
 
     if (_isLoggedIn) {
       _user = User(
@@ -53,6 +59,7 @@ class AuthViewModel extends ChangeNotifier {
                 ? DateTime.tryParse(prefs.getString('lastOnline')!)
                 : null,
       );
+      _userId = _user?.id;
     }
     notifyListeners();
   }
@@ -78,10 +85,10 @@ class AuthViewModel extends ChangeNotifier {
       );
 
       await _saveUserData(user, rememberMe);
-
       _isLoggedIn = true;
       _user = user;
       _rememberMe = rememberMe;
+      _userId = user.id;
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -118,6 +125,7 @@ class AuthViewModel extends ChangeNotifier {
         await _saveUserData(user, _rememberMe);
         _isLoggedIn = true;
         _user = user;
+        _userId = user.id;
       }
 
       return response;
@@ -155,6 +163,7 @@ class AuthViewModel extends ChangeNotifier {
       );
 
       _user = user;
+      _userId = user.id;
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -189,10 +198,10 @@ class AuthViewModel extends ChangeNotifier {
       );
 
       await _saveUserData(user, false);
-
       _isLoggedIn = true;
       _user = user;
       _rememberMe = false;
+      _userId = user.id;
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -297,10 +306,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> resetPassword({
-    required String password,
-    required String token,
-  }) async {
+  Future<void> resetPassword({required String password}) async {
     if (password.isEmpty) {
       throw Exception('Password is required');
     }
@@ -310,7 +316,103 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await authRepository.resetPassword(password: password, token: token);
+      await authRepository.resetPassword(password: password);
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchUserDetails() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await authRepository.getUserDetails();
+      final userData = response['findUser'];
+      final contactData =
+          response['findContact']?.isNotEmpty == true
+              ? response['findContact'][0]
+              : null;
+
+      _userName = userData['name'];
+      _userEmail = userData['email'];
+      _phone = userData['phone']?.toString();
+      _userType = userData['userType'];
+      _userId = userData['_id'];
+
+      if (contactData != null) {
+        _contactId = contactData['_id'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('contactId', _contactId!);
+      }
+
+      if (contactData != null) {
+        _additionalDetails = AdditionalDetailsModel();
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userName', _userName ?? '');
+      await prefs.setString('userEmail', _userEmail ?? '');
+      await prefs.setString('phone', _phone ?? '');
+      await prefs.setString('userType', _userType ?? 'STUDENT');
+      await prefs.setString('userId', _userId ?? '');
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateAdditionalDetails(AdditionalDetailsModel details) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await authRepository.updateAdditionalDetails(details);
+      _additionalDetails = details;
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateContactDetails({
+    required String name,
+    required String email,
+    required String mobile,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await authRepository.updateContactDetails(
+        name: name,
+        email: email,
+        mobile: mobile,
+        id: _userId!,
+      );
+
+      _userName = name;
+      _userEmail = email;
+      _phone = mobile;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userName', name);
+      await prefs.setString('userEmail', email);
+      await prefs.setString('phone', mobile);
+
+      if (_user != null) {
+        _user = _user!.copyWith(name: name, email: email, phone: mobile);
+      }
     } catch (e) {
       _error = e.toString();
       rethrow;

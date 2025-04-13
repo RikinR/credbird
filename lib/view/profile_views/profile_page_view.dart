@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
+import 'package:credbird/view/profile_views/bank_details_view.dart';
 import 'package:credbird/view/profile_views/edit_account_view.dart';
 import 'package:credbird/view/profile_views/kyc_screen_view.dart';
 import 'package:credbird/view/profile_views/transaction_screen_view.dart';
@@ -50,10 +51,7 @@ class ProfilePageView extends StatelessWidget {
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme["textColor"],
-                          width: 2,
-                        ),
+                        border: Border.all(color: theme["textColor"], width: 2),
                       ),
                       child: CircleAvatar(
                         radius: 36,
@@ -130,102 +128,128 @@ class ProfilePageView extends StatelessWidget {
                       theme,
                     ),
                     const Divider(height: 1, indent: 16),
-                    _buildProfileOption(
-                      context,
-                      Icons.credit_card_outlined,
-                      "Virtual Cards",
-                      () {
-                        _showCardsDialog(context, theme);
-                      },
-                      theme,
-                    ),
-                    const Divider(height: 1, indent: 16),
-                    _buildProfileOption(
-                      context,
-                      Icons.history_outlined,
-                      "Transaction History",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => const TransactionHistoryView(),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: theme["cardBackground"],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildProfileOption(
+                            context,
+                            Icons.account_balance_outlined,
+                            "Bank Details",
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const BankDetailsView(),
+                                ),
+                              );
+                            },
+                            theme,
                           ),
-                        );
-                      },
-                      theme,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: theme["cardBackground"],
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    _buildProfileOption(
-                      context,
-                      Icons.help_outline,
-                      "Help Center",
-                      () {
-                        homeViewModel.contactSupport(context);
-                      },
-                      theme,
-                    ),
-                    const Divider(height: 1, indent: 16),
-                    _buildProfileOption(
-                      context,
-                      Icons.info_outline,
-                      "About CredBird",
-                      () {
-                        _showAboutDialog(context, theme);
-                      },
-                      theme,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme["cardBackground"],
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: theme["negativeAmount"].withOpacity(0.3),
-                        width: 1,
+                          const Divider(height: 1, indent: 16),
+                          _buildProfileOption(
+                            context,
+                            Icons.credit_card_outlined,
+                            "Virtual Cards",
+                            () {
+                              _showCardsDialog(context, theme);
+                            },
+                            theme,
+                          ),
+                          const Divider(height: 1, indent: 16),
+                          _buildProfileOption(
+                            context,
+                            Icons.history_outlined,
+                            "Transaction History",
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          const TransactionHistoryView(),
+                                ),
+                              );
+                            },
+                            theme,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
 
-                  onPressed: () async {
-                    final loggedOut = await authViewModel.logout(context);
-                    if (loggedOut) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginSignupView(),
-                        ),
-                      );
-                    }
-                  },
-                  child: Text(
-                    "Log Out",
-                    style: TextStyle(
-                      color: theme["negativeAmount"],
-                      fontSize: 16,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.bold,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: theme["cardBackground"],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildProfileOption(
+                            context,
+                            Icons.help_outline,
+                            "Help Center",
+                            () {
+                              homeViewModel.contactSupport(context);
+                            },
+                            theme,
+                          ),
+                          const Divider(height: 1, indent: 16),
+                          _buildProfileOption(
+                            context,
+                            Icons.info_outline,
+                            "About CredBird",
+                            () {
+                              _showAboutDialog(context, theme);
+                            },
+                            theme,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme["cardBackground"],
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: theme["negativeAmount"].withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+
+                        onPressed: () async {
+                          final loggedOut = await authViewModel.logout(context);
+                          if (loggedOut) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginSignupView(),
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(
+                          "Log Out",
+                          style: TextStyle(
+                            color: theme["negativeAmount"],
+                            fontSize: 16,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

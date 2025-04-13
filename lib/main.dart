@@ -1,4 +1,5 @@
 import 'package:credbird/repositories/auth_repository/auth_repository.dart';
+import 'package:credbird/viewmodel/profile_providers/bank_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -40,6 +41,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => InternationalTouristViewModel()),
         ChangeNotifierProvider(create: (_) => ForexRatesViewModel()),
         ChangeNotifierProvider(create: (_) => BeneficiaryProvider()),
+        ChangeNotifierProvider(create: (_) => BankProvider()),
       ],
       child: const MyApp(),
     ),

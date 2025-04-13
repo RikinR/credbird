@@ -1,25 +1,42 @@
+import 'package:credbird/model/user_models/forex_rate_model.dart';
+import 'package:credbird/repositories/user_repository/forex_rate_repository.dart';
 import 'package:flutter/material.dart';
 
 class ForexRatesViewModel extends ChangeNotifier {
   String _baseCurrency = 'INR';
   String _targetCurrency = 'USD';
+  List<ForexRate> _forexRates = [];
+  bool _isLoading = false;
+  String? _error;
 
   String get baseCurrency => _baseCurrency;
   String get targetCurrency => _targetCurrency;
+  List<ForexRate> get forexRates => _forexRates;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  final List<String> _currencies = [
-    'USD',
-    'EUR',
-    'GBP',
-    'JPY',
-    'AUD',
-    'CAD',
-    'INR',
-    'SGD',
-    'AED',
-  ];
+  List<String> get currencies {
+    final codes = _forexRates.map((rate) => rate.currencyCode).toList();
+    codes.add('INR'); 
+    return codes.toSet().toList()..sort();
+  }
 
-  List<String> get currencies => _currencies;
+  final ForexRateRepository _repository = ForexRateRepository();
+
+  Future<void> fetchForexRates() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      _forexRates = await _repository.getLiveRates();
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   void setBaseCurrency(String currency) {
     _baseCurrency = currency;
@@ -32,60 +49,90 @@ class ForexRatesViewModel extends ChangeNotifier {
   }
 
   double getExchangeRate() {
-    final rates = {
-      'INR': {'USD': 0.012, 'EUR': 0.011, 'GBP': 0.0096},
-      'USD': {'INR': 83.12, 'EUR': 0.92, 'GBP': 0.79},
-      'EUR': {'INR': 89.50, 'USD': 1.09, 'GBP': 0.86},
-      'GBP': {'INR': 104.20, 'USD': 1.27, 'EUR': 1.16},
-    };
+    if (_baseCurrency == 'INR') {
+      final rate = _forexRates.firstWhere(
+        (rate) => rate.currencyCode == _targetCurrency,
+        orElse:
+            () =>
+                ForexRate(currencyCode: _targetCurrency, inrBuy: 0, inrSell: 0),
+      );
+      return 1 / rate.inrBuy;
+    } else if (_targetCurrency == 'INR') {
+      final rate = _forexRates.firstWhere(
+        (rate) => rate.currencyCode == _baseCurrency,
+        orElse:
+            () => ForexRate(currencyCode: _baseCurrency, inrBuy: 0, inrSell: 0),
+      );
+      return rate.inrBuy;
+    } else {
+      final baseToInr =
+          _forexRates
+              .firstWhere(
+                (rate) => rate.currencyCode == _baseCurrency,
+                orElse:
+                    () => ForexRate(
+                      currencyCode: _baseCurrency,
+                      inrBuy: 0,
+                      inrSell: 0,
+                    ),
+              )
+              .inrBuy;
 
-    return rates[_baseCurrency]?[_targetCurrency] ?? 1.0;
+      final targetToInr =
+          _forexRates
+              .firstWhere(
+                (rate) => rate.currencyCode == _targetCurrency,
+                orElse:
+                    () => ForexRate(
+                      currencyCode: _targetCurrency,
+                      inrBuy: 0,
+                      inrSell: 0,
+                    ),
+              )
+              .inrBuy;
+
+      return baseToInr / targetToInr;
+    }
   }
 
   double getExchangeRateFor(String currency) {
-    final rates = {
-      'INR': {
-        'USD': 0.012,
-        'EUR': 0.011,
-        'GBP': 0.0096,
-        'JPY': 1.78,
-        'AUD': 0.018,
-        'CAD': 0.016,
-        'SGD': 0.016,
-        'AED': 0.044,
-      },
-      'USD': {
-        'INR': 83.12,
-        'EUR': 0.92,
-        'GBP': 0.79,
-        'JPY': 148.32,
-        'AUD': 1.52,
-        'CAD': 1.36,
-        'SGD': 1.34,
-        'AED': 3.67,
-      },
-      'EUR': {
-        'INR': 89.50,
-        'USD': 1.09,
-        'GBP': 0.86,
-        'JPY': 161.23,
-        'AUD': 1.65,
-        'CAD': 1.47,
-        'SGD': 1.45,
-        'AED': 4.02,
-      },
-      'GBP': {
-        'INR': 104.20,
-        'USD': 1.27,
-        'EUR': 1.16,
-        'JPY': 187.65,
-        'AUD': 1.92,
-        'CAD': 1.71,
-        'SGD': 1.69,
-        'AED': 4.68,
-      },
-    };
+    if (_baseCurrency == 'INR') {
+      final rate = _forexRates.firstWhere(
+        (rate) => rate.currencyCode == currency,
+        orElse: () => ForexRate(currencyCode: currency, inrBuy: 0, inrSell: 0),
+      );
+      return 1 / rate.inrBuy;
+    } else {
+      final baseToInr =
+          _forexRates
+              .firstWhere(
+                (rate) => rate.currencyCode == _baseCurrency,
+                orElse:
+                    () => ForexRate(
+                      currencyCode: _baseCurrency,
+                      inrBuy: 0,
+                      inrSell: 0,
+                    ),
+              )
+              .inrBuy;
 
-    return rates[_baseCurrency]?[currency] ?? 1.0;
+      if (currency == 'INR') {
+        return baseToInr;
+      } else {
+        final targetToInr =
+            _forexRates
+                .firstWhere(
+                  (rate) => rate.currencyCode == currency,
+                  orElse:
+                      () => ForexRate(
+                        currencyCode: currency,
+                        inrBuy: 0,
+                        inrSell: 0,
+                      ),
+                )
+                .inrBuy;
+        return baseToInr / targetToInr;
+      }
+    }
   }
 }

@@ -7,11 +7,9 @@ import 'package:credbird/view/landing_page_view.dart';
 
 class ResetPasswordView extends StatefulWidget {
   final String email;
-  final String token;
   const ResetPasswordView({
     super.key,
     required this.email,
-    required this.token,
   });
 
   @override
@@ -161,7 +159,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       await authViewModel.resetPassword(
         password: password,
-        token: widget.token,
       );
 
       _showSuccessSnackbar(context, 'Password reset successfully');

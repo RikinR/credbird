@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, unused_local_variable
 
 import 'package:credbird/view/authentication%20view/forgot_password/reset_password_view.dart';
 import 'package:flutter/material.dart';
@@ -149,17 +149,12 @@ class _ForgotPasswordOtpViewState extends State<ForgotPasswordOtpView> {
         username: widget.email,
         otp: otp,
       );
-      final token = response['token'];
 
       _showSuccessSnackbar(context, 'OTP verified successfully');
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder:
-              (context) => ResetPasswordView(
-                email: widget.email,
-                token: token,
-              ),
+          builder: (context) => ResetPasswordView(email: widget.email),
         ),
       );
     } catch (e) {

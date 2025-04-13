@@ -61,37 +61,7 @@ class _KYCForm extends StatelessWidget {
               "Enter your last name",
               (value) => kycProvider.updateLastName(value),
             ),
-            const SizedBox(height: 24),
-            Text(
-              "Bank Details",
-              style: TextStyle(
-                color: theme["textColor"],
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              context,
-              "Account Number",
-              "Enter your account number",
-              (value) => kycProvider.updateBankDetails(accountNumber: value),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 12),
-            _buildTextField(
-              context,
-              "IFSC Code",
-              "Enter your bank's IFSC code",
-              (value) => kycProvider.updateBankDetails(ifsc: value),
-            ),
-            const SizedBox(height: 12),
-            _buildTextField(
-              context,
-              "Account Name",
-              "Enter account holder name",
-              (value) => kycProvider.updateBankDetails(accountName: value),
-            ),
+
             const SizedBox(height: 24),
             Text(
               "Identity Verification",
