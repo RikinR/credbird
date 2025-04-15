@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unused_local_variable
 
 import 'package:credbird/model/user_models/addtional_details.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';

@@ -322,94 +322,83 @@ Widget buildActionButton(
 
 Widget buildBeneficiarySelector(
   BuildContext context,
-  BeneficiaryProvider beneficiaryProvider,
+  BeneficiaryProvider provider,
   Map<String, dynamic> theme,
 ) {
+  final selected = provider.selectedBeneficiary;
+
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const SizedBox(height: 16),
-      Text(
+      const Text(
         "Select Beneficiary",
-        style: TextStyle(
-          color: theme["textColor"],
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
       const SizedBox(height: 8),
-      if (beneficiaryProvider.beneficiaries.isEmpty)
-        Text(
-          "No beneficiaries added yet",
-          style: TextStyle(color: theme["secondaryText"]),
-        )
-      else
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: beneficiaryProvider.beneficiaries.length,
-            itemBuilder: (context, index) {
-              final beneficiary = beneficiaryProvider.beneficiaries[index];
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: GestureDetector(
-                  onTap: () {
-                    beneficiaryProvider.selectBeneficiary(beneficiary);
-                  },
-                  child: Container(
-                    width: 150,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: theme["cardBackground"],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color:
-                            beneficiaryProvider.selectedBeneficiary?.id ==
-                                    beneficiary.id
-                                ? theme["buttonHighlight"]!
-                                : Colors.transparent,
-                        width: 2,
+      SizedBox(
+        height: 100, 
+        child:
+            provider.beneficiaries.isEmpty
+                ? const Center(child: Text("No beneficiaries added"))
+                : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: provider.beneficiaries.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final beneficiary = provider.beneficiaries[index];
+                    final isSelected = beneficiary.id == selected?.id;
+
+                    return GestureDetector(
+                      onTap: () => provider.selectBeneficiary(beneficiary),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundColor:
+                                isSelected
+                                    ? theme["positiveAmount"]
+                                    : theme["unhighlightedButton"],
+                            child: Text(
+                              _getInitials(beneficiary.name),
+                              style: TextStyle(
+                                color: theme["backgroundColor"],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          SizedBox(
+                            width: 70,
+                            child: Text(
+                              beneficiary.name.split(' ').first,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color:
+                                    isSelected
+                                        ? theme["textColor"]
+                                        : theme["secondaryText"],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          beneficiary.name,
-                          style: TextStyle(
-                            color: theme["textColor"],
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          beneficiary.accountNumber,
-                          style: TextStyle(
-                            color: theme["secondaryText"],
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          beneficiary.bankName,
-                          style: TextStyle(
-                            color: theme["secondaryText"],
-                            fontSize: 12,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
+      ),
     ],
   );
+}
+
+String _getInitials(String name) {
+  final parts = name.trim().split(" ");
+  if (parts.length >= 2) {
+    return "${parts[0][0]}${parts[1][0]}".toUpperCase();
+  } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+    return parts[0][0].toUpperCase();
+  }
+  return "?";
 }

@@ -1,4 +1,6 @@
-import 'package:credbird/model/beneficiray_models.dart';
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:credbird/model/beneficiary_models/beneficiray_models.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
@@ -160,7 +162,7 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         final beneficiary = Beneficiary(
                           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -172,22 +174,37 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                           bankAddress: _bankAddressController.text,
                           swiftCode: _swiftCodeController.text,
                           ibanBsbAba: _ibanBsbAbaController.text,
-                          branchName: '',
+                          branchName: '', 
+                          address:
+                              _bankAddressController
+                                  .text, 
+                          isInternational: true,
                         );
 
-                        beneficiaryProvider.addBeneficiary(beneficiary);
+                        await beneficiaryProvider.addBeneficiary(beneficiary);
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              "${_nameController.text} added as beneficiary",
-                              style: TextStyle(color: theme["textColor"]),
+                        if (beneficiaryProvider.error == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "${_nameController.text} added as beneficiary",
+                                style: TextStyle(color: theme["textColor"]),
+                              ),
+                              backgroundColor: theme["positiveAmount"],
                             ),
-                            backgroundColor: theme["positiveAmount"],
-                          ),
-                        );
-
-                        Navigator.pop(context);
+                          );
+                          Navigator.pop(context);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "Failed to add beneficiary: ${beneficiaryProvider.error}",
+                                style: TextStyle(color: theme["textColor"]),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(

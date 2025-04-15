@@ -4,6 +4,7 @@ import 'package:credbird/view/authentication%20view/login_signup_view.dart';
 import 'package:credbird/view/profile_views/bank_details_view.dart';
 import 'package:credbird/view/profile_views/edit_account_view.dart';
 import 'package:credbird/view/profile_views/kyc_screen_view.dart';
+import 'package:credbird/view/profile_views/registration_view.dart';
 import 'package:credbird/view/profile_views/transaction_screen_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
@@ -65,7 +66,7 @@ class ProfilePageView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            authViewModel.userName ?? "User",
+                            homeViewModel.userName,
                             style: TextStyle(
                               color: theme["textColor"],
                               fontSize: 20,
@@ -115,18 +116,33 @@ class ProfilePageView extends StatelessWidget {
                     const Divider(height: 1, indent: 16),
                     _buildProfileOption(
                       context,
-                      Icons.verified_user_outlined,
-                      "KYC Verification",
+                      Icons.account_balance_outlined,
+                      "Registration",
                       () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const KYCView(),
+                            builder: (context) => RegistrationView(),
                           ),
                         );
                       },
                       theme,
                     ),
+                    // const Divider(height: 1, indent: 16),
+                    // _buildProfileOption(
+                    //   context,
+                    //   Icons.verified_user_outlined,
+                    //   "KYC Verification",
+                    //   () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => const KYCView(),
+                    //       ),
+                    //     );
+                    //   },
+                    //   theme,
+                    // ),
                     const Divider(height: 1, indent: 16),
                     Container(
                       decoration: BoxDecoration(
@@ -135,21 +151,21 @@ class ProfilePageView extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          _buildProfileOption(
-                            context,
-                            Icons.account_balance_outlined,
-                            "Bank Details",
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const BankDetailsView(),
-                                ),
-                              );
-                            },
-                            theme,
-                          ),
-                          const Divider(height: 1, indent: 16),
+                          // _buildProfileOption(
+                          //   context,
+                          //   Icons.account_balance_outlined,
+                          //   "Bank Details",
+                          //   () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //         builder: (context) => const BankDetailsView(),
+                          //       ),
+                          //     );
+                          //   },
+                          //   theme,
+                          // ),
+                          // const Divider(height: 1, indent: 16),
                           _buildProfileOption(
                             context,
                             Icons.credit_card_outlined,

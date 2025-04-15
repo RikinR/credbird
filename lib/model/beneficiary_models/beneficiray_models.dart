@@ -12,6 +12,10 @@ class Beneficiary {
   final String? email;
   final double? transferLimit;
   final bool isInternational;
+  final String city;
+  final String country;
+  final String bankAddress;
+  final String? ibanBsbAba;
 
   Beneficiary({
     required this.id,
@@ -26,6 +30,10 @@ class Beneficiary {
     this.mobileNumber,
     this.email,
     this.transferLimit,
-    this.isInternational = false, required String city, required String country, required String bankAddress, required String ibanBsbAba,
+    this.isInternational = false,
+    required this.city,
+    required this.country,
+    required this.bankAddress,
+    this.ibanBsbAba,
   });
 }

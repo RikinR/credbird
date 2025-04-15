@@ -6,8 +6,23 @@ import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class SendPageView extends StatelessWidget {
+class SendPageView extends StatefulWidget {
   const SendPageView({super.key});
+
+  @override
+  State<SendPageView> createState() => _SendPageViewState();
+}
+
+class _SendPageViewState extends State<SendPageView> {
+  @override
+  void initState() {
+    super.initState();
+    final beneficiaryProvider = Provider.of<BeneficiaryProvider>(
+      context,
+      listen: false,
+    );
+    beneficiaryProvider.fetchBeneficiaries();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -51,6 +51,11 @@ class _HomePageViewState extends State<HomePageView>
       final targetOpacity = (scrollPosition / maxScroll).clamp(0.0, 1.0);
       _appBarController.animateTo(targetOpacity);
     });
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+    if (authViewModel.additionalDetails == null) {
+      authViewModel.fetchUserDetails();
+    }
+
   }
 
   @override
@@ -192,7 +197,7 @@ class _HomePageViewState extends State<HomePageView>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Hi, Raihan👋",
+                          "Hi, ${homeViewModel.userName}👋",
                           style: TextStyle(
                             color: theme["textColor"],
                             fontSize: 24,
@@ -466,7 +471,7 @@ class _HomePageViewState extends State<HomePageView>
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    authViewModel.userName ?? "User",
+                    homeViewModel.userName,
                     style: TextStyle(
                       color: theme["textColor"],
                       fontSize: 20,
@@ -476,7 +481,7 @@ class _HomePageViewState extends State<HomePageView>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    authViewModel.userEmail ?? "user@credbird.com",
+                    homeViewModel.userEmail ?? "",
                     style: TextStyle(
                       color: theme["textColor"],
                       fontSize: 14,
@@ -794,5 +799,4 @@ class _HomePageViewState extends State<HomePageView>
       ),
     );
   }
-
 }
