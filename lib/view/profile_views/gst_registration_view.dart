@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:credbird/viewmodel/profile_providers/registration_provider.dart';
+import 'package:credbird/viewmodel/profile_providers/gst_registration_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:credbird/view/profile_views/registration_success_view.dart';
 
-class RegistrationView extends StatelessWidget {
-  const RegistrationView({super.key});
+class GstRegistrationView extends StatelessWidget {
+  const GstRegistrationView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
     return ChangeNotifierProvider(
-      create: (_) => RegistrationProvider(),
+      create: (_) => GstRegistrationProvider(),
       child: Scaffold(
         backgroundColor: theme["scaffoldBackground"],
         appBar: AppBar(
-          title: const Text("Complete Registration"),
+          title: const Text("GST Registration"),
           backgroundColor: Colors.transparent,
           elevation: 0,
           foregroundColor: theme["textColor"],
         ),
-        body: Consumer<RegistrationProvider>(
+        body: Consumer<GstRegistrationProvider>(
           builder: (context, provider, _) {
-            if (provider.currentStep == 4) {
+            if (provider.currentStep == 3) {
               return const RegistrationSuccessScreen();
             }
-            return const _RegistrationStepper();
+            return const _GstRegistrationStepper();
           },
         ),
       ),
@@ -33,24 +33,22 @@ class RegistrationView extends StatelessWidget {
   }
 }
 
-class _RegistrationStepper extends StatelessWidget {
-  const _RegistrationStepper();
+class _GstRegistrationStepper extends StatelessWidget {
+  const _GstRegistrationStepper();
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<RegistrationProvider>(context);
+    final provider = Provider.of<GstRegistrationProvider>(context);
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
 
     return Stepper(
       currentStep: provider.currentStep,
       onStepContinue: () async {
         if (provider.currentStep == 0) {
-          provider.goToStep(1);
+          await provider.verifyGst();
         } else if (provider.currentStep == 1) {
-          await provider.verifyPan();
-        } else if (provider.currentStep == 2) {
           await provider.verifyBankDetails();
-        } else if (provider.currentStep == 3) {
+        } else if (provider.currentStep == 2) {
           await provider.submitRegistration();
         }
       },
@@ -92,7 +90,7 @@ class _RegistrationStepper extends StatelessWidget {
                             color: theme["backgroundColor"],
                           )
                           : Text(
-                            provider.currentStep == 3 ? "SUBMIT" : "NEXT",
+                            provider.currentStep == 2 ? "SUBMIT" : "NEXT",
                             style: TextStyle(
                               color: theme["backgroundColor"],
                               fontWeight: FontWeight.bold,
@@ -104,21 +102,26 @@ class _RegistrationStepper extends StatelessWidget {
           ),
         );
       },
-      steps: [
-        _basicStep(context),
-        _panStep(context),
-        _bankStep(context),
-        _contactStep(context),
-      ],
+      steps: [_gstStep(context), _bankStep(context), _contactStep(context)],
     );
   }
 
-  Step _basicStep(BuildContext context) {
-    final provider = Provider.of<RegistrationProvider>(context);
+  Step _gstStep(BuildContext context) {
+    final provider = Provider.of<GstRegistrationProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context).themeConfig;
 
-    final TextEditingController passport = TextEditingController();
-    final TextEditingController mobile = TextEditingController();
-    final TextEditingController email = TextEditingController();
+    final TextEditingController pan = TextEditingController(
+      text: provider.registrationData.panNumber,
+    );
+    final TextEditingController gst = TextEditingController(
+      text: provider.registrationData.gstNumber,
+    );
+    final TextEditingController orgName = TextEditingController(
+      text: provider.registrationData.orgName,
+    );
+    final TextEditingController orgType = TextEditingController(
+      text: provider.registrationData.orgType,
+    );
     final TextEditingController address = TextEditingController();
     final TextEditingController pin = TextEditingController();
     final TextEditingController city = TextEditingController();
@@ -126,22 +129,23 @@ class _RegistrationStepper extends StatelessWidget {
     final TextEditingController country = TextEditingController();
 
     return Step(
-      title: const Text("Basic Details"),
+      title: const Text("GST Details"),
       state: provider.currentStep > 0 ? StepState.complete : StepState.indexed,
       content: Column(
         children: [
-          _buildTextField(context, "Passport", passport),
+          _buildTextField(context, "PAN Number", pan),
+          _buildTextField(context, "GST Number", gst),
           _buildTextField(
             context,
-            "Mobile (+91)",
-            mobile,
-            type: TextInputType.phone,
+            "Organization Name",
+            orgName,
+            enabled: false,
           ),
           _buildTextField(
             context,
-            "Email",
-            email,
-            type: TextInputType.emailAddress,
+            "Organization Type",
+            orgType,
+            enabled: false,
           ),
           _buildTextField(context, "Address", address),
           _buildTextField(context, "PIN Code", pin, type: TextInputType.number),
@@ -152,51 +156,20 @@ class _RegistrationStepper extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               provider.updateBasicDetails(
-                passport: passport.text,
-                mobile: mobile.text,
-                email: email.text,
-                address: address.text,
-                pin: pin.text,
-                city: city.text,
-                state: state.text,
-                country: country.text.toUpperCase(),
+                panNumber: pan.text,
+                gstNumber: gst.text,
+                orgName: orgName.text,
+                orgType: orgType.text,
+                orgAddress: address.text,
+                orgPin: pin.text,
+                orgCity: city.text,
+                orgState: state.text,
+                orgCountry: country.text.toUpperCase(),
               );
-              provider.goToStep(1);
+              provider.verifyGst();
             },
-            child: const Text("Save & Continue"),
+            child: const Text("Verify GST"),
           ),
-        ],
-      ),
-    );
-  }
-
-  Step _panStep(BuildContext context) {
-    final provider = Provider.of<RegistrationProvider>(context);
-    final theme = Provider.of<ThemeProvider>(context).themeConfig;
-
-    return Step(
-      title: const Text("PAN Verification"),
-      state: provider.currentStep > 1 ? StepState.complete : StepState.indexed,
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTextField(
-            context,
-            "PAN Number",
-            null,
-            onChanged: provider.updatePan,
-            enabled: provider.registrationData.fullName == null,
-          ),
-          if (provider.registrationData.fullName != null) ...[
-            Text(
-              "Name: ${provider.registrationData.fullName}",
-              style: TextStyle(color: theme["textColor"]),
-            ),
-            Text(
-              "TCS Rate: ${provider.registrationData.tcsRate}%",
-              style: TextStyle(color: theme["textColor"]),
-            ),
-          ],
           if (provider.errorMessage != null)
             Text(
               provider.errorMessage!,
@@ -208,12 +181,12 @@ class _RegistrationStepper extends StatelessWidget {
   }
 
   Step _bankStep(BuildContext context) {
-    final provider = Provider.of<RegistrationProvider>(context);
+    final provider = Provider.of<GstRegistrationProvider>(context);
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
 
     return Step(
       title: const Text("Bank Verification"),
-      state: provider.currentStep > 2 ? StepState.complete : StepState.indexed,
+      state: provider.currentStep > 1 ? StepState.complete : StepState.indexed,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -231,11 +204,19 @@ class _RegistrationStepper extends StatelessWidget {
             onChanged: provider.updateIfsc,
             enabled: provider.registrationData.bankDetails.isEmpty,
           ),
-
           if (provider.registrationData.bankDetails.isNotEmpty)
-            Text(
-              "Account Name: ${provider.registrationData.bankDetails.first.accountName}",
-              style: TextStyle(color: theme["textColor"]),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Account Name: ${provider.registrationData.bankDetails.first.accountName}",
+                  style: TextStyle(color: theme["textColor"]),
+                ),
+                Text(
+                  "Verified ID: ${provider.registrationData.bankDetails.first.verifiedId}",
+                  style: TextStyle(color: theme["textColor"]),
+                ),
+              ],
             ),
           if (provider.errorMessage != null)
             Text(
@@ -248,7 +229,7 @@ class _RegistrationStepper extends StatelessWidget {
   }
 
   Step _contactStep(BuildContext context) {
-    final provider = Provider.of<RegistrationProvider>(context);
+    final provider = Provider.of<GstRegistrationProvider>(context);
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
 
     final TextEditingController name = TextEditingController();

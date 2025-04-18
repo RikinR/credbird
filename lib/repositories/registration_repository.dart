@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'package:credbird/model/gst_registration_model.dart';
 import 'package:credbird/model/registration_model.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -169,84 +170,6 @@ class RegistrationRepository {
     }
   }
 
-  Future<Map<String, dynamic>> verifyGst(String gstNumber) async {
-    print(
-      '[GST Verification] Starting verification for GST: ${gstNumber.replaceRange(2, gstNumber.length - 2, '****')}',
-    );
-    final tokenValue = await token;
-    print(
-      '[GST Verification] Using token: ${tokenValue != null ? '*****' : 'NULL'}',
-    );
-
-    final url = Uri.parse('$baseUrl$apiPrefix/p-access/getGstData');
-    print('[GST Verification] API Endpoint: $url');
-
-    final headers = {
-      'Content-Type': 'application/json',
-      'p-key': pKey,
-      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
-    };
-
-    final body = jsonEncode({"gst": gstNumber});
-
-    print('[GST Verification] Request Headers: ${headers.keys.join(', ')}');
-    print(
-      '[GST Verification] Request Body: ${body.replaceAll(gstNumber, gstNumber.replaceRange(2, gstNumber.length - 2, '****'))}',
-    );
-
-    try {
-      print('[GST Verification] Making API request...');
-      final response = await http.post(url, headers: headers, body: body);
-      print(
-        '[GST Verification] Response received. Status: ${response.statusCode}',
-      );
-
-      final responseData = jsonDecode(response.body);
-      print(
-        '[GST Verification] Full Response Data Length: ${responseData.toString().length}',
-      );
-      print('[GST Verification] Response Success: ${responseData['success']}');
-      print('[GST Verification] Response Message: ${responseData['message']}');
-
-      if (response.statusCode == 200 && responseData['success'] == true) {
-        final gstData = responseData['data']?['data'];
-        if (gstData == null) {
-          throw Exception('GST data not found in response');
-        }
-
-        final details = gstData['details'];
-        final contactDetails = details?['contact_details']?['principal'];
-
-        print('[GST Verification] Verification successful!');
-        print(
-          '[GST Verification] Business Name: ${details?['legal_name'] ?? details?['business_name'] ?? 'N/A'}',
-        );
-        print(
-          '[GST Verification] Business Address: ${contactDetails?['address'] ?? 'N/A'}',
-        );
-
-        return {
-          'businessName': details?['legal_name'] ?? details?['business_name'],
-          'businessAddress': contactDetails?['address'],
-          'gstVerifiedId': gstData['client_id'],
-          'email': gstData['email'],
-          'mobile': gstData['mobile'],
-          'panNumber': details?['pan_number'],
-        };
-      } else {
-        final errorMsg = responseData['message'] ?? 'GST verification failed';
-        print('[GST Verification] Verification failed: $errorMsg');
-        throw Exception(errorMsg);
-      }
-    } catch (e) {
-      print('[GST Verification] ERROR during verification: $e');
-      print(
-        '[GST Verification] Stack trace: ${e is Error ? e.stackTrace : ''}',
-      );
-      throw Exception('Failed to verify GST: $e');
-    }
-  }
-
   Future<Map<String, dynamic>> completeRegistration(
     RegistrationModel data,
   ) async {
@@ -310,6 +233,153 @@ class RegistrationRepository {
     } catch (e) {
       print('[Registration] ERROR during registration: $e');
       print('[Registration] Stack trace: ${e is Error ? e.stackTrace : ''}');
+      throw Exception('Failed to complete registration: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyGst(String gstNumber) async {
+    print(
+      '[GST Verification] Starting verification for GST: ${gstNumber.replaceRange(2, gstNumber.length - 2, '****')}',
+    );
+    final tokenValue = await token;
+    print(
+      '[GST Verification] Using token: ${tokenValue != null ? '*****' : 'NULL'}',
+    );
+
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/getGstData');
+    print('[GST Verification] API Endpoint: $url');
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': pKey,
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
+    };
+
+    final body = jsonEncode({"gst": gstNumber});
+
+    print('[GST Verification] Request Headers: ${headers.keys.join(', ')}');
+    print(
+      '[GST Verification] Request Body: ${body.replaceAll(gstNumber, gstNumber.replaceRange(2, gstNumber.length - 2, '****'))}',
+    );
+
+    try {
+      print('[GST Verification] Making API request...');
+      final response = await http.post(url, headers: headers, body: body);
+      print(
+        '[GST Verification] Response received. Status: ${response.statusCode}',
+      );
+
+      final responseData = jsonDecode(response.body);
+      print(
+        '[GST Verification] Full Response Data Length: ${responseData.toString().length}',
+      );
+      print('[GST Verification] Response Success: ${responseData['success']}');
+      print('[GST Verification] Response Message: ${responseData['message']}');
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        final gstData = responseData['data']?['data'];
+        if (gstData == null) {
+          throw Exception('GST data not found in response');
+        }
+
+        final details = gstData['details'];
+        final contactDetails = details?['contact_details']?['principal'];
+
+        print('[GST Verification] Verification successful!');
+        print(
+          '[GST Verification] Business Name: ${details?['legal_name'] ?? details?['business_name'] ?? 'N/A'}',
+        );
+        print(
+          '[GST Verification] Business Address: ${contactDetails?['address'] ?? 'N/A'}',
+        );
+
+        return {
+          'businessName': details?['legal_name'] ?? details?['business_name'],
+          'businessAddress': contactDetails?['address'],
+          'gstVerifiedId': gstData['client_id'],
+          'email': gstData['email'],
+          'mobile': gstData['mobile'],
+          'panNumber': details?['pan_number'],
+          'orgType': details?['constitution_of_business'],
+        };
+      } else {
+        final errorMsg = responseData['message'] ?? 'GST verification failed';
+        print('[GST Verification] Verification failed: $errorMsg');
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      print('[GST Verification] ERROR during verification: $e');
+      print(
+        '[GST Verification] Stack trace: ${e is Error ? e.stackTrace : ''}',
+      );
+      throw Exception('Failed to verify GST: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> completeGstRegistration(
+    GstRegistrationModel data,
+  ) async {
+    print('[GST Registration] Starting registration completion...');
+    final tokenValue = await token;
+    print(
+      '[GST Registration] Using token: ${tokenValue != null ? '*****' : 'NULL'}',
+    );
+
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/register');
+    print('[GST Registration] API Endpoint: $url');
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': pKey,
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
+    };
+
+    final body = jsonEncode({
+      "pan": data.panNumber,
+      "gst": data.gstNumber,
+      "orgName": data.orgName,
+      "orgType": data.orgType,
+      "orgAddress": data.orgAddress,
+      "orgPin": data.orgPin,
+      "orgCity": data.orgCity,
+      "orgState": data.orgState,
+      "orgCountry": data.orgCountry,
+      if (data.businessAddress != null) "businessAddress": data.businessAddress,
+      if (data.businessPin != null) "businessPin": data.businessPin,
+      if (data.businessCity != null) "businessCity": data.businessCity,
+      if (data.businessState != null) "businessState": data.businessState,
+      if (data.businessCountry != null) "businessCountry": data.businessCountry,
+      "contactDetail": data.contactDetails.map((e) => e.toJson()).toList(),
+      "bankDetail": data.bankDetails.map((e) => e.toJson()).toList(),
+    });
+
+    print('[GST Registration] Request Headers: ${headers.keys.join(', ')}');
+    print('[GST Registration] Making API request...');
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      print(
+        '[GST Registration] Response received. Status: ${response.statusCode}',
+      );
+
+      final responseData = jsonDecode(response.body);
+      print(
+        '[GST Registration] Response Data: ${responseData.toString().length > 200 ? '${responseData.toString().substring(0, 200)}...' : responseData}',
+      );
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        print('[GST Registration] Registration successful!');
+        return responseData['data'];
+      } else {
+        final errorMsg = responseData['message'] ?? 'Registration failed';
+        print('[GST Registration] Registration failed: $errorMsg');
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      print('[GST Registration] ERROR during registration: $e');
+      print(
+        '[GST Registration] Stack trace: ${e is Error ? e.stackTrace : ''}',
+      );
       throw Exception('Failed to complete registration: $e');
     }
   }

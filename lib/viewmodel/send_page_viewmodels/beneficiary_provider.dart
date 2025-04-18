@@ -28,7 +28,7 @@ class BeneficiaryProvider extends ChangeNotifier {
         country: beneficiary.country,
         accountNumber: beneficiary.accountNumber,
         bankName: beneficiary.bankName,
-        bankAddress: beneficiary.bankAddress ?? '',
+        bankAddress: beneficiary.bankAddress ,
         swiftCode: beneficiary.swiftCode ?? '',
         iban_bsb_aba: beneficiary.ibanBsbAba,
       );

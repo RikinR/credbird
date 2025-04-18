@@ -1,166 +1,154 @@
-// ignore_for_file: non_constant_identifier_names, avoid_print
+// ignore_for_file: avoid_print
 
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class KycRepository {
+class KYCRepository {
   late final String baseUrl;
   late final String apiPrefix;
   late final String p_key;
   late final Future<String?> token;
 
-  KycRepository() {
+  KYCRepository() {
     baseUrl = dotenv.get('API_DOMAIN');
     apiPrefix = dotenv.get('API_PREFIX');
     p_key = dotenv.get('P_KEY');
-    print('[KYCRepository] Initialized with baseUrl: $baseUrl');
     token = _loadToken();
-    print("token is : $token");
+    print('KYCRepository initialized: $baseUrl$apiPrefix');
   }
 
   Future<String?> _loadToken() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+    final prefs = await SharedPreferences.getInstance();
+    final t = prefs.getString('token');
+    print('Loaded token: ${t != null ? "exists" : "null"}');
+    return t;
   }
 
-  void addOrUpdateBankDetails({
-    required String accountNumber,
-    required String ifsc,
-    required String accountName,
-    required String verifiedId,
-    required bool refundAccount,
-    required String? id,
-    required String? verifiedStatus,
-    required String status,
-  }) async {
-    final url = Uri.parse('$baseUrl$apiPrefix/p-access/addUpdateBankDetail');
+  Future<List<dynamic>> getPendingDocuments() async {
     final tokenValue = await token;
-    
-    print("token is : $tokenValue");
-    
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/findDocumentByStatus');
+
     final headers = {
-      'Content-Type': 'application/json',
       'p-key': p_key,
       'Authorization': 'Bearer $tokenValue',
     };
-    final body = jsonEncode({
-      'accountNumber': accountNumber,
-      'ifsc': ifsc,
-      'accountName': accountName,
-      'refundAccount': refundAccount,
-      'verifiedStatus': verifiedId,
-      '_id': id,
-      'status': status,
-      'verifiedId': verifiedId,
-    });
 
-    print('[Bank] Sending POST request to $url with body: $body');
-    try {
-      final response = await http.post(url, headers: headers, body: body);
-      print('[Bank] Response status: ${response.statusCode}');
-      final responseData = jsonDecode(response.body);
-      print('[Bank] Response data: $responseData');
+    print('Fetching pending documents → $url');
+    print('Headers: $headers');
 
-      if (response.statusCode == 200 && responseData['success'] == true) {
-        print('[Bank] Bank deatils updated successfully');
-      } else {
-        print('[Bank] Bank updation failed: ${responseData['message']}');
-        throw Exception(responseData['message'] ?? 'Cant update bank details');
-      }
-    } catch (e) {
-      print('[Bank] Error occurred: $e');
-      rethrow;
+    final response = await http.get(url, headers: headers);
+    print('Response code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200 && responseData['success'] == true) {
+      print('Documents fetched: ${responseData['data'].length}');
+      return responseData['data'];
+    } else {
+      final msg = responseData['message'] ?? 'Failed to fetch documents';
+      print('Error fetching documents: $msg');
+      throw Exception(msg);
     }
   }
 
-  void addUpdateContactDetail({
-    required String name,
-    required String mobile,
-    required String email,
-    required String? id,
-    required String status,
-  }) async {
-    final url = Uri.parse('$baseUrl$apiPrefix/p-access/addUpdateContactDetail');
+  Future<List<String>> uploadFile(File file) async {
     final tokenValue = await token;
-    final headers = {
-      'Content-Type': 'application/json',
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/common/uploadFile');
+
+    final request = http.MultipartRequest('POST', url);
+    request.headers.addAll({
       'p-key': p_key,
       'Authorization': 'Bearer $tokenValue',
-    };
-    final body = jsonEncode({
-      "name": name,
-      "mobile": mobile,
-      "email": email,
-      "_id": id,
-      "status": status,
     });
 
-    print('[Contact] Sending POST request to $url with body: $body');
-    try {
-      final response = await http.post(url, headers: headers, body: body);
-      print('[Contact] Response status: ${response.statusCode}');
-      final responseData = jsonDecode(response.body);
-      print('[Contact] Response data: $responseData');
+    print('⬆ Uploading file: ${file.path}');
+    request.files.add(await http.MultipartFile.fromPath('file', file.path));
 
-      if (response.statusCode == 200 && responseData['success'] == true) {
-        print('[Contact] Contact deatils updated successfully');
-      } else {
-        print('[Contact] Contact updation failed: ${responseData['message']}');
-        throw Exception(
-          responseData['message'] ?? 'Cant update Contact details',
-        );
-      }
-    } catch (e) {
-      print('[Contact] Error occurred: $e');
-      rethrow;
+    final response = await request.send();
+    final responseBody = await http.Response.fromStream(response);
+
+    print('⬆Upload response code: ${response.statusCode}');
+    print('⬆Upload response body: ${responseBody.body}');
+
+    final responseData = json.decode(responseBody.body);
+
+    if (response.statusCode == 200 && responseData['success'] == true) {
+      final urls = List<String>.from(responseData['data']);
+      print('File uploaded. URLs: $urls');
+      return urls;
+    } else {
+      final msg = responseData['message'] ?? 'Upload failed';
+      print('File upload error: $msg');
+      throw Exception(msg);
     }
   }
 
-  void updateAdditonalDetails({
-    required String businessAddress,
-    required String businessCity,
-    required String businessCountry,
-    required String businessPin,
-    required String businessState,
-  }) async {
-    final url = Uri.parse('$baseUrl$apiPrefix/p-access/addUpdateContactDetail');
+  Future<String> makeFilePublic(String fileUri) async {
     final tokenValue = await token;
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/common/createPublic');
     final headers = {
       'Content-Type': 'application/json',
       'p-key': p_key,
       'Authorization': 'Bearer $tokenValue',
     };
+
+    final body = jsonEncode({'fileUri': fileUri});
+    print('Making file public for URI: $fileUri');
+
+    final response = await http.post(url, headers: headers, body: body);
+    print('Public URL response code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200 && responseData['success'] == true) {
+      final publicUrl = responseData['data'];
+      print('Public URL created: $publicUrl');
+      return publicUrl;
+    } else {
+      final msg = responseData['message'] ?? 'Failed to make file public';
+      print('Public URL error: $msg');
+      throw Exception(msg);
+    }
+  }
+
+  Future<bool> uploadRegistrationDocuments({
+    required String registrationId,
+    required List<Map<String, dynamic>> documents,
+  }) async {
+    final tokenValue = await token;
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/uploadRegisterationDocument');
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': p_key,
+      'Authorization': 'Bearer $tokenValue',
+    };
+
     final body = jsonEncode({
-      "businessAddress": businessAddress,
-      "businessCity": businessCity,
-      "businessCountry": businessCountry,
-      "businessPin": businessPin,
-      "businessState": businessState,
+      'registrationId': registrationId,
+      'document': documents,
     });
 
-    print('[Additonal Details] Sending POST request to $url with body: $body');
-    try {
-      final response = await http.post(url, headers: headers, body: body);
-      print('[Additonal Details] Response status: ${response.statusCode}');
-      final responseData = jsonDecode(response.body);
-      print('[Additonal Details] Response data: $responseData');
+    print('Uploading registration documents for ID: $registrationId');
+    print('Request Body: $body');
 
-      if (response.statusCode == 200 && responseData['success'] == true) {
-        print('[Additonal Details] Contact deatils updated successfully');
-      } else {
-        print(
-          '[Additonal Details] Additonal Details  failed: ${responseData['message']}',
-        );
-        throw Exception(
-          responseData['message'] ?? 'Cant update Additonal Details',
-        );
-      }
-    } catch (e) {
-      print('[Additonal Details] Error occurred: $e');
-      rethrow;
+    final response = await http.post(url, headers: headers, body: body);
+    print(' Response code: ${response.statusCode}');
+    print(' Response body: ${response.body}');
+
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200 && responseData['success'] == true) {
+      print(' Registration documents uploaded successfully');
+      return true;
+    } else {
+      final msg = responseData['message'] ?? 'Registration upload failed';
+      print(' Registration upload error: $msg');
+      throw Exception(msg);
     }
   }
 }

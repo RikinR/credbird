@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
-import 'package:credbird/view/profile_views/bank_details_view.dart';
 import 'package:credbird/view/profile_views/edit_account_view.dart';
-import 'package:credbird/view/profile_views/kyc_screen_view.dart';
+import 'package:credbird/view/profile_views/gst_registration_view.dart';
+import 'package:credbird/view/profile_views/kyc_view.dart';
 import 'package:credbird/view/profile_views/registration_view.dart';
 import 'package:credbird/view/profile_views/transaction_screen_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
@@ -128,21 +128,36 @@ class ProfilePageView extends StatelessWidget {
                       },
                       theme,
                     ),
-                    // const Divider(height: 1, indent: 16),
-                    // _buildProfileOption(
-                    //   context,
-                    //   Icons.verified_user_outlined,
-                    //   "KYC Verification",
-                    //   () {
-                    //     Navigator.push(
-                    //       context,
-                    //       MaterialPageRoute(
-                    //         builder: (context) => const KYCView(),
-                    //       ),
-                    //     );
-                    //   },
-                    //   theme,
-                    // ),
+                    const Divider(height: 1, indent: 16),
+                    _buildProfileOption(
+                      context,
+                      Icons.account_balance_outlined,
+                      "GST Registration",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GstRegistrationView(),
+                          ),
+                        );
+                      },
+                      theme,
+                    ),
+                    const Divider(height: 1, indent: 16),
+                    _buildProfileOption(
+                      context,
+                      Icons.verified_user_outlined,
+                      "KYC Verification",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const KYCView(),
+                          ),
+                        );
+                      },
+                      theme,
+                    ),
                     const Divider(height: 1, indent: 16),
                     Container(
                       decoration: BoxDecoration(
@@ -151,21 +166,6 @@ class ProfilePageView extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          // _buildProfileOption(
-                          //   context,
-                          //   Icons.account_balance_outlined,
-                          //   "Bank Details",
-                          //   () {
-                          //     Navigator.push(
-                          //       context,
-                          //       MaterialPageRoute(
-                          //         builder: (context) => const BankDetailsView(),
-                          //       ),
-                          //     );
-                          //   },
-                          //   theme,
-                          // ),
-                          // const Divider(height: 1, indent: 16),
                           _buildProfileOption(
                             context,
                             Icons.credit_card_outlined,
