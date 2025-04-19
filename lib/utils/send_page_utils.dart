@@ -3,35 +3,6 @@ import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-Widget buildPaymentMethodSelector(
-  BuildContext context,
-  Map<String, dynamic> theme,
-  SendMoneyViewModel viewModel,
-) {
-  return Container(
-    decoration: BoxDecoration(
-      color: theme["cardBackground"],
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: DefaultTabController(
-      length: 2,
-      child: Column(
-        children: [
-          TabBar(
-            onTap: (index) {
-              viewModel.setPaymentMethod(PaymentMethod.values[index]);
-            },
-            labelColor: theme["buttonHighlight"],
-            unselectedLabelColor: theme["secondaryText"],
-            indicatorColor: theme["buttonHighlight"],
-            tabs: const [Tab(text: "Contacts"), Tab(text: "Beneficiary")],
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 Widget buildContactSelector(
   Map<String, dynamic> theme,
   SendMoneyViewModel viewModel,

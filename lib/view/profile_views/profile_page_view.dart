@@ -2,9 +2,9 @@
 
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
 import 'package:credbird/view/profile_views/edit_account_view.dart';
-import 'package:credbird/view/profile_views/gst_registration_view.dart';
+import 'package:credbird/view/registration_views/gst_registration_view.dart';
 import 'package:credbird/view/profile_views/kyc_view.dart';
-import 'package:credbird/view/profile_views/registration_view.dart';
+import 'package:credbird/view/registration_views/registration_view.dart';
 import 'package:credbird/view/profile_views/transaction_screen_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';

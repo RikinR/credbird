@@ -3,7 +3,6 @@
 import 'package:credbird/model/beneficiary_models/beneficiray_models.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class AddBeneficiaryPage extends StatefulWidget {
@@ -39,14 +38,14 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Provider.of<ThemeProvider>(context).themeConfig;
+    final theme = Theme.of(context);
     final beneficiaryProvider = Provider.of<BeneficiaryProvider>(
       context,
       listen: false,
     );
 
     return Scaffold(
-      backgroundColor: theme["scaffoldBackground"],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Add Beneficiary",
@@ -54,7 +53,7 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: theme["textColor"],
+        iconTheme: IconThemeData(color: theme.iconTheme.color),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -67,96 +66,49 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                   controller: _nameController,
                   label: "Beneficiary's Full Name",
                   theme: theme,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter full name';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _cityController,
                   label: "City",
                   theme: theme,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter city';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _countryController,
                   label: "Country",
                   theme: theme,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter country';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _accountNumberController,
                   label: "Account Number",
                   theme: theme,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter account number';
-                    }
-                    return null;
-                  },
+                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _bankNameController,
                   label: "Bank Name",
                   theme: theme,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter bank name';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _bankAddressController,
                   label: "Bank Address",
                   theme: theme,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter bank address';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _swiftCodeController,
                   label: "SWIFT Code",
                   theme: theme,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter SWIFT code';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _ibanBsbAbaController,
                   label: "IBAN/BSB/ABA",
                   theme: theme,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter IBAN/BSB/ABA';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
@@ -174,10 +126,8 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                           bankAddress: _bankAddressController.text,
                           swiftCode: _swiftCodeController.text,
                           ibanBsbAba: _ibanBsbAbaController.text,
-                          branchName: '', 
-                          address:
-                              _bankAddressController
-                                  .text, 
+                          branchName: '',
+                          address: _bankAddressController.text,
                           isInternational: true,
                         );
 
@@ -188,9 +138,9 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                             SnackBar(
                               content: Text(
                                 "${_nameController.text} added as beneficiary",
-                                style: TextStyle(color: theme["textColor"]),
+                                style: const TextStyle(color: Colors.white),
                               ),
-                              backgroundColor: theme["positiveAmount"],
+                              backgroundColor: Colors.green,
                             ),
                           );
                           Navigator.pop(context);
@@ -199,7 +149,7 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                             SnackBar(
                               content: Text(
                                 "Failed to add beneficiary: ${beneficiaryProvider.error}",
-                                style: TextStyle(color: theme["textColor"]),
+                                style: const TextStyle(color: Colors.white),
                               ),
                               backgroundColor: Colors.red,
                             ),
@@ -208,16 +158,17 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme["textColor"],
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      foregroundColor: Colors.white,
+                      backgroundColor: theme.primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       "Save Beneficiary",
                       style: TextStyle(
-                        color: theme["backgroundColor"],
+                        fontFamily: 'Roboto',
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -234,31 +185,29 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    required Map<String, dynamic> theme,
-    String? Function(String?)? validator,
+    required ThemeData theme,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return TextFormField(
       controller: controller,
-      style: TextStyle(color: theme["textColor"]),
+      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: theme["secondaryText"]),
+        labelStyle: TextStyle(color: theme.primaryColor),
+        filled: true,
+        fillColor: theme.cardColor,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: theme["unhighlightedButton"]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: theme["unhighlightedButton"]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: theme["textColor"]!),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
       ),
-      validator: validator,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter $label';
+        }
+        return null;
+      },
     );
   }
 }

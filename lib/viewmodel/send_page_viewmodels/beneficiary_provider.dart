@@ -1,5 +1,5 @@
 import 'package:credbird/model/beneficiary_models/beneficiray_models.dart';
-import 'package:credbird/repositories/beneficiary/beneficairy_repository.dart';
+import 'package:credbird/repositories/remitence_repository/beneficairy_repository.dart';
 import 'package:flutter/material.dart';
 
 class BeneficiaryProvider extends ChangeNotifier {

@@ -1,5 +1,8 @@
 import 'package:credbird/utils/send_page_utils.dart';
+import 'package:credbird/view/send_page_views/intermediary_view.dart';
+import 'package:credbird/view/send_page_views/remittance_view/add_remitter_view.dart';
 import 'package:credbird/view/send_page_views/beneficiary_view.dart';
+import 'package:credbird/view/send_page_views/remittance_view/initiate_remittance_view.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
@@ -65,21 +68,56 @@ class _SendPageViewState extends State<SendPageView> {
         padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
         child: Column(
           children: [
-            buildPaymentMethodSelector(context, theme, viewModel),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.person_add),
+                    label: const Text("Add Remitter"),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AddRemitterScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.account_balance),
+                    label: const Text("Add Intermediary"),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AddIntermediaryScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.send),
+                    label: const Text("Full Remittance Flow"),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const InitiateRemittanceScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (viewModel.paymentMethod == PaymentMethod.contact) ...[
-                    buildContactSelector(theme, viewModel, context),
-                  ] else if (viewModel.paymentMethod ==
-                      PaymentMethod.beneficiary) ...[
-                    buildBeneficiarySelector(
-                      context,
-                      beneficiaryProvider,
-                      theme,
-                    ),
-                  ],
+                  buildBeneficiarySelector(context, beneficiaryProvider, theme),
                   buildAmountInput(theme, viewModel),
                   buildNumberPad(theme, viewModel),
                   buildConfirmButton(context, theme, viewModel),

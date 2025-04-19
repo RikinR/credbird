@@ -1,17 +1,19 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
-import 'package:credbird/model/transaction_model.dart';
+import 'package:credbird/model/remittance/transaction_create_model.dart';
+import 'package:credbird/model/remittance/transaction_model.dart';
+import 'package:credbird/repositories/remitence_repository/remittance_repository.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-enum PaymentMethod { contact, beneficiary }
+enum PaymentMethod { beneficiary }
 
 class SendMoneyViewModel extends ChangeNotifier {
   double _amount = 0.0;
   String? _selectedContact;
-  PaymentMethod _paymentMethod = PaymentMethod.contact;
+  PaymentMethod _paymentMethod = PaymentMethod.beneficiary;
   final List<String> _recentContacts = [
     "Jonas Hoffman",
     "Martha Richards",
@@ -72,15 +74,7 @@ class SendMoneyViewModel extends ChangeNotifier {
     String recipient;
     String? recipientDetails;
 
-    if (_paymentMethod == PaymentMethod.contact) {
-      if (_selectedContact == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select a contact")),
-        );
-        return false;
-      }
-      recipient = _selectedContact!;
-    } else {
+    
       final beneficiary =
           Provider.of<BeneficiaryProvider>(
             context,
@@ -95,7 +89,7 @@ class SendMoneyViewModel extends ChangeNotifier {
       recipient = beneficiary.name;
       recipientDetails =
           "${beneficiary.bankName} • ${beneficiary.accountNumber}";
-    }
+    
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -193,6 +187,68 @@ class SendMoneyViewModel extends ChangeNotifier {
   void addRecipient(String name) {
     if (name.isNotEmpty && !_recentContacts.contains(name)) {
       _recentContacts.add(name);
+      notifyListeners();
+    }
+  }
+
+  Future<void> initiateRemittanceTransaction(
+    TransactionCreateModel transaction,
+    BuildContext context,
+  ) async {
+    try {
+      
+    } catch (e) {
+      print('[initiateRemittanceTransaction] Error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+    }
+  }
+
+  final RemittanceRepository _repo = RemittanceRepository();
+
+  List<Map<String, dynamic>> remitters = [];
+  List<Map<String, dynamic>> beneficiaries = [];
+  List<Map<String, dynamic>> remittanceTypes = [];
+  List<Map<String, dynamic>> subTypes = [];
+  List<Map<String, dynamic>> intermediaries = [];
+  List<Map<String, dynamic>> currencies = [];
+
+  String? selectedRemitterId;
+  String? selectedBeneficiaryId;
+  String? selectedRemittanceTypeId;
+  String? selectedRemittanceSubTypeId;
+  String? selectedIntermediaryId;
+  String? selectedCurrencyId;
+  String purpose = "";
+  bool isLoading = false;
+
+  Future<void> loadDropdownData() async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      remitters = await _repo.getRemitterList();
+      beneficiaries = await _repo.getBeneficiaryList();
+      remittanceTypes = await _repo.getRemittanceTypes();
+      intermediaries = await _repo.getIntermediaryList();
+      currencies = await _repo.getCurrencyList();
+    } catch (e) {
+      print("Error loading dropdowns: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadSubTypes(String remittanceTypeId) async {
+    selectedRemittanceSubTypeId = null;
+    notifyListeners();
+    try {
+      subTypes = await _repo.getRemittanceSubTypes(remittanceTypeId);
+    } catch (e) {
+      print("Failed to load subtypes");
+    } finally {
       notifyListeners();
     }
   }

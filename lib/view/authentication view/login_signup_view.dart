@@ -5,7 +5,7 @@ import 'package:credbird/view/authentication%20view/otp_verification_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:credbird/view/landing_page_view.dart';
+import 'package:credbird/view/initial_views/landing_page_view.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 
 class LoginSignupView extends StatefulWidget {

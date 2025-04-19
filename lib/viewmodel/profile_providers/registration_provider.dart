@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:credbird/model/registration_model.dart';
-import 'package:credbird/repositories/registration_repository.dart';
+import 'package:credbird/model/registration_models/registration_model.dart';
+import 'package:credbird/repositories/user_repository/registration_repository.dart';
 
 class RegistrationProvider with ChangeNotifier {
   final RegistrationRepository _repository = RegistrationRepository();

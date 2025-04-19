@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
-import 'package:credbird/model/transaction_model.dart';
+import 'package:credbird/model/remittance/transaction_model.dart';
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
-import 'package:credbird/view/card_view.dart';
+import 'package:credbird/view/initial_views/card_view.dart';
 import 'package:credbird/view/home_page_views/forex_rates_view.dart';
 import 'package:credbird/view/home_page_views/international_tourist_view.dart';
 import 'package:credbird/view/profile_views/profile_page_view.dart';

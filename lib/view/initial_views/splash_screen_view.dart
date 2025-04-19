@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
-import 'package:credbird/view/landing_page_view.dart';
-import 'package:credbird/view/onboarding_screen_view.dart';
+import 'package:credbird/view/initial_views/landing_page_view.dart';
+import 'package:credbird/view/initial_views/onboarding_screen_view.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:credbird/viewmodel/usage_provider.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';

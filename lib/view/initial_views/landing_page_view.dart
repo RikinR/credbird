@@ -109,7 +109,7 @@ class LandingPageView extends StatelessWidget {
                 scale: isSelected ? 1.1 : 1.0,
                 child: Icon(
                       icon,
-                      size: 24, // Slightly larger size for Material icons
+                      size: 24, 
                       color:
                           isSelected ? const Color(0xFFFFD700) : Colors.white,
                     )

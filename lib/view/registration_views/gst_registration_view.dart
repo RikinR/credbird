@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/profile_providers/gst_registration_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
-import 'package:credbird/view/profile_views/registration_success_view.dart';
+import 'package:credbird/view/registration_views/registration_success_view.dart';
 
 class GstRegistrationView extends StatelessWidget {
   const GstRegistrationView({super.key});

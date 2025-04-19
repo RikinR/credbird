@@ -1,4 +1,4 @@
-import 'package:credbird/view/card_view.dart';
+import 'package:credbird/view/initial_views/card_view.dart';
 import 'package:credbird/view/home_page_views/home_page_view.dart';
 import 'package:credbird/view/receive_page_view.dart';
 import 'package:credbird/view/send_page_views/send_page_view.dart';

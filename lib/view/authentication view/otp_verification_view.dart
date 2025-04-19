@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
-import 'package:credbird/view/landing_page_view.dart';
+import 'package:credbird/view/initial_views/landing_page_view.dart';
 
 class OtpVerificationView extends StatefulWidget {
   final String email;

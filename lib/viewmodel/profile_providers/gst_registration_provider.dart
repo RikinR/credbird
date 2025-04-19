@@ -1,5 +1,5 @@
-import 'package:credbird/model/gst_registration_model.dart';
-import 'package:credbird/repositories/registration_repository.dart';
+import 'package:credbird/model/registration_models/gst_registration_model.dart';
+import 'package:credbird/repositories/user_repository/registration_repository.dart';
 import 'package:flutter/material.dart';
 
 class GstRegistrationProvider with ChangeNotifier {

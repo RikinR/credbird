@@ -1,12 +1,14 @@
 import 'package:credbird/repositories/auth_repository/auth_repository.dart';
 import 'package:credbird/viewmodel/profile_providers/kyc_provider.dart';
+import 'package:credbird/viewmodel/send_page_viewmodels/intermediary_provider.dart';
+import 'package:credbird/viewmodel/send_page_viewmodels/remitter_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:credbird/view/splash_screen_view.dart';
+import 'package:credbird/view/initial_views/splash_screen_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/card_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/forex_rates_provider.dart';
@@ -42,6 +44,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ForexRatesViewModel()),
         ChangeNotifierProvider(create: (_) => BeneficiaryProvider()),
         ChangeNotifierProvider(create: (_) => KYCProvider()),
+        ChangeNotifierProvider(create: (_) => RemitterProvider()),
+        ChangeNotifierProvider(create: (_) => IntermediaryProvider()),
       ],
       child: const MyApp(),
     ),

@@ -1,4 +1,4 @@
-import 'package:credbird/model/transaction_model.dart';
+import 'package:credbird/model/remittance/transaction_model.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
