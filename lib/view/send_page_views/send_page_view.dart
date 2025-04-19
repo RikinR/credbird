@@ -79,8 +79,6 @@ class _SendPageViewState extends State<SendPageView> {
                       beneficiaryProvider,
                       theme,
                     ),
-                  ] else ...[
-                    buildCredBirdIdInput(theme, viewModel),
                   ],
                   buildAmountInput(theme, viewModel),
                   buildNumberPad(theme, viewModel),

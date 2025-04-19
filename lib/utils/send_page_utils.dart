@@ -14,7 +14,7 @@ Widget buildPaymentMethodSelector(
       borderRadius: BorderRadius.circular(8),
     ),
     child: DefaultTabController(
-      length: 3,
+      length: 2,
       child: Column(
         children: [
           TabBar(
@@ -24,11 +24,7 @@ Widget buildPaymentMethodSelector(
             labelColor: theme["buttonHighlight"],
             unselectedLabelColor: theme["secondaryText"],
             indicatorColor: theme["buttonHighlight"],
-            tabs: const [
-              Tab(text: "Contacts"),
-              Tab(text: "CredBird ID"),
-              Tab(text: "Beneficiary"),
-            ],
+            tabs: const [Tab(text: "Contacts"), Tab(text: "Beneficiary")],
           ),
         ],
       ),
@@ -70,39 +66,6 @@ Widget buildContactSelector(
             buildAddContactItem(theme, () => viewModel.addNewContact(context)),
           ],
         ),
-      ),
-    ],
-  );
-}
-
-Widget buildCredBirdIdInput(
-  Map<String, dynamic> theme,
-  SendMoneyViewModel viewModel,
-) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 24),
-      Text(
-        "Recipient CredBird ID",
-        style: TextStyle(
-          color: theme["textColor"],
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      const SizedBox(height: 8),
-      TextField(
-        controller: viewModel.credBirdIdController,
-        decoration: InputDecoration(
-          hintText: "@username",
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          prefixIcon: Icon(
-            Icons.person_outline,
-            color: theme["buttonHighlight"],
-          ),
-        ),
-        style: TextStyle(color: theme["textColor"]),
       ),
     ],
   );
@@ -337,7 +300,7 @@ Widget buildBeneficiarySelector(
       ),
       const SizedBox(height: 8),
       SizedBox(
-        height: 100, 
+        height: 100,
         child:
             provider.beneficiaries.isEmpty
                 ? const Center(child: Text("No beneficiaries added"))

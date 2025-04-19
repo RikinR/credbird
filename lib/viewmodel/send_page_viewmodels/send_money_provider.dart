@@ -1,4 +1,3 @@
-
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:credbird/model/transaction_model.dart';
@@ -7,7 +6,7 @@ import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dar
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-enum PaymentMethod { contact, credBirdId, beneficiary }
+enum PaymentMethod { contact, beneficiary }
 
 class SendMoneyViewModel extends ChangeNotifier {
   double _amount = 0.0;
@@ -21,7 +20,6 @@ class SendMoneyViewModel extends ChangeNotifier {
     "Alex Smith",
   ];
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController credBirdIdController = TextEditingController();
 
   double get amount => _amount;
   String? get selectedContact => _selectedContact;
@@ -82,9 +80,12 @@ class SendMoneyViewModel extends ChangeNotifier {
         return false;
       }
       recipient = _selectedContact!;
-    } 
-    else if (_paymentMethod == PaymentMethod.beneficiary) {
-      final beneficiary = Provider.of<BeneficiaryProvider>(context, listen: false).selectedBeneficiary;
+    } else {
+      final beneficiary =
+          Provider.of<BeneficiaryProvider>(
+            context,
+            listen: false,
+          ).selectedBeneficiary;
       if (beneficiary == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please select a beneficiary")),
@@ -92,47 +93,40 @@ class SendMoneyViewModel extends ChangeNotifier {
         return false;
       }
       recipient = beneficiary.name;
-      recipientDetails = "${beneficiary.bankName} • ${beneficiary.accountNumber}";
-    }
-    else {
-      if (credBirdIdController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please enter a CredBird ID")),
-        );
-        return false;
-      }
-      recipient = credBirdIdController.text;
+      recipientDetails =
+          "${beneficiary.bankName} • ${beneficiary.accountNumber}";
     }
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Confirm Payment"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Send \$${_amount.toStringAsFixed(2)} to $recipient?"),
-            if (recipientDetails != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                recipientDetails,
-                style: Theme.of(context).textTheme.bodySmall,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Confirm Payment"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Send \$${_amount.toStringAsFixed(2)} to $recipient?"),
+                if (recipientDetails != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    recipientDetails,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Confirm"),
               ),
             ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Confirm"),
-          ),
-        ],
-      ),
     );
 
     if (confirmed != true) return false;
@@ -148,15 +142,16 @@ class SendMoneyViewModel extends ChangeNotifier {
       ),
     );
     homeViewModel.addFunds(-_amount);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Sent \$${_amount.toStringAsFixed(2)} to $recipient")),
+      SnackBar(
+        content: Text("Sent \$${_amount.toStringAsFixed(2)} to $recipient"),
+      ),
     );
 
     _amount = 0.0;
     amountController.clear();
     _selectedContact = null;
-    credBirdIdController.clear();
     Provider.of<BeneficiaryProvider>(context, listen: false).clearSelection();
     notifyListeners();
 
@@ -167,26 +162,27 @@ class SendMoneyViewModel extends ChangeNotifier {
     final nameController = TextEditingController();
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Add New Contact"),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(
-            hintText: "Enter full name",
-            border: OutlineInputBorder(),
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Add New Contact"),
+            content: TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                hintText: "Enter full name",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Add"),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Add"),
-          ),
-        ],
-      ),
     );
 
     if (result == true && nameController.text.isNotEmpty) {
@@ -204,7 +200,6 @@ class SendMoneyViewModel extends ChangeNotifier {
   @override
   void dispose() {
     amountController.dispose();
-    credBirdIdController.dispose();
     super.dispose();
   }
 }

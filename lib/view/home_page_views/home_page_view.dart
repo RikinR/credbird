@@ -52,10 +52,8 @@ class _HomePageViewState extends State<HomePageView>
       _appBarController.animateTo(targetOpacity);
     });
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-    if (authViewModel.additionalDetails == null) {
-      authViewModel.fetchUserDetails();
-    }
 
+    authViewModel.fetchUserDetails();
   }
 
   @override
