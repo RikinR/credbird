@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'dart:convert';
+
 import 'package:credbird/model/remittance/transaction_create_model.dart';
 import 'package:credbird/model/remittance/transaction_model.dart';
 import 'package:credbird/repositories/remitence_repository/remittance_repository.dart';
@@ -22,11 +24,18 @@ class SendMoneyViewModel extends ChangeNotifier {
     "Alex Smith",
   ];
   final TextEditingController amountController = TextEditingController();
+  final TextEditingController purposeController =
+      TextEditingController(); 
+  String _nostroCharge = 'SHA'; 
 
   double get amount => _amount;
   String? get selectedContact => _selectedContact;
   PaymentMethod get paymentMethod => _paymentMethod;
   List<String> get recentContacts => _recentContacts;
+  String get nostroCharge => _nostroCharge;
+  String get purpose =>
+      purposeController.text; 
+  set purpose(String value) => purposeController.text = value;
 
   void updateAmount(double newAmount) {
     _amount = newAmount;
@@ -63,6 +72,13 @@ class SendMoneyViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setNostroCharge(String? value) {
+    if (value != null) {
+      _nostroCharge = value;
+      notifyListeners();
+    }
+  }
+
   Future<bool> sendMoney(BuildContext context) async {
     if (_amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -74,22 +90,19 @@ class SendMoneyViewModel extends ChangeNotifier {
     String recipient;
     String? recipientDetails;
 
-    
-      final beneficiary =
-          Provider.of<BeneficiaryProvider>(
-            context,
-            listen: false,
-          ).selectedBeneficiary;
-      if (beneficiary == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select a beneficiary")),
-        );
-        return false;
-      }
-      recipient = beneficiary.name;
-      recipientDetails =
-          "${beneficiary.bankName} • ${beneficiary.accountNumber}";
-    
+    final beneficiary =
+        Provider.of<BeneficiaryProvider>(
+          context,
+          listen: false,
+        ).selectedBeneficiary;
+    if (beneficiary == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a beneficiary")),
+      );
+      return false;
+    }
+    recipient = beneficiary.name;
+    recipientDetails = "${beneficiary.bankName} • ${beneficiary.accountNumber}";
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -191,20 +204,6 @@ class SendMoneyViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> initiateRemittanceTransaction(
-    TransactionCreateModel transaction,
-    BuildContext context,
-  ) async {
-    try {
-      
-    } catch (e) {
-      print('[initiateRemittanceTransaction] Error: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
-    }
-  }
-
   final RemittanceRepository _repo = RemittanceRepository();
 
   List<Map<String, dynamic>> remitters = [];
@@ -220,8 +219,8 @@ class SendMoneyViewModel extends ChangeNotifier {
   String? selectedRemittanceSubTypeId;
   String? selectedIntermediaryId;
   String? selectedCurrencyId;
-  String purpose = "";
   bool isLoading = false;
+  String? transactionError; 
 
   Future<void> loadDropdownData() async {
     isLoading = true;
@@ -253,9 +252,150 @@ class SendMoneyViewModel extends ChangeNotifier {
     }
   }
 
+  // Future<void> createRemittanceTransaction(BuildContext context) async {
+  //   isLoading = true;
+  //   transactionError = null;
+  //   notifyListeners();
+  //   if (selectedRemitterId == null ||
+  //       selectedBeneficiaryId == null ||
+  //       selectedRemittanceTypeId == null ||
+  //       selectedRemittanceSubTypeId == null ||
+  //       selectedCurrencyId == null ||
+  //       purpose.isEmpty ||
+  //       _amount <= 0 ||
+  //       _nostroCharge.isEmpty) {
+  //     transactionError = "Please fill in all the required fields.";
+  //     isLoading = false;
+  //     notifyListeners();
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text(transactionError!)));
+  //     return;
+  //   }
+  //   final transaction = TransactionCreateModel(
+  //     remitterId: selectedRemitterId!,
+  //     beneficiaryId: selectedBeneficiaryId!,
+  //     remittanceTypeId: selectedRemittanceTypeId!,
+  //     remittanceSubTypeId: selectedRemittanceSubTypeId!,
+  //     intermediaryId: selectedIntermediaryId,
+  //     currencyId: selectedCurrencyId!,
+  //     amount: _amount,
+  //     purpose: purpose,
+  //     nostroCharge: _nostroCharge,
+  //     invoices: [
+  //       Invoice(
+  //         invoiceId: "773733",
+  //         totalAmount: 2882.0,
+  //         remainingAmount: 0.0,
+  //         paidAmount: _amount,
+  //         reason: "Advance /Partial payment",
+  //         showReason: true,
+  //       ),
+  //     ],
+  //     lrsList: [
+  //       Lrs(
+  //         address: "",
+  //         addressPlaceHolder:
+  //             "Enter comma separated Name and address of transactions done outside platform",
+  //         datesPlaceHolder:
+  //             "Enter comma separated dates of transactions done outside platform",
+  //         amount: "",
+  //         dates: "",
+  //         usdAmount: 0,
+  //         info: "Transaction Done outside the Pay2Remit in 23-24",
+  //         disabled: false,
+  //       ),
+  //       Lrs(
+  //         address: "",
+  //         amount: "",
+  //         addressPlaceHolder:
+  //             "Name and address will appear automatically after transaction completed.",
+  //         datesPlaceHolder:
+  //             "Dates will appear automatically after transaction completed.",
+  //         dates: "",
+  //         usdAmount: 0,
+  //         info: "Transaction Done from the Pay2Remit in 23-24",
+  //         disabled: true,
+  //       ),
+  //     ],
+  //   );
+  //   try {
+  //     final response = await _repo.createTransaction(transaction);
+  //     print('Transaction created successfully: $response');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Transaction initiated successfully!")),
+  //     );
+  //   } catch (e) {
+  //     print('[createRemittanceTransaction] Error: $e');
+  //     if (e is Exception) {
+  //       try {
+  //         final responseData = jsonDecode(e.toString().split(': ')[1]);
+  //         if (responseData['success'] == false &&
+  //             responseData['error'] != null &&
+  //             responseData['error']['msg'] ==
+  //                 "Complete you kyc first to start remittance") {
+  //           showDialog(
+  //             context: context,
+  //             builder:
+  //                 (BuildContext context) => AlertDialog(
+  //                   title: const Text("KYC Required"),
+  //                   content: const Text(
+  //                     "Complete your KYC first to create a transaction.",
+  //                   ),
+  //                   actions: <Widget>[
+  //                     TextButton(
+  //                       child: const Text("OK"),
+  //                       onPressed: () {
+  //                         Navigator.of(context).pop();
+  //                       },
+  //                     ),
+  //                   ],
+  //                 ),
+  //           );
+  //           transactionError = "KYC Required";
+  //           return;
+  //         } else {
+  //           transactionError = e.toString();
+  //           ScaffoldMessenger.of(
+  //             context,
+  //           ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+  //         }
+  //       } catch (jsonError) {
+  //         showDialog(
+  //           context: context,
+  //           builder:
+  //               (BuildContext context) => AlertDialog(
+  //                 title: const Text("KYC Required"),
+  //                 content: const Text(
+  //                   "Complete your KYC first to create a transaction.",
+  //                 ),
+  //                 actions: <Widget>[
+  //                   TextButton(
+  //                     child: const Text("OK"),
+  //                     onPressed: () {
+  //                       Navigator.of(context).pop();
+  //                     },
+  //                   ),
+  //                 ],
+  //               ),
+  //         );
+  //       }
+  //     } else {
+  //       transactionError = e.toString();
+  //       ScaffoldMessenger.of(
+  //         context,
+  //       ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+  //     }
+  //   } finally {
+  //     isLoading = false;
+  //     notifyListeners();
+  //   }
+  // }
+
   @override
   void dispose() {
     amountController.dispose();
+    purposeController.dispose();
     super.dispose();
   }
 }

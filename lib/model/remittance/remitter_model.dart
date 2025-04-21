@@ -3,7 +3,7 @@ class RemitterModel {
   final String remitterPan;
   final String panVerifiedId;
   final String remitterName;
-  final double tcsRate;
+  final double? tcsRate;
   final String remitterAddressProofType;
   final String remitterAddressProof;
   final String? placeOfIssue;
@@ -12,15 +12,16 @@ class RemitterModel {
   final String mobile;
   final String emailId;
   final String address;
-  final String country;
-  final String state;
   final String city;
+  final String state;
+  final String country;
   final String pin;
-  final String? relationship;
   final String accountNumber;
   final String ifsc;
   final String accountName;
   final String accountVerifiedId;
+  
+  final String? relationship;
   final String? travellerFullName;
   final String? passportNo;
   final String? studentPlaceOfIssue;
@@ -33,7 +34,7 @@ class RemitterModel {
     required this.remitterPan,
     required this.panVerifiedId,
     required this.remitterName,
-    required this.tcsRate,
+    this.tcsRate,
     required this.remitterAddressProofType,
     required this.remitterAddressProof,
     this.placeOfIssue,
@@ -42,15 +43,15 @@ class RemitterModel {
     required this.mobile,
     required this.emailId,
     required this.address,
-    required this.country,
-    required this.state,
     required this.city,
+    required this.state,
+    required this.country,
     required this.pin,
-    this.relationship,
     required this.accountNumber,
     required this.ifsc,
     required this.accountName,
     required this.accountVerifiedId,
+    this.relationship,
     this.travellerFullName,
     this.passportNo,
     this.studentPlaceOfIssue,
@@ -60,35 +61,46 @@ class RemitterModel {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      "remitterType": remitterType,
-      "remitterPan": remitterPan,
-      "panVerifiedId": panVerifiedId,
-      "remitterName": remitterName,
-      "tcsRate": tcsRate,
-      "remitterAddressProofType": remitterAddressProofType,
-      "remitterAddressProof": remitterAddressProof,
-      if (placeOfIssue != null) "placeOfIssue": placeOfIssue,
-      if (dateOfIssue != null) "dateOfIssue": dateOfIssue,
-      if (dateOfExpiry != null) "dateOfExpiry": dateOfExpiry,
-      "mobile": mobile,
-      "emailId": emailId,
-      "address": address,
-      "country": country,
-      "state": state,
-      "city": city,
-      "pin": pin,
-      if (relationship != null) "relationship": relationship,
-      "accountNumber": accountNumber,
-      "Ifsc": ifsc,
-      "accountName": accountName,
-      "accountVerifiedId": accountVerifiedId,
-      if (travellerFullName != null) "travellerFullName": travellerFullName,
-      if (passportNo != null) "passportNo": passportNo,
-      if (studentPlaceOfIssue != null) "studentPlaceOfIssue": studentPlaceOfIssue,
-      if (studentDateOfIssue != null) "studentDateOfIssue": studentDateOfIssue,
-      if (studentDateOfExpiry != null) "studentDateOfExpiry": studentDateOfExpiry,
-      if (studentAddress != null) "studentAddress": studentAddress,
+    final map = <String, dynamic>{
+      'remitterType': remitterType,
+      'remitterPan': remitterPan,
+      'panVerifiedId': panVerifiedId,
+      'remitterName': remitterName,
+      'tcsRate': tcsRate,
+      'remitterAddressProofType': remitterAddressProofType,
+      'remitterAddressProof': remitterAddressProof,
+      'mobile': mobile,
+      'emailId': emailId,
+      'address': address,
+      'city': city,
+      'state': state,
+      'country': country,
+      'pin': pin,
+      'accountNumber': accountNumber,
+      'ifsc': ifsc,
+      'accountName': accountName,
+      'accountVerifiedId': accountVerifiedId,
     };
+
+    if (remitterType == 'Self') {
+      map.addAll({
+        'placeOfIssue': placeOfIssue,
+        'dateOfIssue': dateOfIssue,
+        'dateOfExpiry': dateOfExpiry,
+      });
+    } else if (remitterType == 'Guardian') {
+      map.addAll({
+        'relationship': relationship,
+        'travellerFullName': travellerFullName,
+        'passportNo': passportNo,
+        'studentPlaceOfIssue': studentPlaceOfIssue,
+        'studentDateOfIssue': studentDateOfIssue,
+        'studentDateOfExpiry': studentDateOfExpiry,
+        'studentAddress': studentAddress,
+      });
+    }
+
+    return map;
   }
+
 }

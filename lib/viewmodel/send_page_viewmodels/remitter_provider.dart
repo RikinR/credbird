@@ -16,6 +16,7 @@ class RemitterProvider extends ChangeNotifier {
   String? get remitterId => _remitterId;
 
   Future<void> createRemitter({
+    required String remitterType,
     required String pan,
     required String accountNumber,
     required String ifsc,
@@ -26,6 +27,17 @@ class RemitterProvider extends ChangeNotifier {
     required String state,
     required String country,
     required String pin,
+    String? relationship,
+    String? travellerFullName,
+    String? passportNo,
+    String? studentPlaceOfIssue,
+    String? studentDateOfIssue,
+    String? studentDateOfExpiry,
+    String? studentAddress,
+    String? remitterAddressProof,
+    String? placeOfIssue,
+    String? dateOfIssue,
+    String? dateOfExpiry,
   }) async {
     _isLoading = true;
     _error = null;
@@ -36,23 +48,39 @@ class RemitterProvider extends ChangeNotifier {
       final bankData = await _regRepo.verifyBankDetails(accountNumber, ifsc);
 
       final remitter = RemitterModel(
-        remitterType: "Self",
+        remitterType: remitterType,
         remitterPan: pan,
         panVerifiedId: panData['verifiedId'],
         remitterName: panData['full_name'],
-        tcsRate: panData['tcs_rate']?.toDouble() ?? 5,
-        remitterAddressProofType: "Passport", 
-        remitterAddressProof: "YOUR_PASSPORT_NO",
-        placeOfIssue: "DELHI",
-        dateOfIssue: "2020-01-01",
-        dateOfExpiry: "2030-01-01",
+        tcsRate: panData['tcs_rate']?.toDouble(),
+        remitterAddressProofType:
+            remitterType == 'Self' ? 'Passport' : 'Aadhar',
+        remitterAddressProof: remitterAddressProof ?? '',
+
+        placeOfIssue: remitterType == 'Self' ? placeOfIssue : null,
+        dateOfIssue: remitterType == 'Self' ? dateOfIssue : null,
+        dateOfExpiry: remitterType == 'Self' ? dateOfExpiry : null,
+
         mobile: mobile,
         emailId: email,
         address: address,
-        city: city,
-        state: state,
         country: country,
+        state: state,
+        city: city,
         pin: pin,
+
+        relationship: remitterType == 'Guardian' ? relationship : null,
+        travellerFullName:
+            remitterType == 'Guardian' ? travellerFullName : null,
+        passportNo: remitterType == 'Guardian' ? passportNo : null,
+        studentPlaceOfIssue:
+            remitterType == 'Guardian' ? studentPlaceOfIssue : null,
+        studentDateOfIssue:
+            remitterType == 'Guardian' ? studentDateOfIssue : null,
+        studentDateOfExpiry:
+            remitterType == 'Guardian' ? studentDateOfExpiry : null,
+        studentAddress: remitterType == 'Guardian' ? studentAddress : null,
+
         accountNumber: accountNumber,
         ifsc: ifsc,
         accountName: bankData['full_name'],
@@ -68,4 +96,6 @@ class RemitterProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+
 }

@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously, unused_element, deprecated_member_use
 
+import 'package:credbird/view/registration_views/registration_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
-import 'package:credbird/view/initial_views/landing_page_view.dart';
 
 class OtpVerificationView extends StatefulWidget {
   final String email;
@@ -51,7 +51,7 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LandingPageView()),
+        MaterialPageRoute(builder: (context) => const RegistrationView()),
       );
     } catch (e) {
       _showErrorSnackbar(context, 'Could not verify the OTP');

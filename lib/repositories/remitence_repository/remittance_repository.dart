@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:credbird/model/remittance/remitter_model.dart';
+import 'package:credbird/model/remittance/transaction_create_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +11,7 @@ class RemittanceRepository {
   late final String baseUrl;
   late final String apiPrefix;
   late final String pKey;
-  late final Future<String?> token;
+  late final Future<String?> token; //
 
   RemittanceRepository() {
     baseUrl = dotenv.get('API_DOMAIN');
@@ -56,7 +57,7 @@ class RemittanceRepository {
     final url = Uri.parse('$baseUrl$apiPrefix/directory/remittanceType');
     final headers = {
       'p-key': pKey,
-      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue'
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
     };
 
     print('[getRemittanceTypes] Fetching remittance types from $url');
@@ -70,12 +71,16 @@ class RemittanceRepository {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getRemittanceSubTypes(String remittanceTypeId) async {
+  Future<List<Map<String, dynamic>>> getRemittanceSubTypes(
+    String remittanceTypeId,
+  ) async {
     final tokenValue = await token;
-    final url = Uri.parse('$baseUrl$apiPrefix/directory/remittanceSubType?remittanceTypeId=$remittanceTypeId');
+    final url = Uri.parse(
+      '$baseUrl$apiPrefix/directory/remittanceSubType?remittanceTypeId=$remittanceTypeId',
+    );
     final headers = {
       'p-key': pKey,
-      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue'
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
     };
 
     print('[getRemittanceSubTypes] Fetching subtypes for $remittanceTypeId');
@@ -91,10 +96,12 @@ class RemittanceRepository {
 
   Future<List<Map<String, dynamic>>> getRemitterList() async {
     final tokenValue = await token;
-    final url = Uri.parse('$baseUrl$apiPrefix/directory/remitter?view=dropdown');
+    final url = Uri.parse(
+      '$baseUrl$apiPrefix/directory/remitter?view=dropdown',
+    );
     final headers = {
       'p-key': pKey,
-      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue'
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
     };
 
     print('[getRemitterList] Fetching remitter list');
@@ -110,10 +117,12 @@ class RemittanceRepository {
 
   Future<List<Map<String, dynamic>>> getBeneficiaryList() async {
     final tokenValue = await token;
-    final url = Uri.parse('$baseUrl$apiPrefix/directory/beneficiary?view=dropdown');
+    final url = Uri.parse(
+      '$baseUrl$apiPrefix/directory/beneficiary?view=dropdown',
+    );
     final headers = {
       'p-key': pKey,
-      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue'
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
     };
 
     print('[getBeneficiaryList] Fetching beneficiary list');
@@ -129,10 +138,12 @@ class RemittanceRepository {
 
   Future<List<Map<String, dynamic>>> getIntermediaryList() async {
     final tokenValue = await token;
-    final url = Uri.parse('$baseUrl$apiPrefix/directory/intermediary?view=dropdown');
+    final url = Uri.parse(
+      '$baseUrl$apiPrefix/directory/intermediary?view=dropdown',
+    );
     final headers = {
       'p-key': pKey,
-      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue'
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
     };
 
     print('[getIntermediaryList] Fetching intermediary list');
@@ -148,10 +159,12 @@ class RemittanceRepository {
 
   Future<List<Map<String, dynamic>>> getCurrencyList() async {
     final tokenValue = await token;
-    final url = Uri.parse('$baseUrl$apiPrefix/p-access/currency?pageSize=100&page=1');
+    final url = Uri.parse(
+      '$baseUrl$apiPrefix/p-access/currency?pageSize=100&page=1',
+    );
     final headers = {
       'p-key': pKey,
-      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue'
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
     };
 
     print('[getCurrencyList] Fetching currency list');
@@ -167,10 +180,12 @@ class RemittanceRepository {
 
   Future<Map<String, dynamic>> getTcsData(String pan) async {
     final tokenValue = await token;
-    final url = Uri.parse('$baseUrl$apiPrefix/p-access/getTcsData?panNumber=$pan');
+    final url = Uri.parse(
+      '$baseUrl$apiPrefix/p-access/getTcsData?panNumber=$pan',
+    );
     final headers = {
       'p-key': pKey,
-      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue'
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
     };
 
     print('[getTcsData] Fetching TCS data for PAN: $pan');
@@ -184,4 +199,51 @@ class RemittanceRepository {
     }
   }
 
- }
+  Future<Map<String, dynamic>> createTransaction(
+    TransactionCreateModel data,
+  ) async {
+    final tokenValue = await token;
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/transaction');
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': pKey,
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
+    };
+
+    final body = jsonEncode(data.toJson());
+    print('[createTransaction] Request URL: $url');
+    print('[createTransaction] Request Headers: ${headers.keys.join(', ')}');
+    print('[createTransaction] Request Body: $body');
+
+    final response = await http.post(url, headers: headers, body: body);
+    print('[createTransaction] Response Status: ${response.statusCode}');
+
+    final responseData = jsonDecode(response.body);
+    print('[createTransaction] Response Data: $responseData');
+
+    if (response.statusCode == 200 && responseData['success'] == true) {
+      return responseData['data'];
+    } else {
+      throw Exception(responseData['message'] ?? 'Transaction creation failed');
+    }
+  }
+
+  Future<Map<String, dynamic>> getRemitterById(String remitterId) async {
+    final tokenValue = await token;
+    final url = Uri.parse('$baseUrl$apiPrefix/directory/remitter/$remitterId');
+    final headers = {
+      'p-key': pKey,
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
+    };
+
+    print('[getRemitterById] Fetching remitter by ID: $remitterId');
+    final response = await http.get(url, headers: headers);
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && responseData['success'] == true) {
+      return responseData['data'];
+    } else {
+      throw Exception('Failed to fetch remitter by ID');
+    }
+  }
+}

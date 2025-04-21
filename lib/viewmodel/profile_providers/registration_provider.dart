@@ -130,13 +130,15 @@ class RegistrationProvider with ChangeNotifier {
     }
   }
 
-  Future<void> submitRegistration() async {
+  Future<bool> submitRegistration() async {
     _setLoading(true);
     try {
       await _repository.completeRegistration(_registrationData);
       goToStep(4);
+      return true;
     } catch (e) {
       _setError(e.toString());
+      return false;
     } finally {
       _setLoading(false);
     }

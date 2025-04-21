@@ -1,3 +1,4 @@
+import 'package:credbird/view/profile_views/kyc_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/profile_providers/registration_provider.dart';
@@ -43,17 +44,25 @@ class _RegistrationStepper extends StatelessWidget {
 
     return Stepper(
       currentStep: provider.currentStep,
-      onStepContinue: () async {
-        if (provider.currentStep == 0) {
-          provider.goToStep(1);
-        } else if (provider.currentStep == 1) {
-          await provider.verifyPan();
-        } else if (provider.currentStep == 2) {
-          await provider.verifyBankDetails();
-        } else if (provider.currentStep == 3) {
-          await provider.submitRegistration();
-        }
-      },
+onStepContinue: () async {
+  if (provider.currentStep == 0) {
+    provider.goToStep(1);
+  } else if (provider.currentStep == 1) {
+    await provider.verifyPan();
+  } else if (provider.currentStep == 2) {
+    await provider.verifyBankDetails();
+  } else if (provider.currentStep == 3) {
+    bool success = await provider.submitRegistration();
+    if (success && context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const KYCView(),
+        ),
+      );
+    }
+  }
+},
       onStepCancel: () {
         if (provider.currentStep > 0) {
           provider.goToStep(provider.currentStep - 1);

@@ -16,6 +16,7 @@ class Beneficiary {
   final String country;
   final String bankAddress;
   final String? ibanBsbAba;
+  final bool? isActivated;
 
   Beneficiary({
     required this.id,
@@ -23,6 +24,7 @@ class Beneficiary {
     required this.accountNumber,
     required this.bankName,
     required this.branchName,
+    this.isActivated =true,
     this.ifscCode,
     this.swiftCode,
     this.iban,

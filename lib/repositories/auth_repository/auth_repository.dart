@@ -109,7 +109,10 @@ class AuthRepository {
   }) async {
     final url = Uri.parse('$baseUrl$apiPrefix/p-access/verifyOtp');
     final headers = {'Content-Type': 'application/json', 'p-key': p_key};
-    final body = jsonEncode({'username': username, 'otp': otp});
+
+    int _otp = int.parse(otp);
+
+    final body = jsonEncode({'username': username, 'otp': _otp});
 
     print('[verifyOtp] Sending POST request to $url with body: $body');
     try {

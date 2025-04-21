@@ -1,7 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
+import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 Widget buildContactSelector(
   Map<String, dynamic> theme,
@@ -259,71 +263,146 @@ Widget buildBeneficiarySelector(
   BeneficiaryProvider provider,
   Map<String, dynamic> theme,
 ) {
-  final selected = provider.selectedBeneficiary;
-
+  final selectedId = provider.selectedBeneficiary?.id;
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const SizedBox(height: 16),
-      const Text(
-        "Select Beneficiary",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      const Padding(
+        padding: EdgeInsets.only(top: 16, bottom: 8),
+        child: Text("Select Beneficiary"),
       ),
-      const SizedBox(height: 8),
       SizedBox(
         height: 100,
-        child:
-            provider.beneficiaries.isEmpty
-                ? const Center(child: Text("No beneficiaries added"))
-                : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: provider.beneficiaries.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final beneficiary = provider.beneficiaries[index];
-                    final isSelected = beneficiary.id == selected?.id;
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: provider.beneficiaries.length,
+          itemBuilder: (context, index) {
+            final b = provider.beneficiaries[index];
+            final isSelected = b.id == selectedId;
 
-                    return GestureDetector(
-                      onTap: () => provider.selectBeneficiary(beneficiary),
-                      child: Column(
-                        children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundColor:
-                                isSelected
-                                    ? theme["positiveAmount"]
-                                    : theme["unhighlightedButton"],
-                            child: Text(
-                              _getInitials(beneficiary.name),
-                              style: TextStyle(
-                                color: theme["backgroundColor"],
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          SizedBox(
-                            width: 70,
-                            child: Text(
-                              beneficiary.name.split(' ').first,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color:
-                                    isSelected
-                                        ? theme["textColor"]
-                                        : theme["secondaryText"],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+            return GestureDetector(
+              onTap: () {
+                provider.selectBeneficiary(b);
+              },
+              onLongPress: () {
+                _showBeneficiaryDetail(context, b.id);
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isSelected ? theme['primary'] : theme['cardColor'],
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.grey.shade300,
+                      radius: 20,
+                      child: Text(
+                        _getInitials(b.name),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      b.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: isSelected ? 14 : 12,
+                        color:
+                            isSelected
+                                ? const Color.fromARGB(255, 102, 7, 255)
+                                : theme['textColor'],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     ],
+  );
+}
+
+void _showBeneficiaryDetail(BuildContext context, String beneficiaryId) async {
+  final provider = Provider.of<BeneficiaryProvider>(context, listen: false);
+  final theme = Provider.of<ThemeProvider>(context, listen: false).themeConfig;
+  final beneficiary = await provider.fetchBeneficiaryDetailById(beneficiaryId);
+
+  if (beneficiary == null) return;
+
+  showDialog(
+    context: context,
+    builder:
+        (_) => AlertDialog(
+          title: Text(
+            beneficiary.name,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Bank: ${beneficiary.bankName}",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              Text(
+                "Account: ${beneficiary.accountNumber}",
+                style: TextStyle(fontSize: 18),
+              ),
+              Text("City: ${beneficiary.city}", style: TextStyle(fontSize: 18)),
+              Text(
+                "Country: ${beneficiary.country}",
+                style: TextStyle(fontSize: 18),
+              ),
+              Text(
+                "SWIFT: ${beneficiary.swiftCode}",
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                icon: Icon(
+                  beneficiary.isActivated! ? Icons.block : Icons.check_circle,
+                  color: beneficiary.isActivated! ? Colors.red : Colors.green,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme["primary"],
+                ),
+                onPressed: () async {
+                  final updated = await provider.toggleBeneficiaryActivation(
+                    beneficiaryId,
+                    !beneficiary.isActivated!,
+                  );
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        updated
+                            ? "Beneficiary status updated"
+                            : "Update failed",
+                      ),
+                    ),
+                  );
+                  await provider.fetchBeneficiaries();
+                },
+                label: Text(
+                  beneficiary.isActivated! ? "Deactivate" : "Activate",
+                  style: TextStyle(
+                    color: beneficiary.isActivated! ? Colors.red : Colors.green,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
   );
 }
 

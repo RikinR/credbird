@@ -13,7 +13,6 @@ class InitiateRemittanceScreen extends StatefulWidget {
 }
 
 class _InitiateRemittanceScreenState extends State<InitiateRemittanceScreen> {
-  final TextEditingController _purposeController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
 
   @override
@@ -51,32 +50,32 @@ class _InitiateRemittanceScreenState extends State<InitiateRemittanceScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildDropdown("Remitter", viewModel.remitters, (val) {
-                      viewModel.selectedRemitterId = val;
+                      viewModel.selectedRemitterId = val.toString();
                     }, theme),
                     _buildDropdown("Beneficiary", viewModel.beneficiaries, (
                       val,
                     ) {
-                      viewModel.selectedBeneficiaryId = val;
+                      viewModel.selectedBeneficiaryId = val.toString();
                     }, theme),
                     _buildDropdown(
                       "Remittance Type",
                       viewModel.remittanceTypes,
                       (val) {
-                        viewModel.selectedRemittanceTypeId = val;
-                        viewModel.loadSubTypes(val!);
+                        viewModel.selectedRemittanceTypeId = val.toString();
+                        viewModel.loadSubTypes(val.toString());
                       },
                       theme,
                     ),
                     _buildDropdown("Remittance Sub-Type", viewModel.subTypes, (
                       val,
                     ) {
-                      viewModel.selectedRemittanceSubTypeId = val;
+                      viewModel.selectedRemittanceSubTypeId = val.toString();
                     }, theme),
                     _buildDropdown(
                       "Intermediary",
                       viewModel.intermediaries,
                       (val) {
-                        viewModel.selectedIntermediaryId = val;
+                        viewModel.selectedIntermediaryId = val.toString();
                       },
                       theme,
                       labelKey: "intermediaryBankName",
@@ -85,14 +84,27 @@ class _InitiateRemittanceScreenState extends State<InitiateRemittanceScreen> {
                       "Currency",
                       viewModel.currencies,
                       (val) {
-                        viewModel.selectedCurrencyId = val;
+                        viewModel.selectedCurrencyId = val.toString();
                       },
                       theme,
                       labelKey: "currency",
                     ),
+                    _buildDropdown<String>(
+                      "Nostro Charge",
+                      const [
+                        "SHA",
+                        "BEN",
+                        "OUR",
+                      ].map((e) => {"name": e, "_id": e}).toList(),
+                      (val) {
+                        viewModel.setNostroCharge(val);
+                      },
+                      theme,
+                      labelKey: "name",
+                    ),
                     const SizedBox(height: 16),
                     TextFormField(
-                      controller: _purposeController,
+                      controller: viewModel.purposeController,
                       decoration: InputDecoration(
                         labelText: "Purpose",
                         labelStyle: TextStyle(color: theme.primaryColor),
@@ -140,7 +152,19 @@ class _InitiateRemittanceScreenState extends State<InitiateRemittanceScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed:
+                          viewModel.selectedRemitterId != null &&
+                                  viewModel.selectedBeneficiaryId != null &&
+                                  viewModel.selectedRemittanceTypeId != null &&
+                                  viewModel.selectedRemittanceSubTypeId !=
+                                      null &&
+                                  viewModel.selectedCurrencyId != null &&
+                                  viewModel.purpose.isNotEmpty &&
+                                  viewModel.amount > 0 &&
+                                  viewModel.nostroCharge.isNotEmpty
+                              ? () =>
+                                  viewModel.createRemittanceTransaction(context)
+                              : null,
                       child: const Text(
                         "Create Transaction",
                         style: TextStyle(
@@ -149,22 +173,30 @@ class _InitiateRemittanceScreenState extends State<InitiateRemittanceScreen> {
                         ),
                       ),
                     ),
+                    if (viewModel.transactionError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          viewModel.transactionError!,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
                   ],
                 ),
               ),
     );
   }
 
-  Widget _buildDropdown(
+  Widget _buildDropdown<T>(
     String label,
     List<Map<String, dynamic>> items,
-    void Function(String?) onChanged,
+    void Function(T?) onChanged,
     ThemeData theme, {
     String labelKey = 'name',
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: DropdownButtonFormField<String>(
+      child: DropdownButtonFormField<T>(
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: theme.primaryColor),
@@ -183,8 +215,8 @@ class _InitiateRemittanceScreenState extends State<InitiateRemittanceScreen> {
                   item["benificiaryName"] ??
                   item["remitterName"] ??
                   "Unnamed";
-              return DropdownMenuItem<String>(
-                value: item["_id"],
+              return DropdownMenuItem<T>(
+                value: item["_id"] as T?, 
                 child: Text(
                   displayText,
                   style: const TextStyle(fontFamily: 'Roboto'),

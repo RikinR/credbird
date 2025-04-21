@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:credbird/view/initial_views/landing_page_view.dart';
 import 'package:credbird/viewmodel/profile_providers/kyc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -72,7 +73,19 @@ class _KYCViewState extends State<KYCView> {
         title: const Text("KYC Verification"),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: theme["textColor"],
+        foregroundColor: theme["textColor"],actions: [ if (!isSubmitted)
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LandingPageView()),
+              );
+            },
+            child: Text(
+              "Skip",
+              style: TextStyle(color: theme["textColor"]),
+            ),
+          ),],
       ),
       body:
           registrationId == null
