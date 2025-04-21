@@ -144,6 +144,56 @@ class RegistrationProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> saveVerifiedBankDetail({required bool refundAccount}) async {
+    try {
+      final bank = _registrationData.bankDetails.first;
+
+      final result = await _repository.addOrUpdateBankDetail(
+        accountNumber: bank.accountNumber,
+        ifsc: bank.ifsc,
+        accountName: bank.accountName,
+        verifiedId: bank.verifiedId,
+        refundAccount: refundAccount,
+        status: "ACTIVE",
+      );
+
+      return result;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyBankDetailsAndReturn(
+    String accountNumber,
+    String ifsc,
+  ) async {
+    return await _repository.verifyBankDetails(accountNumber, ifsc);
+  }
+
+  Future<bool> submitBankDetail({
+    required String accountNumber,
+    required String ifsc,
+    required String accountName,
+    required String verifiedId,
+    required bool refundAccount,
+    String? id, 
+  }) async {
+    try {
+      final result = await _repository.addOrUpdateBankDetail(
+        accountNumber: accountNumber,
+        ifsc: ifsc,
+        accountName: accountName,
+        verifiedId: verifiedId,
+        refundAccount: refundAccount,
+        id: id,
+      );
+      return result;
+    } catch (e) {
+      throw Exception("Failed to submit bank detail: $e");
+    }
+  }
+
   void goToStep(int step) {
     _currentStep = step;
     notifyListeners();

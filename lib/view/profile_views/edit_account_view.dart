@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, unused_local_variable
 
-import 'package:credbird/model/user_models/addtional_details.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
+
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -39,42 +39,16 @@ class _AccountEditFormState extends State<_AccountEditForm> {
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
   late TextEditingController _addressController;
-  late TextEditingController _businessAddressController;
-  late TextEditingController _businessCityController;
-  late TextEditingController _businessStateController;
-  late TextEditingController _businessPinController;
-  late TextEditingController _businessCountryController;
 
   @override
   void initState() {
     super.initState();
     final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
-    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
     _nameController = TextEditingController(text: homeViewModel.userName);
     _emailController = TextEditingController(text: homeViewModel.userEmail);
     _phoneController = TextEditingController(text: homeViewModel.userPhone);
     _addressController = TextEditingController(text: homeViewModel.userAddress);
-
-    _businessAddressController = TextEditingController(
-      text: authViewModel.additionalDetails?.businessAddress,
-    );
-    _businessCityController = TextEditingController(
-      text: authViewModel.additionalDetails?.businessCity,
-    );
-    _businessStateController = TextEditingController(
-      text: authViewModel.additionalDetails?.businessState,
-    );
-    _businessPinController = TextEditingController(
-      text: authViewModel.additionalDetails?.businessPin,
-    );
-    _businessCountryController = TextEditingController(
-      text: authViewModel.additionalDetails?.businessCountry,
-    );
-
-    if (authViewModel.additionalDetails == null) {
-      authViewModel.fetchUserDetails();
-    }
   }
 
   @override
@@ -83,11 +57,6 @@ class _AccountEditFormState extends State<_AccountEditForm> {
     _emailController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    _businessAddressController.dispose();
-    _businessCityController.dispose();
-    _businessStateController.dispose();
-    _businessPinController.dispose();
-    _businessCountryController.dispose();
     super.dispose();
   }
 
@@ -95,7 +64,6 @@ class _AccountEditFormState extends State<_AccountEditForm> {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
     final homeViewModel = Provider.of<HomeViewModel>(context);
-    final authViewModel = Provider.of<AuthViewModel>(context);
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -118,7 +86,6 @@ class _AccountEditFormState extends State<_AccountEditForm> {
               "Enter your email",
               _emailController,
               Icons.email,
-              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -127,7 +94,6 @@ class _AccountEditFormState extends State<_AccountEditForm> {
               "Enter your phone number",
               _phoneController,
               Icons.phone,
-              keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -138,75 +104,8 @@ class _AccountEditFormState extends State<_AccountEditForm> {
               Icons.home,
               maxLines: 3,
             ),
-            const SizedBox(height: 24),
-            Text(
-              "Business Details",
-              style: TextStyle(
-                color: theme["textColor"],
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              context,
-              "Business Address",
-              "Enter your business address",
-              _businessAddressController,
-              Icons.location_on,
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    context,
-                    "City",
-                    "Enter city",
-                    _businessCityController,
-                    Icons.location_city,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    context,
-                    "State",
-                    "Enter state",
-                    _businessStateController,
-                    Icons.map,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    context,
-                    "PIN Code",
-                    "Enter PIN code",
-                    _businessPinController,
-                    Icons.pin,
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    context,
-                    "Country",
-                    "Enter country",
-                    _businessCountryController,
-                    Icons.public,
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 32),
-            _buildSaveButton(context, homeViewModel, authViewModel, theme),
+            _buildSaveButton(context, homeViewModel, theme),
           ],
         ),
       ),
@@ -216,63 +115,43 @@ class _AccountEditFormState extends State<_AccountEditForm> {
   Widget _buildSaveButton(
     BuildContext context,
     HomeViewModel homeViewModel,
-    AuthViewModel authViewModel,
     Map<String, dynamic> theme,
   ) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed:
-            homeViewModel.isAccountLoading || authViewModel.isLoading
+            homeViewModel.isAccountLoading
                 ? null
                 : () async {
+                  final authViewModel = Provider.of<AuthViewModel>(
+                    context,
+                    listen: false,
+                  );
                   try {
-                    final hasContactChanged =
-                        _nameController.text != authViewModel.userName ||
-                        _emailController.text != authViewModel.userEmail ||
-                        _phoneController.text != authViewModel.phone;
-
-                    final AdditionalDetailsModel newDetails =
-                        AdditionalDetailsModel(
-                          businessAddress: _businessAddressController.text,
-                          businessCity: _businessCityController.text,
-                          businessState: _businessStateController.text,
-                          businessPin: _businessPinController.text,
-                          businessCountry: _businessCountryController.text,
-                        );
-
-                    final oldDetails = authViewModel.additionalDetails;
-                    final hasBusinessChanged =
-                        oldDetails == null ||
-                        oldDetails.businessAddress !=
-                            newDetails.businessAddress ||
-                        oldDetails.businessCity != newDetails.businessCity ||
-                        oldDetails.businessState != newDetails.businessState ||
-                        oldDetails.businessPin != newDetails.businessPin ||
-                        oldDetails.businessCountry !=
-                            newDetails.businessCountry;
-
-                    if (hasBusinessChanged) {
-                      await authViewModel.updateAdditionalDetails(newDetails);
-                    }
+                    await authViewModel.updateContactDetails(
+                      name: _nameController.text,
+                      email: _emailController.text,
+                      mobile: _phoneController.text,
+                    );
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Profile updated successfully'),
+                        content: Text('Contact details updated successfully'),
                       ),
                     );
-
                     Navigator.pop(context);
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Error updating profile: ${e.toString()}',
+                          'Error updating contact details: ${e.toString()}',
                         ),
                       ),
                     );
                   }
                 },
+
         style: ElevatedButton.styleFrom(
           backgroundColor: theme["textColor"],
           padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
@@ -281,7 +160,7 @@ class _AccountEditFormState extends State<_AccountEditForm> {
           ),
         ),
         child:
-            homeViewModel.isAccountLoading || authViewModel.isLoading
+            homeViewModel.isAccountLoading
                 ? CircularProgressIndicator(color: theme["backgroundColor"])
                 : Text(
                   "Save Changes",

@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'package:credbird/model/remittance/transaction_model.dart';
+import 'package:credbird/model/user_models/dashboard_count.dart';
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
 import 'package:credbird/view/initial_views/card_view.dart';
 import 'package:credbird/view/home_page_views/forex_rates_view.dart';
@@ -9,6 +10,7 @@ import 'package:credbird/view/profile_views/profile_page_view.dart';
 import 'package:credbird/view/send_page_views/send_page_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/card_provider.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/dashboard_viewmodel.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/forex_rates_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/international_tourist_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
@@ -18,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
+import 'package:intl/intl.dart';
 
 class HomePageView extends StatefulWidget {
   const HomePageView({super.key});
@@ -301,6 +304,8 @@ class _HomePageViewState extends State<HomePageView>
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  _buildDashboardStats(context, theme),
                   const SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(
@@ -368,6 +373,7 @@ class _HomePageViewState extends State<HomePageView>
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.all(16),
@@ -479,7 +485,7 @@ class _HomePageViewState extends State<HomePageView>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    homeViewModel.userEmail ?? "",
+                    authViewModel.userEmail ?? "",
                     style: TextStyle(
                       color: theme["textColor"],
                       fontSize: 14,
@@ -796,5 +802,168 @@ class _HomePageViewState extends State<HomePageView>
         ),
       ),
     );
+  }
+
+  Widget _buildDashboardStats(
+    BuildContext context,
+    Map<String, dynamic> theme,
+  ) {
+    final dashboardVm = Provider.of<DashboardViewModel>(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme["cardBackground"],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.2), width: 1),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Transaction Summary",
+                style: TextStyle(
+                  color: theme["textColor"],
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.calendar_today,
+                  size: 20,
+                  color: theme["textColor"],
+                ),
+                onPressed: () => _showDateRangePicker(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (dashboardVm.fromDate != null && dashboardVm.toDate != null)
+            Text(
+              "${DateFormat('MMM d, y').format(dashboardVm.fromDate!)} - ${DateFormat('MMM d, y').format(dashboardVm.toDate!)}",
+              style: TextStyle(color: theme["secondaryText"], fontSize: 12),
+            ),
+          const SizedBox(height: 16),
+          if (dashboardVm.isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (dashboardVm.error != null)
+            Text(dashboardVm.error!, style: TextStyle(color: Colors.red))
+          else if (dashboardVm.dashboardCount != null)
+            _buildStatsGrid(dashboardVm.dashboardCount!, theme)
+          else
+            Text(
+              "Select a date range to view stats",
+              style: TextStyle(color: theme["secondaryText"]),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid(DashboardCount count, Map<String, dynamic> theme) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      childAspectRatio: 2.5,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      children: [
+        _buildStatItem("Total", count.totalTransactions.toString(), theme),
+        _buildStatItem(
+          "Successful",
+          count.successfulTransactions.toString(),
+          theme,
+          isSuccess: true,
+        ),
+        _buildStatItem(
+          "Failed",
+          count.failedTransactions.toString(),
+          theme,
+          isError: true,
+        ),
+        _buildStatItem(
+          "Pending",
+          count.pendingTransactions.toString(),
+          theme,
+          isPending: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatItem(
+    String label,
+    String value,
+    Map<String, dynamic> theme, {
+    bool isSuccess = false,
+    bool isError = false,
+    bool isPending = false,
+  }) {
+    Color color;
+    if (isSuccess) {
+      color = Colors.green;
+    } else if (isError) {
+      color = Colors.red;
+    } else if (isPending) {
+      color = Colors.orange;
+    } else {
+      color = theme["textColor"] ?? Colors.black;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            style: TextStyle(color: theme["secondaryText"], fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showDateRangePicker(BuildContext context) async {
+    final dashboardVm = Provider.of<DashboardViewModel>(context, listen: false);
+    final initialFromDate =
+        dashboardVm.fromDate ??
+        DateTime.now().subtract(const Duration(days: 30));
+    final initialToDate = dashboardVm.toDate ?? DateTime.now();
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: DateTimeRange(
+        start: initialFromDate,
+        end: initialToDate,
+      ),
+    );
+
+    if (picked != null) {
+      dashboardVm.setFromDate(picked.start);
+      dashboardVm.setToDate(picked.end);
+      dashboardVm.fetchDashboardCount();
+    }
   }
 }

@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
+import 'package:credbird/view/profile_views/bank_detail_view.dart';
+import 'package:credbird/view/profile_views/business_details_view.dart';
 import 'package:credbird/view/profile_views/edit_account_view.dart';
 import 'package:credbird/view/registration_views/gst_registration_view.dart';
 import 'package:credbird/view/profile_views/kyc_view.dart';
@@ -108,6 +110,36 @@ class ProfilePageView extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => const AccountEditView(),
+                          ),
+                        );
+                      },
+                      theme,
+                    ),
+                    const Divider(height: 1, indent: 16),
+                    _buildProfileOption(
+                      context,
+                      Icons.business_outlined,
+                      "Business Details",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const BusinessDetailsView(),
+                          ),
+                        );
+                      },
+                      theme,
+                    ),
+                    const Divider(height: 1, indent: 16),
+                    _buildProfileOption(
+                      context,
+                      Icons.account_balance,
+                      "Update Bank Detail",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const BankDetailsView(),
                           ),
                         );
                       },

@@ -383,4 +383,49 @@ class RegistrationRepository {
       throw Exception('Failed to complete registration: $e');
     }
   }
+
+  Future<bool> addOrUpdateBankDetail({
+    required String accountNumber,
+    required String ifsc,
+    required String accountName,
+    required String verifiedId,
+    required bool refundAccount,
+    String? id,
+    String verifiedStatus = "PENDING",
+    String status = "ACTIVE",
+  }) async {
+    final tokenValue = await token;
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/addUpdateBankDetail');
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'p-key': pKey,
+      if (tokenValue != null) 'Authorization': 'Bearer $tokenValue',
+    };
+
+    final body = {
+      "accountNumber": accountNumber,
+      "ifsc": ifsc,
+      "accountName": accountName,
+      "verifiedId": verifiedId,
+      "refundAccount": refundAccount,
+      "verifiedStatus": verifiedStatus,
+      "status": status,
+    };
+
+    if (id != null) body["_id"] = id;
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode(body),
+    );
+
+    final json = jsonDecode(response.body);
+    if (response.statusCode == 200 && json['success'] == true) {
+      return true;
+    } else {
+      throw Exception(json['message'] ?? 'Failed to add/update bank detail');
+    }
+  }
 }

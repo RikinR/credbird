@@ -1,17 +1,34 @@
-class BankModel {
-  final String? accountNumber;
-  final String? ifsc;
-  final String? accountName;
-  final bool? refundAccount;
-  final String? verifiedStatus;
-  final String? status;
+class BankDetail {
+  final String accountNumber;
+  final String ifsc;
+  final String accountName;
+  final String verifiedId;
+  final bool refundAccount;
+  final String status;
+  final String verifiedStatus;
+  final String? id;
 
-  BankModel({
-    this.accountNumber,
-    this.ifsc,
-    this.accountName,
+  BankDetail({
+    required this.accountNumber,
+    required this.ifsc,
+    required this.accountName,
+    required this.verifiedId,
     this.refundAccount = false,
-    this.verifiedStatus = "PENDING",
-    this.status = "ACTIVE",
+    this.status = 'ACTIVE',
+    this.verifiedStatus = 'PENDING',
+    this.id,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      "accountNumber": accountNumber,
+      "ifsc": ifsc,
+      "accountName": accountName,
+      "verifiedId": verifiedId,
+      "refundAccount": refundAccount,
+      "status": status,
+      "verifiedStatus": verifiedStatus,
+      if (id != null) "_id": id,
+    };
+  }
 }

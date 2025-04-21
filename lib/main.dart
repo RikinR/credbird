@@ -1,5 +1,8 @@
 import 'package:credbird/repositories/auth_repository/auth_repository.dart';
+import 'package:credbird/repositories/user_repository/dashboard_repository.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/dashboard_viewmodel.dart';
 import 'package:credbird/viewmodel/profile_providers/kyc_provider.dart';
+import 'package:credbird/viewmodel/profile_providers/registration_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/intermediary_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/remitter_provider.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +49,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => KYCProvider()),
         ChangeNotifierProvider(create: (_) => RemitterProvider()),
         ChangeNotifierProvider(create: (_) => IntermediaryProvider()),
+        ChangeNotifierProvider(
+          create: (context) => DashboardViewModel(DashboardRepository()),
+        ),
+        ChangeNotifierProvider(create: (_) => RegistrationProvider()),
       ],
       child: const MyApp(),
     ),

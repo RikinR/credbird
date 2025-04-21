@@ -398,7 +398,7 @@ class AuthViewModel extends ChangeNotifier {
         name: name,
         email: email,
         mobile: mobile,
-        id: _userId!,
+        id: _contactId!,
       );
 
       _userName = name;

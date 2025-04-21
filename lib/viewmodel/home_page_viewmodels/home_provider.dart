@@ -133,6 +133,7 @@ class HomeViewModel extends ChangeNotifier {
     }
 
     _isAccountLoading = false;
+    
     notifyListeners();
   }
 
