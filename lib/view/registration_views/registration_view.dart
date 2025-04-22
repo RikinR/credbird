@@ -24,7 +24,7 @@ class RegistrationView extends StatelessWidget {
         body: Consumer<RegistrationProvider>(
           builder: (context, provider, _) {
             if (provider.currentStep == 4) {
-              return const RegistrationSuccessScreen();
+              return const KYCView();
             }
             return const _RegistrationStepper();
           },

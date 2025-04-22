@@ -1,5 +1,6 @@
 import 'package:credbird/utils/send_page_utils.dart';
 import 'package:credbird/view/send_page_views/intermediary_view.dart';
+import 'package:credbird/view/send_page_views/invoices_view.dart';
 import 'package:credbird/view/send_page_views/remittance_view/add_remitter_view.dart';
 import 'package:credbird/view/send_page_views/beneficiary_view.dart';
 import 'package:credbird/view/send_page_views/remittance_view/initiate_remittance_view.dart';
@@ -74,6 +75,18 @@ class _SendPageViewState extends State<SendPageView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ElevatedButton.icon(
+                    icon: const Icon(Icons.paypal_rounded),
+                    label: const Text("See invoices"),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const InvoiceListView(),
+                        ),
+                      );
+                    },
+                  ),
+                  ElevatedButton.icon(
                     icon: const Icon(Icons.person_add),
                     label: const Text("Add Remitter"),
                     onPressed: () {
@@ -99,7 +112,7 @@ class _SendPageViewState extends State<SendPageView> {
                   ),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.send),
-                    label: const Text("Full Remittance Flow"),
+                    label: const Text("Remitt Money! "),
                     onPressed: () {
                       Navigator.push(
                         context,
