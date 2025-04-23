@@ -1,9 +1,9 @@
 import 'package:credbird/utils/send_page_utils.dart';
-import 'package:credbird/view/send_page_views/intermediary_view.dart';
-import 'package:credbird/view/send_page_views/invoices_view.dart';
+import 'package:credbird/view/send_page_views/remittance_view/initate_remittance_views/initate_remittance_flow_view.dart';
+import 'package:credbird/view/send_page_views/remittance_view/intermediary_view.dart';
+import 'package:credbird/view/send_page_views/remittance_view/invoices_view.dart';
 import 'package:credbird/view/send_page_views/remittance_view/add_remitter_view.dart';
-import 'package:credbird/view/send_page_views/beneficiary_view.dart';
-import 'package:credbird/view/send_page_views/remittance_view/initiate_remittance_view.dart';
+import 'package:credbird/view/send_page_views/remittance_view/beneficiary_view.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
@@ -117,7 +117,7 @@ class _SendPageViewState extends State<SendPageView> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const InitiateRemittanceScreen(),
+                          builder: (_) => const RemittanceFlow(),
                         ),
                       );
                     },

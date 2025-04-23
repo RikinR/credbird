@@ -1,6 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, avoid_print
-
-import 'dart:convert';
+// ignore_for_file: use_build_context_synchronously, avoid_print, curly_braces_in_flow_control_structures
 
 import 'package:credbird/model/remittance/transaction_create_model.dart';
 import 'package:credbird/model/remittance/transaction_model.dart';
@@ -24,17 +22,15 @@ class SendMoneyViewModel extends ChangeNotifier {
     "Alex Smith",
   ];
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController purposeController =
-      TextEditingController(); 
-  String _nostroCharge = 'SHA'; 
+  final TextEditingController purposeController = TextEditingController();
+  String _nostroCharge = 'SHA';
 
   double get amount => _amount;
   String? get selectedContact => _selectedContact;
   PaymentMethod get paymentMethod => _paymentMethod;
   List<String> get recentContacts => _recentContacts;
   String get nostroCharge => _nostroCharge;
-  String get purpose =>
-      purposeController.text; 
+  String get purpose => purposeController.text;
   set purpose(String value) => purposeController.text = value;
 
   void updateAmount(double newAmount) {
@@ -213,6 +209,9 @@ class SendMoneyViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> intermediaries = [];
   List<Map<String, dynamic>> currencies = [];
 
+  List<Map<String, dynamic>> lrsList = [];
+  List<Map<String, dynamic>> invoices = [];
+
   String? selectedRemitterId;
   String? selectedBeneficiaryId;
   String? selectedRemittanceTypeId;
@@ -220,7 +219,21 @@ class SendMoneyViewModel extends ChangeNotifier {
   String? selectedIntermediaryId;
   String? selectedCurrencyId;
   bool isLoading = false;
-  String? transactionError; 
+  String? transactionError;
+
+  bool educationDeclaration = false;
+  String? educationDeclarationNumber;
+  double educationDeclarationAmount = 0.0;
+
+  void addLRSInfo(Map<String, dynamic> lrsInfo) {
+    lrsList.add(lrsInfo);
+    notifyListeners();
+  }
+
+  void addInvoice(Map<String, dynamic> invoice) {
+    invoices.add(invoice);
+    notifyListeners();
+  }
 
   Future<void> loadDropdownData() async {
     isLoading = true;
@@ -252,145 +265,123 @@ class SendMoneyViewModel extends ChangeNotifier {
     }
   }
 
-  // Future<void> createRemittanceTransaction(BuildContext context) async {
-  //   isLoading = true;
-  //   transactionError = null;
-  //   notifyListeners();
-  //   if (selectedRemitterId == null ||
-  //       selectedBeneficiaryId == null ||
-  //       selectedRemittanceTypeId == null ||
-  //       selectedRemittanceSubTypeId == null ||
-  //       selectedCurrencyId == null ||
-  //       purpose.isEmpty ||
-  //       _amount <= 0 ||
-  //       _nostroCharge.isEmpty) {
-  //     transactionError = "Please fill in all the required fields.";
-  //     isLoading = false;
-  //     notifyListeners();
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(SnackBar(content: Text(transactionError!)));
-  //     return;
-  //   }
-  //   final transaction = TransactionCreateModel(
-  //     remitterId: selectedRemitterId!,
-  //     beneficiaryId: selectedBeneficiaryId!,
-  //     remittanceTypeId: selectedRemittanceTypeId!,
-  //     remittanceSubTypeId: selectedRemittanceSubTypeId!,
-  //     intermediaryId: selectedIntermediaryId,
-  //     currencyId: selectedCurrencyId!,
-  //     amount: _amount,
-  //     purpose: purpose,
-  //     nostroCharge: _nostroCharge,
-  //     invoices: [
-  //       Invoice(
-  //         invoiceId: "773733",
-  //         totalAmount: 2882.0,
-  //         remainingAmount: 0.0,
-  //         paidAmount: _amount,
-  //         reason: "Advance /Partial payment",
-  //         showReason: true,
-  //       ),
-  //     ],
-  //     lrsList: [
-  //       Lrs(
-  //         address: "",
-  //         addressPlaceHolder:
-  //             "Enter comma separated Name and address of transactions done outside platform",
-  //         datesPlaceHolder:
-  //             "Enter comma separated dates of transactions done outside platform",
-  //         amount: "",
-  //         dates: "",
-  //         usdAmount: 0,
-  //         info: "Transaction Done outside the Pay2Remit in 23-24",
-  //         disabled: false,
-  //       ),
-  //       Lrs(
-  //         address: "",
-  //         amount: "",
-  //         addressPlaceHolder:
-  //             "Name and address will appear automatically after transaction completed.",
-  //         datesPlaceHolder:
-  //             "Dates will appear automatically after transaction completed.",
-  //         dates: "",
-  //         usdAmount: 0,
-  //         info: "Transaction Done from the Pay2Remit in 23-24",
-  //         disabled: true,
-  //       ),
-  //     ],
-  //   );
-  //   try {
-  //     final response = await _repo.createTransaction(transaction);
-  //     print('Transaction created successfully: $response');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text("Transaction initiated successfully!")),
-  //     );
-  //   } catch (e) {
-  //     print('[createRemittanceTransaction] Error: $e');
-  //     if (e is Exception) {
-  //       try {
-  //         final responseData = jsonDecode(e.toString().split(': ')[1]);
-  //         if (responseData['success'] == false &&
-  //             responseData['error'] != null &&
-  //             responseData['error']['msg'] ==
-  //                 "Complete you kyc first to start remittance") {
-  //           showDialog(
-  //             context: context,
-  //             builder:
-  //                 (BuildContext context) => AlertDialog(
-  //                   title: const Text("KYC Required"),
-  //                   content: const Text(
-  //                     "Complete your KYC first to create a transaction.",
-  //                   ),
-  //                   actions: <Widget>[
-  //                     TextButton(
-  //                       child: const Text("OK"),
-  //                       onPressed: () {
-  //                         Navigator.of(context).pop();
-  //                       },
-  //                     ),
-  //                   ],
-  //                 ),
-  //           );
-  //           transactionError = "KYC Required";
-  //           return;
-  //         } else {
-  //           transactionError = e.toString();
-  //           ScaffoldMessenger.of(
-  //             context,
-  //           ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
-  //         }
-  //       } catch (jsonError) {
-  //         showDialog(
-  //           context: context,
-  //           builder:
-  //               (BuildContext context) => AlertDialog(
-  //                 title: const Text("KYC Required"),
-  //                 content: const Text(
-  //                   "Complete your KYC first to create a transaction.",
-  //                 ),
-  //                 actions: <Widget>[
-  //                   TextButton(
-  //                     child: const Text("OK"),
-  //                     onPressed: () {
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                   ),
-  //                 ],
-  //               ),
-  //         );
-  //       }
-  //     } else {
-  //       transactionError = e.toString();
-  //       ScaffoldMessenger.of(
-  //         context,
-  //       ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
-  //     }
-  //   } finally {
-  //     isLoading = false;
-  //     notifyListeners();
-  //   }
-  // }
+  Future<void> createRemittanceTransaction(BuildContext context) async {
+    isLoading = true;
+    transactionError = null;
+    notifyListeners();
+
+    List<String> missingFields = [];
+
+    if (selectedRemitterId == null) missingFields.add("Remitter");
+    if (selectedBeneficiaryId == null) missingFields.add("Beneficiary");
+    if (selectedRemittanceTypeId == null) missingFields.add("Remittance Type");
+    if (selectedRemittanceSubTypeId == null)
+      missingFields.add("Remittance Sub-Type");
+    if (selectedCurrencyId == null) missingFields.add("Currency");
+    if (purpose.isEmpty) missingFields.add("Purpose");
+    if (_nostroCharge.isEmpty) missingFields.add("Nostro Charge");
+
+    if (invoices.isEmpty && !educationDeclaration) {
+      missingFields.add("Invoice or Education Declaration");
+    }
+
+    if (educationDeclaration &&
+        (educationDeclarationNumber == null ||
+            educationDeclarationNumber!.isEmpty)) {
+      missingFields.add("Education Declaration Number");
+    }
+
+    if (missingFields.isNotEmpty) {
+      transactionError = "Missing: ${missingFields.join(', ')}";
+      isLoading = false;
+      notifyListeners();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(transactionError!)));
+      return;
+    }
+
+    if (invoices.isEmpty && lrsList.isEmpty) {
+      transactionError = "Please add either an invoice or LRS information.";
+      isLoading = false;
+      notifyListeners();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(transactionError!)));
+      return;
+    }
+
+    try {
+      final List<Invoice> invoiceModels =
+          invoices.map((invoice) {
+            final double total = invoice['totalAmount'];
+            final double paid = invoice['transferAmount'];
+            return Invoice(
+              invoiceId: invoice['invoiceId'],
+              totalAmount: total,
+              remainingAmount: total - paid,
+              paidAmount: paid,
+              reason:
+                  paid < total
+                      ? "Advance /Partial payment"
+                      : "Completed payment",
+              showReason: paid < total,
+            );
+          }).toList();
+
+      final List<Lrs> lrsModels =
+          lrsList.map((lrs) {
+            return Lrs(
+              address: lrs['address'] ?? "",
+              addressPlaceHolder: lrs['addressPlaceHolder'] ?? "",
+              datesPlaceHolder: lrs['datesPlaceHolder'] ?? "",
+              amount: lrs['amount'] ?? "",
+              dates: lrs['dates'] ?? "",
+              usdAmount:
+                  lrs['usdAmount'] is double
+                      ? lrs['usdAmount']
+                      : double.tryParse('${lrs['usdAmount']}') ?? 0,
+              info: lrs['info'] ?? "",
+              disabled: lrs['disabled'] ?? false,
+            );
+          }).toList();
+
+      final model = TransactionCreateModel(
+        remitterId: selectedRemitterId!,
+        beneficiaryId: selectedBeneficiaryId!,
+        remittanceTypeId: selectedRemittanceTypeId!,
+        remittanceSubTypeId: selectedRemittanceSubTypeId!,
+        intermediaryId: selectedIntermediaryId,
+        currencyId: selectedCurrencyId!,
+        amount: _amount,
+        purpose: purpose,
+        nostroCharge: _nostroCharge,
+        invoices: invoiceModels,
+        lrsList: lrsModels,
+        //   educationDeclaration: educationDeclaration,
+        //   educationDeclarationNumber:
+        //       educationDeclaration ? educationDeclarationNumber : null,
+        //   educationDeclarationAmount:
+        //       educationDeclaration ? educationDeclarationAmount : null,
+      );
+
+      final response = await _repo.createTransaction(model);
+
+      print('✅ Transaction created: $response');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Transaction initiated successfully!")),
+      );
+    } catch (e) {
+      print("❌ Error creating transaction: $e");
+      transactionError = e.toString();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 
   @override
   void dispose() {

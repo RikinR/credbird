@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/profile_providers/registration_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
-import 'package:credbird/view/registration_views/registration_success_view.dart';
 
 class RegistrationView extends StatelessWidget {
   const RegistrationView({super.key});

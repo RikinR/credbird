@@ -198,7 +198,7 @@ class _HomePageViewState extends State<HomePageView>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Hi, ${homeViewModel.userName}👋",
+                          "Hi, ${authViewModel.userName}👋",
                           style: TextStyle(
                             color: theme["textColor"],
                             fontSize: 24,
@@ -475,7 +475,7 @@ class _HomePageViewState extends State<HomePageView>
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    homeViewModel.userName,
+                    authViewModel.userName! ?? "",
                     style: TextStyle(
                       color: theme["textColor"],
                       fontSize: 20,
