@@ -218,7 +218,7 @@ class ProfilePageView extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder:
                                       (context) =>
-                                          const TransactionHistoryView(),
+                                          const TransactionScreenView(),
                                 ),
                               );
                             },

@@ -1,101 +1,160 @@
-import 'package:credbird/model/remittance/transaction_model.dart';
-import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
-import 'package:credbird/viewmodel/theme_provider.dart';
+import 'package:credbird/model/user_models/api_transaction_model.dart';
+import 'package:credbird/utils/transaction_detail_dialog.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/transaction_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
-class TransactionHistoryView extends StatelessWidget {
-  const TransactionHistoryView({super.key});
+class TransactionScreenView extends StatefulWidget {
+  const TransactionScreenView({super.key});
+
+  @override
+  State<TransactionScreenView> createState() => _TransactionScreenViewState();
+}
+
+class _TransactionScreenViewState extends State<TransactionScreenView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<TransactionViewModel>(
+        context,
+        listen: false,
+      ).loadTransactions();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Provider.of<ThemeProvider>(context).themeConfig;
-    final homeViewModel = Provider.of<HomeViewModel>(context);
+    final theme = Theme.of(context);
+    final viewModel = Provider.of<TransactionViewModel>(context);
 
     return Scaffold(
-      backgroundColor: theme["scaffoldBackground"],
       appBar: AppBar(
-        title: Text(
-          "Transaction History",
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold,
-            color: theme["textColor"],
+        title: const Text('Transaction History'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => viewModel.loadTransactions(refresh: true),
           ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(color: theme["textColor"]),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      body: _buildBody(viewModel, theme),
+    );
+  }
+
+  Widget _buildBody(TransactionViewModel viewModel, ThemeData theme) {
+    if (viewModel.isLoading && viewModel.transactionResponse == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (viewModel.error != null) {
+      return Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: homeViewModel.transactions.length,
-                itemBuilder: (context, index) {
-                  final transaction = homeViewModel.transactions[index];
-                  return _buildTransactionItem(transaction, theme);
-                },
-              ),
+            Text('Error: ${viewModel.error}'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => viewModel.loadTransactions(refresh: true),
+              child: const Text('Retry'),
             ),
           ],
         ),
+      );
+    }
+
+    final transactions = viewModel.transactionResponse?.transactions ?? [];
+    final dateFormat = DateFormat('MMM dd, yyyy');
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            decoration: const InputDecoration(
+              hintText: 'Search transactions...',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
+            ),
+            onChanged: viewModel.searchTransactions,
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: transactions.length + (viewModel.hasMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= transactions.length) {
+                return _buildLoadMore(viewModel);
+              }
+              final transaction = transactions[index];
+              return _buildTransactionItem(transaction, dateFormat, theme);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoadMore(TransactionViewModel viewModel) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child:
+            viewModel.isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                  onPressed: () => viewModel.loadTransactions(),
+                  child: const Text('Load More'),
+                ),
       ),
     );
   }
 
   Widget _buildTransactionItem(
-    Transaction transaction,
-    Map<String, dynamic> theme,
+    ApiTransaction transaction,
+    DateFormat dateFormat,
+    ThemeData theme,
   ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: theme["cardBackground"],
-        borderRadius: BorderRadius.circular(12),
-      ),
+    final isCompleted = (transaction.status ?? '').toLowerCase() == 'completed';
+    final statusColor = isCompleted ? Colors.green : Colors.orange;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: transaction.isIncoming
-                ? theme["positiveAmount"].withOpacity(0.1)
-                : theme["negativeAmount"].withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            transaction.isIncoming ? Icons.arrow_downward : Icons.arrow_upward,
-            color: transaction.isIncoming
-                ? theme["positiveAmount"]
-                : theme["negativeAmount"],
-          ),
+        title: Text(transaction.beneficiaryName ?? 'N/A'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(dateFormat.format(transaction.createdAt ?? DateTime.now())),
+            Chip(
+              label: Text(
+                transaction.status ?? 'Unknown',
+                style: const TextStyle(color: Colors.white),
+              ),
+              backgroundColor: statusColor,
+              padding: EdgeInsets.zero,
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
         ),
-        title: Text(
-          transaction.recipient,
-          style: TextStyle(
-            color: theme["textColor"],
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(
-          transaction.date,
-          style: TextStyle(color: theme["secondaryText"], fontFamily: 'Roboto'),
-        ),
-        trailing: Text(
-          "${transaction.isIncoming ? '+' : '-'}\$${transaction.amount.toStringAsFixed(2)}",
-          style: TextStyle(
-            color: transaction.isIncoming
-                ? theme["positiveAmount"]
-                : theme["negativeAmount"],
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold,
+        trailing: SizedBox(
+          width: 100,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${transaction.currency ?? ''} ${transaction.netAmount?.toStringAsFixed(2) ?? '0.00'}',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              
+            ],
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        onTap: () => showTransactionDetailDialog(context, transaction),
       ),
     );
   }

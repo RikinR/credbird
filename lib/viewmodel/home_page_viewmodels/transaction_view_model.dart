@@ -1,11 +1,10 @@
-
 import 'package:credbird/model/remittance/transaction_response_model.dart';
 import 'package:credbird/repositories/user_repository/transaction_repository.dart';
 import 'package:flutter/material.dart';
 
 class TransactionViewModel extends ChangeNotifier {
   final TransactionRepository _repository;
-  
+
   TransactionResponse? _transactionResponse;
   int _currentPage = 1;
   final int _pageSize = 10;
@@ -57,6 +56,10 @@ class TransactionViewModel extends ChangeNotifier {
       _currentPage++;
     } catch (e) {
       _error = e.toString();
+      _transactionResponse = TransactionResponse(
+        totalCount: 0,
+        transactions: [],
+      );
     } finally {
       _isLoading = false;
       notifyListeners();

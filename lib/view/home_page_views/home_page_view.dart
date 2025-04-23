@@ -1,12 +1,15 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
-import 'package:credbird/model/remittance/transaction_model.dart';
+import 'package:credbird/model/user_models/api_transaction_model.dart';
 import 'package:credbird/model/user_models/dashboard_count.dart';
+import 'package:credbird/repositories/user_repository/transaction_repository.dart';
+import 'package:credbird/utils/transaction_detail_dialog.dart';
 import 'package:credbird/view/authentication%20view/login_signup_view.dart';
 import 'package:credbird/view/initial_views/card_view.dart';
 import 'package:credbird/view/home_page_views/forex_rates_view.dart';
 import 'package:credbird/view/home_page_views/international_tourist_view.dart';
 import 'package:credbird/view/profile_views/profile_page_view.dart';
+import 'package:credbird/view/profile_views/transaction_screen_view.dart';
 import 'package:credbird/view/send_page_views/send_page_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/card_provider.dart';
@@ -14,6 +17,7 @@ import 'package:credbird/viewmodel/home_page_viewmodels/dashboard_viewmodel.dart
 import 'package:credbird/viewmodel/home_page_viewmodels/forex_rates_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/international_tourist_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/transaction_view_model.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -54,9 +58,13 @@ class _HomePageViewState extends State<HomePageView>
       final targetOpacity = (scrollPosition / maxScroll).clamp(0.0, 1.0);
       _appBarController.animateTo(targetOpacity);
     });
-    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
-    authViewModel.fetchUserDetails();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthViewModel>().fetchUserDetails();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TransactionViewModel>().loadTransactions();
+    });
   }
 
   @override
@@ -71,6 +79,7 @@ class _HomePageViewState extends State<HomePageView>
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
     final homeViewModel = Provider.of<HomeViewModel>(context);
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+    final transactionViewModel = Provider.of<TransactionViewModel>(context);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -176,272 +185,343 @@ class _HomePageViewState extends State<HomePageView>
               ),
             ),
           ),
-          ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
+          Expanded(
+            child: ScrollConfiguration(
+              behavior: ScrollConfiguration.of(context).copyWith(
+                physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                ),
               ),
-            ),
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).padding.top + kToolbarHeight,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height:
+                          MediaQuery.of(context).padding.top + kToolbarHeight,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Hi, ${authViewModel.userName}👋",
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Hi, ${authViewModel.userName}👋",
+                            style: TextStyle(
+                              color: theme["textColor"],
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Select Option",
                           style: TextStyle(
                             color: theme["textColor"],
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Select Option",
-                        style: TextStyle(
-                          color: theme["textColor"],
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                  ),
-                  Container(
-                    height: MediaQuery.of(context).size.height * 0.15,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        _buildActionButton(
-                          context,
-                          "Send Money Abroad",
-                          FontAwesomeIcons.paperPlane,
-                          theme,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => ChangeNotifierProvider(
-                                      create: (_) => SendMoneyViewModel(),
-                                      child: const SendPageView(),
-                                    ),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildActionButton(
-                          context,
-                          "Virtual Card",
-                          FontAwesomeIcons.creditCard,
-                          theme,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => ChangeNotifierProvider(
-                                      create: (_) => CardViewModel(),
-                                      child: const CardView(),
-                                    ),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildActionButton(
-                          context,
-                          "International Tourist",
-                          FontAwesomeIcons.earthAsia,
-                          theme,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => ChangeNotifierProvider(
-                                      create:
-                                          (_) =>
-                                              InternationalTouristViewModel(),
-                                      child: const InternationalTouristView(),
-                                    ),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildActionButton(
-                          context,
-                          "Forex",
-                          FontAwesomeIcons.chartLine,
-                          theme,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => ChangeNotifierProvider(
-                                      create: (_) => ForexRatesViewModel(),
-                                      child: const ForexRatesView(),
-                                    ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDashboardStats(context, theme),
-                  const SizedBox(height: 20),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: theme["cardBackground"],
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.grey.withOpacity(0.2),
-                        width: 1,
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.15,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          _buildActionButton(
+                            context,
+                            "Send Money Abroad",
+                            FontAwesomeIcons.paperPlane,
+                            theme,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => ChangeNotifierProvider(
+                                        create: (_) => SendMoneyViewModel(),
+                                        child: const SendPageView(),
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildActionButton(
+                            context,
+                            "Virtual Card",
+                            FontAwesomeIcons.creditCard,
+                            theme,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => ChangeNotifierProvider(
+                                        create: (_) => CardViewModel(),
+                                        child: const CardView(),
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildActionButton(
+                            context,
+                            "International Tourist",
+                            FontAwesomeIcons.earthAsia,
+                            theme,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => ChangeNotifierProvider(
+                                        create:
+                                            (_) =>
+                                                InternationalTouristViewModel(),
+                                        child: const InternationalTouristView(),
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildActionButton(
+                            context,
+                            "Forex",
+                            FontAwesomeIcons.chartLine,
+                            theme,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => ChangeNotifierProvider(
+                                        create: (_) => ForexRatesViewModel(),
+                                        child: const ForexRatesView(),
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    margin: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
-                          child: Row(
-                            children: [
-                              Text(
-                                "Recent Recipients",
-                                style: TextStyle(
-                                  color: theme["textColor"],
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
+                    const SizedBox(height: 16),
+                    _buildDashboardStats(context, theme),
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: theme["cardBackground"],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.grey.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "Recent Recipients",
+                                  style: TextStyle(
+                                    color: theme["textColor"],
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.only(
-                            left: 8,
-                            right: 8,
-                            bottom: 16,
-                          ),
-                          child: Row(
-                            children: [
-                              _buildRecipientItem(
-                                "https://randomuser.me/api/portraits/men/32.jpg",
-                                "John Doe",
-                                theme,
-                                onTap: () {},
-                              ),
-                              _buildRecipientItem(
-                                "https://randomuser.me/api/portraits/women/44.jpg",
-                                "Sarah Kim",
-                                theme,
-                                onTap: () {},
-                              ),
-                              _buildRecipientItem(
-                                "https://randomuser.me/api/portraits/men/55.jpg",
-                                "Mike Ross",
-                                theme,
-                                onTap: () {},
-                              ),
-                              _buildRecipientItem(
-                                "https://randomuser.me/api/portraits/women/67.jpg",
-                                "Emma Watson",
-                                theme,
-                                onTap: () {},
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Transactions",
-                              style: TextStyle(
-                                color: theme["textColor"],
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              ],
                             ),
-                            Container(
-                              width: 150,
-                              height: 35,
-                              decoration: BoxDecoration(
-                                color: theme["cardBackground"],
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  width: 1,
-                                ),
-                              ),
-                              child: TextField(
-                                style: TextStyle(
-                                  color: theme["textColor"],
-                                  fontSize: 13,
-                                ),
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 0,
-                                  ),
-                                  border: InputBorder.none,
-                                  hintText: "Search...",
-                                  hintStyle: TextStyle(
-                                    color: theme["textColor"]?.withOpacity(0.5),
-                                    fontSize: 13,
-                                  ),
-                                  suffixIcon: Icon(
-                                    Icons.search,
-                                    color: theme["textColor"]?.withOpacity(0.5),
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
+                          ),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.only(
+                              left: 8,
+                              right: 8,
+                              bottom: 16,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        ...homeViewModel.transactions.map(
-                          (transaction) =>
-                              _buildTransactionItem(transaction, theme),
-                        ),
-                      ],
+                            child: Row(
+                              children: [
+                                _buildRecipientItem(
+                                  "https://randomuser.me/api/portraits/men/32.jpg",
+                                  "John Doe",
+                                  theme,
+                                  onTap: () {},
+                                ),
+                                _buildRecipientItem(
+                                  "https://randomuser.me/api/portraits/women/44.jpg",
+                                  "Sarah Kim",
+                                  theme,
+                                  onTap: () {},
+                                ),
+                                _buildRecipientItem(
+                                  "https://randomuser.me/api/portraits/men/55.jpg",
+                                  "Mike Ross",
+                                  theme,
+                                  onTap: () {},
+                                ),
+                                _buildRecipientItem(
+                                  "https://randomuser.me/api/portraits/women/67.jpg",
+                                  "Emma Watson",
+                                  theme,
+                                  onTap: () {},
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                    const SizedBox(height: 16),
+                    _buildTransactionSection(
+                      context,
+                      theme,
+                      transactionViewModel,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionSection(
+    BuildContext context,
+    Map<String, dynamic> theme,
+    TransactionViewModel transactionViewModel,
+  ) {
+    final dateFormat = DateFormat('MMM dd, yyyy');
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Recent Transactions",
+                style: TextStyle(
+                  color: theme["textColor"],
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => ChangeNotifierProvider(
+                            create:
+                                (_) => TransactionViewModel(
+                                  TransactionRepository(),
+                                ),
+                            child: TransactionScreenView(),
+                          ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'View All',
+                  style: TextStyle(color: theme["buttonHighlight"]),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (transactionViewModel.isLoading &&
+              transactionViewModel.transactionResponse == null)
+            Center(child: CircularProgressIndicator()),
+          if (transactionViewModel.error != null)
+            Text(
+              'Error: ${transactionViewModel.error}',
+              style: TextStyle(color: Colors.red),
+            ),
+          if (transactionViewModel.transactionResponse != null)
+            Column(
+              children:
+                  transactionViewModel.transactionResponse!.transactions
+                      .take(3)
+                      .map(
+                        (transaction) => _buildApiTransactionItem(
+                          transaction,
+                          dateFormat,
+                          Theme.of(context),
+                        ),
+                      )
+                      .toList(),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApiTransactionItem(
+    ApiTransaction transaction,
+
+    DateFormat dateFormat,
+    ThemeData theme,
+  ) {
+    final isCompleted = (transaction.status ?? '').toLowerCase() == 'completed';
+    final statusColor = isCompleted ? Colors.green : Colors.orange;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ListTile(
+        title: Text(transaction.beneficiaryName ?? 'N/A'),
+        subtitle: Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(dateFormat.format(transaction.createdAt ?? DateTime.now())),
+              Chip(
+                label: Text(
+                  transaction.status ?? 'Unknown',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                backgroundColor: statusColor,
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+        ),
+        trailing: SizedBox(
+          width: 100,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${transaction.currency ?? ''} ${transaction.netAmount?.toStringAsFixed(2) ?? '0.00'}',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              
+            ],
+          ),
+        ),
+        onTap: () => showTransactionDetailDialog(context, transaction),
       ),
     );
   }
@@ -452,6 +532,8 @@ class _HomePageViewState extends State<HomePageView>
     HomeViewModel homeViewModel,
     AuthViewModel authViewModel,
   ) {
+    final userName = authViewModel.userName ?? 'User';
+    final userEmail = authViewModel.userEmail ?? '';
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.8,
       child: SafeArea(
@@ -475,7 +557,7 @@ class _HomePageViewState extends State<HomePageView>
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    authViewModel.userName! ?? "",
+                    userName,
                     style: TextStyle(
                       color: theme["textColor"],
                       fontSize: 20,
@@ -485,7 +567,7 @@ class _HomePageViewState extends State<HomePageView>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    authViewModel.userEmail ?? "",
+                    userEmail,
                     style: TextStyle(
                       color: theme["textColor"],
                       fontSize: 14,
@@ -576,17 +658,19 @@ class _HomePageViewState extends State<HomePageView>
   }) {
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
 
-    return ListTile(
-      leading: Icon(icon, color: theme["textColor"]),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: theme["textColor"],
-          fontFamily: 'Roboto',
-          fontWeight: FontWeight.w300,
+    return SizedBox(
+      height: 50, 
+      child: ListTile(
+        leading: Icon(icon, color: theme["textColor"]),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: theme["textColor"],
+            fontWeight: FontWeight.w300,
+          ),
         ),
+        onTap: onTap,
       ),
-      onTap: onTap,
     );
   }
 
@@ -643,79 +727,6 @@ class _HomePageViewState extends State<HomePageView>
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTransactionItem(
-    Transaction transaction,
-    Map<String, dynamic> theme,
-  ) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
-      ),
-      color: theme["cardBackground"],
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: theme["textColor"]?.withOpacity(0.1) ?? Colors.grey,
-                  width: 1.5,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.network(
-                  'https://randomuser.me/api/portraits/${transaction.isIncoming ? 'women' : 'men'}/${transaction.hashCode % 100}.jpg',
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) =>
-                          Icon(Icons.person, color: theme["textColor"]),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    transaction.recipient,
-                    style: TextStyle(
-                      color: theme["textColor"],
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    transaction.date,
-                    style: TextStyle(
-                      color: theme["secondaryText"],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              '${transaction.isIncoming ? '+' : '-'}\$${transaction.amount.toStringAsFixed(2)}',
-              style: TextStyle(
-                color: transaction.isIncoming ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
         ),
       ),
     );

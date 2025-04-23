@@ -1,7 +1,9 @@
 import 'package:credbird/repositories/auth_repository/auth_repository.dart';
 import 'package:credbird/repositories/remitence_repository/invoices_repository.dart';
 import 'package:credbird/repositories/user_repository/dashboard_repository.dart';
+import 'package:credbird/repositories/user_repository/transaction_repository.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/dashboard_viewmodel.dart';
+import 'package:credbird/viewmodel/home_page_viewmodels/transaction_view_model.dart';
 import 'package:credbird/viewmodel/profile_providers/kyc_provider.dart';
 import 'package:credbird/viewmodel/profile_providers/registration_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/intermediary_provider.dart';
@@ -51,6 +53,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => KYCProvider()),
         ChangeNotifierProvider(create: (_) => RemitterProvider()),
         ChangeNotifierProvider(create: (_) => IntermediaryProvider()),
+        ChangeNotifierProvider(
+          create: (_) => TransactionViewModel(TransactionRepository()),
+        ),
         ChangeNotifierProvider(
           create: (context) => DashboardViewModel(DashboardRepository()),
         ),
