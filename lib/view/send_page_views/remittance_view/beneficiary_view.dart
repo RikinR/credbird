@@ -73,6 +73,7 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
                   key: _formKey,
                   child: SingleChildScrollView(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildTextField(
                           controller: _nameController,
@@ -242,28 +243,39 @@ class _AddBeneficiaryPageState extends State<AddBeneficiaryPage> {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: DropdownButtonFormField(
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: theme.primaryColor),
-          filled: true,
-          fillColor: theme.cardColor,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: theme.cardColor,
         ),
-        items:
-            items
-                .map(
-                  (item) => DropdownMenuItem(
-                    value: item['_id'],
-                    child: Text(item[labelKey]),
-                  ),
-                )
-                .toList(),
-        onChanged: onChanged,
-        validator: (value) => value == null ? 'Please select $label' : null,
+        child: DropdownButtonFormField(
+          isExpanded: false, 
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(color: theme.primaryColor),
+            filled: true,
+            fillColor: theme.cardColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          items:
+              items
+                  .map(
+                    (item) => DropdownMenuItem(
+                      value: item['_id'],
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(item[labelKey]),
+                      ),
+                    ),
+                  )
+                  .toList(),
+          onChanged: onChanged,
+          validator: (value) => value == null ? 'Please select $label' : null,
+        ),
       ),
     );
   }

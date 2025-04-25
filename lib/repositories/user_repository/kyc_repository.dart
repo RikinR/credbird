@@ -31,10 +31,7 @@ class KYCRepository {
     final tokenValue = await token;
     final url = Uri.parse('$baseUrl$apiPrefix/p-access/findDocumentByStatus');
 
-    final headers = {
-      'p-key': p_key,
-      'Authorization': 'Bearer $tokenValue',
-    };
+    final headers = {'p-key': p_key, 'Authorization': 'Bearer $tokenValue'};
 
     print('Fetching pending documents → $url');
     print('Headers: $headers');
@@ -121,7 +118,9 @@ class KYCRepository {
     required List<Map<String, dynamic>> documents,
   }) async {
     final tokenValue = await token;
-    final url = Uri.parse('$baseUrl$apiPrefix/p-access/uploadRegisterationDocument');
+    final url = Uri.parse(
+      '$baseUrl$apiPrefix/p-access/uploadRegisterationDocument',
+    );
     final headers = {
       'Content-Type': 'application/json',
       'p-key': p_key,
@@ -148,6 +147,26 @@ class KYCRepository {
     } else {
       final msg = responseData['message'] ?? 'Registration upload failed';
       print(' Registration upload error: $msg');
+      throw Exception(msg);
+    }
+  }
+
+  Future<bool> checkKYCStatus() async {
+    final tokenValue = await token;
+    final url = Uri.parse('$baseUrl$apiPrefix/p-access/checkKyc');
+
+    final headers = {'p-key': p_key, 'Authorization': 'Bearer $tokenValue'};
+
+    print('Checking KYC status → $url');
+    final response = await http.get(url, headers: headers);
+    print('KYC check response: ${response.body}');
+
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200 && responseData['success'] == true) {
+      return responseData['data']['kycDone'] ?? false;
+    } else {
+      final msg = responseData['message'] ?? 'Failed to check KYC status';
       throw Exception(msg);
     }
   }

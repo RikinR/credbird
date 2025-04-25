@@ -1,4 +1,5 @@
 import 'package:credbird/viewmodel/send_page_viewmodels/invoices_provider.dart';
+import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -30,56 +31,124 @@ class _InvoiceListViewState extends State<InvoiceListView> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Invoice Management'),
+        title: const Text(
+          'Invoice Management',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: theme.iconTheme.color),
+        foregroundColor: theme.iconTheme.color,
       ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: DropdownButtonFormField<String>(
-              value: _selectedView,
-              decoration: InputDecoration(
-                labelText: 'View',
-                border: OutlineInputBorder(),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: DropdownButtonFormField<String>(
+                value: _selectedView,
+                decoration: InputDecoration(
+                  labelText: 'View Invoices',
+                  labelStyle: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color:
+                        Provider.of<ThemeProvider>(
+                          context,
+                        ).themeConfig["buttonHighlight"],
+                  ),
+                  filled: true,
+                  fillColor: theme.cardColor,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color:
+                          Provider.of<ThemeProvider>(
+                            context,
+                          ).themeConfig["buttonHighlight"],
+                      width: 2,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color:
+                          Provider.of<ThemeProvider>(
+                            context,
+                          ).themeConfig["buttonHighlight"],
+                    ),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color:
+                          Provider.of<ThemeProvider>(
+                            context,
+                          ).themeConfig["buttonHighlight"],
+                    ),
+                  ),
+                ),
+                iconEnabledColor:
+                    Provider.of<ThemeProvider>(
+                      context,
+                    ).themeConfig["buttonHighlight"],
+                dropdownColor: theme.cardColor,
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                items: [
+                  DropdownMenuItem(
+                    value: 'assignedToMe',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.assignment,
+                          color: theme.iconTheme.color,
+                        ), 
+                        const SizedBox(width: 8),
+                        Text('Assigned To Me'),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'assignedByMe',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.assignment_ind,
+                          color: theme.iconTheme.color,
+                        ), 
+                        const SizedBox(width: 8),
+                        Text('Assigned By Me'),
+                      ],
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedView = value!;
+                  });
+                  if (value == 'assignedToMe') {
+                    viewModel.loadInvoicesAssignedForMe();
+                  } else {
+                    viewModel.loadInvoicesAssignedByMe();
+                  }
+                },
               ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'assignedToMe',
-                  child: Text('Assigned To Me'),
-                ),
-                DropdownMenuItem(
-                  value: 'assignedByMe',
-                  child: Text('Assigned By Me'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedView = value!;
-                });
-                if (value == 'assignedToMe') {
-                  viewModel.loadInvoicesAssignedForMe();
-                } else {
-                  viewModel.loadInvoicesAssignedByMe();
-                }
-              },
             ),
           ),
+
           Expanded(
             child:
                 viewModel.isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : _buildInvoiceList(viewModel),
+                    : _buildInvoiceList(viewModel, theme),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInvoiceList(InvoiceViewModel viewModel) {
+  Widget _buildInvoiceList(InvoiceViewModel viewModel, ThemeData theme) {
     String formatDateTime(String? iso) {
       if (iso == null) return 'N/A';
       try {
@@ -112,11 +181,11 @@ class _InvoiceListViewState extends State<InvoiceListView> {
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
-          elevation: 4,
+          elevation: 5,
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -128,20 +197,29 @@ class _InvoiceListViewState extends State<InvoiceListView> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text('Status: ${invoice['status'] ?? 'N/A'}'),
-                Text('Active: ${invoice['isActive'] ?? 'N/A'}'),
-                Text('Amount: ${invoice['totalAmount'] ?? 'N/A'}'),
-                Text('Remaining: ${invoice['remainingAmount'] ?? 'N/A'}'),
-                if (invoice['currencyId'] is Map &&
-                    invoice['currencyId']['currency'] != null)
-                  Text('Currency: ${invoice['currencyId']['currency']}'),
-                if (invoice['userId'] is Map &&
-                    invoice['userId']['email'] != null)
-                  Text('User Email: ${invoice['userId']['email']}'),
-                if (invoice['agentId'] is Map &&
-                    invoice['agentId']['email'] != null)
-                  Text('Agent Email: ${invoice['agentId']['email']}'),
-                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 8,
+                  children: [
+                    _infoText('Status', invoice['status']),
+                    _infoText('Active', invoice['isActive'].toString()),
+                    _infoText('Amount', invoice['totalAmount'].toString()),
+                    _infoText(
+                      'Remaining',
+                      invoice['remainingAmount'].toString(),
+                    ),
+                    if (invoice['currencyId'] is Map &&
+                        invoice['currencyId']['currency'] != null)
+                      _infoText('Currency', invoice['currencyId']['currency']),
+                    if (invoice['userId'] is Map &&
+                        invoice['userId']['email'] != null)
+                      _infoText('User Email', invoice['userId']['email']),
+                    if (invoice['agentId'] is Map &&
+                        invoice['agentId']['email'] != null)
+                      _infoText('Agent Email', invoice['agentId']['email']),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 Text(
                   'Created: ${formatDateTime(invoice['createdAt'])}',
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
@@ -155,6 +233,16 @@ class _InvoiceListViewState extends State<InvoiceListView> {
           ),
         );
       },
+    );
+  }
+
+  Widget _infoText(String label, String? value) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(value ?? 'N/A'),
+      ],
     );
   }
 }

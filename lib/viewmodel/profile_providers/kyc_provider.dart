@@ -12,12 +12,16 @@ class KYCProvider with ChangeNotifier {
   Map<String, File?> get selectedFiles => _selectedFiles;
   bool get isLoading => _loading;
 
+  bool _kycDone = false;
+  bool get isKYCDone => _kycDone;
+
   Future<void> loadPendingDocuments() async {
     _loading = true;
     notifyListeners();
     try {
       final allDocs = await _repository.getPendingDocuments();
-      _pendingDocs = allDocs.where((doc) => doc['status'] != 'VERIFIED').toList();
+      _pendingDocs =
+          allDocs.where((doc) => doc['status'] != 'VERIFIED').toList();
     } finally {
       _loading = false;
       notifyListeners();
@@ -48,6 +52,17 @@ class KYCProvider with ChangeNotifier {
         registrationId: registrationId,
         documents: finalDocuments,
       );
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> checkKYCStatus() async {
+    _loading = true;
+    notifyListeners();
+    try {
+      _kycDone = await _repository.checkKYCStatus();
     } finally {
       _loading = false;
       notifyListeners();

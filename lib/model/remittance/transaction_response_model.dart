@@ -14,7 +14,7 @@ class TransactionResponse {
               ?.map(
                 (item) => ApiTransaction.fromJson(item as Map<String, dynamic>),
               )
-              ?.toList() ??
+              .toList() ??
           [],
     );
   }

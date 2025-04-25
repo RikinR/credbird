@@ -1,3 +1,4 @@
+import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
@@ -82,6 +83,16 @@ class TransactionDetailsStep extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  Provider.of<ThemeProvider>(
+                    context,
+                  ).themeConfig["buttonHighlight"],
+              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: () {
               if (viewModel.selectedRemittanceTypeId != null &&
                   viewModel.selectedRemittanceSubTypeId != null &&
@@ -93,7 +104,24 @@ class TransactionDetailsStep extends StatelessWidget {
                 onContinue();
               }
             },
-            child: const Text("Continue to LRS Information"),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.navigate_next, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  "Continue to next step",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color:
+                        Provider.of<ThemeProvider>(
+                          context,
+                        ).themeConfig["backgroundColor"],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

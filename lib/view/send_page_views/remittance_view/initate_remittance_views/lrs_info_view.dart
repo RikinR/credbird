@@ -1,5 +1,6 @@
 // ignore_for_file: unused_local_variable
 
+import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
@@ -29,7 +30,8 @@ class _LRSInformationStepState extends State<LRSInformationStep> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<SendMoneyViewModel>(context);
-    final theme = Theme.of(context);
+
+    final theme = Provider.of<ThemeProvider>(context).themeConfig;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -46,7 +48,7 @@ class _LRSInformationStepState extends State<LRSInformationStep> {
             style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
           const SizedBox(height: 16),
-          
+
           Card(
             elevation: 2,
             child: Padding(
@@ -61,12 +63,13 @@ class _LRSInformationStepState extends State<LRSInformationStep> {
                     ),
                     items: const [
                       DropdownMenuItem(
-                        value: 'Transaction Done outside the Pay2Remit in 24-25',
-                        child: Text('Transaction Done outside the Pay2Remit in 24-25'),
+                        value:
+                            'Transaction Done outside the Pay2Remit in 24-25',
+                        child: Text('Transaction Done outside the Pay2Remit'),
                       ),
                       DropdownMenuItem(
                         value: 'Transaction Done from the Pay2Remit in 24-25',
-                        child: Text('Transaction Done from the Pay2Remit in 24-25'),
+                        child: Text('Transaction Done from the Pay2Remit'),
                       ),
                     ],
                     onChanged: (value) {
@@ -96,7 +99,8 @@ class _LRSInformationStepState extends State<LRSInformationStep> {
                     controller: _addressController,
                     decoration: const InputDecoration(
                       labelText: "Name and Address",
-                      hintText: "Enter comma separated Name and address of transactions done outside platform",
+                      hintText:
+                          "Enter comma separated Name and address of transactions done outside platform",
                     ),
                     maxLines: 2,
                   ),
@@ -122,11 +126,13 @@ class _LRSInformationStepState extends State<LRSInformationStep> {
                             lastDate: DateTime(2100),
                           );
                           if (picked != null) {
-                            final dateStr = "${picked.day}/${picked.month}/${picked.year}";
+                            final dateStr =
+                                "${picked.day}/${picked.month}/${picked.year}";
                             if (_datesController.text.isEmpty) {
                               _datesController.text = dateStr;
                             } else {
-                              _datesController.text = "${_datesController.text}, $dateStr";
+                              _datesController.text =
+                                  "${_datesController.text}, $dateStr";
                             }
                           }
                         },
@@ -135,83 +141,163 @@ class _LRSInformationStepState extends State<LRSInformationStep> {
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme["buttonHighlight"],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 26,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                     onPressed: () {
                       if (_amountInrController.text.isNotEmpty) {
                         setState(() {
                           _lrsData.add({
                             'info': _selectedInfoType,
                             'amount': _amountInrController.text,
-                            'usdAmount': _amountUsdController.text.isEmpty 
-                                ? 0 
-                                : double.tryParse(_amountUsdController.text),
+                            'usdAmount':
+                                _amountUsdController.text.isEmpty
+                                    ? 0
+                                    : double.tryParse(
+                                      _amountUsdController.text,
+                                    ),
                             'address': _addressController.text,
                             'dates': _datesController.text,
-                            'addressPlaceHolder': "Enter comma separated Name and address of transactions done outside platform",
-                            'datesPlaceHolder': "Enter comma separated dates of transactions done outside",
+                            'addressPlaceHolder':
+                                "Enter comma separated Name and address of transactions done outside platform",
+                            'datesPlaceHolder':
+                                "Enter comma separated dates of transactions done outside",
                             'disabled': false,
                           });
-                          
+
                           _amountInrController.clear();
                           _amountUsdController.clear();
                           _addressController.clear();
                           _datesController.clear();
                         });
-                        
+
                         viewModel.addLRSInfo({
                           'info': _selectedInfoType,
                           'amount': _amountInrController.text,
-                          'usdAmount': _amountUsdController.text.isEmpty 
-                              ? 0 
-                              : double.tryParse(_amountUsdController.text),
+                          'usdAmount':
+                              _amountUsdController.text.isEmpty
+                                  ? 0
+                                  : double.tryParse(_amountUsdController.text),
                           'address': _addressController.text,
                           'dates': _datesController.text,
-                          'addressPlaceHolder': "Enter comma separated Name and address of transactions done outside platform",
-                          'datesPlaceHolder': "Enter comma separated dates of transactions done outside",
+                          'addressPlaceHolder':
+                              "Enter comma separated Name and address of transactions done outside platform",
+                          'datesPlaceHolder':
+                              "Enter comma separated dates of transactions done outside",
                           'disabled': false,
                         });
                       }
                     },
-                    child: const Text("Add LRS Entry"),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.playlist_add, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Add LRS Entry",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: theme["backgroundColor"],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           if (_lrsData.isNotEmpty) ...[
             const SizedBox(height: 16),
             const Text(
               "Added LRS Entries:",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            ..._lrsData.map((entry) => ListTile(
-              title: Text(entry['info']),
-              subtitle: Text("Amount: ${entry['amount']} INR (${entry['usdAmount']} USD)"),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  setState(() {
-                    _lrsData.remove(entry);
-                  });
-                },
+            ..._lrsData.map(
+              (entry) => ListTile(
+                title: Text(entry['info']),
+                subtitle: Text(
+                  "Amount: ${entry['amount']} INR (${entry['usdAmount']} USD)",
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    setState(() {
+                      _lrsData.remove(entry);
+                    });
+                  },
+                ),
               ),
-            )),
+            ),
           ],
-          
+
           const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme["buttonHighlight"],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   onPressed: widget.onBack,
-                  child: const Text("Back"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Back",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme["backgroundColor"],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme["buttonHighlight"],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 26,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   onPressed: widget.onContinue,
-                  child: const Text("Continue to Invoice Details"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Next",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme["backgroundColor"],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

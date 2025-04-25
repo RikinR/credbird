@@ -10,6 +10,9 @@ class TransactionCreateModel {
   final String nostroCharge;
   final List<Invoice> invoices;
   final List<Lrs>? lrsList;
+  final bool? educationDeclaration;
+  final String? educationDeclarationNumber;
+  final double? educationDeclarationAmount;
 
   TransactionCreateModel({
     required this.remitterId,
@@ -23,6 +26,9 @@ class TransactionCreateModel {
     required this.nostroCharge,
     required this.invoices,
     this.lrsList,
+    this.educationDeclaration,
+    this.educationDeclarationNumber,
+    this.educationDeclarationAmount,
   });
 
   Map<String, dynamic> toJson() {
@@ -39,6 +45,12 @@ class TransactionCreateModel {
       'invoices': invoices.map((invoice) => invoice.toJson()).toList(),
       if (lrsList != null)
         'lrsList': lrsList!.map((lrs) => lrs.toJson()).toList(),
+      if (educationDeclaration != null)
+        'educationDeclaration': educationDeclaration,
+      if (educationDeclaration == true && educationDeclarationNumber != null)
+        'educationDeclarationNumber': educationDeclarationNumber,
+      if (educationDeclaration == true && educationDeclarationAmount != null)
+        'educationDeclarationAmount': educationDeclarationAmount,
     };
   }
 }

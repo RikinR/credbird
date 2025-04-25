@@ -7,45 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
-Widget buildContactSelector(
-  Map<String, dynamic> theme,
-  SendMoneyViewModel viewModel,
-  BuildContext context,
-) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 24),
-      Text(
-        "Recent Contacts",
-        style: TextStyle(
-          color: theme["textColor"],
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      const SizedBox(height: 16),
-      SizedBox(
-        height: 100,
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          children: [
-            ...viewModel.recentContacts.map(
-              (contact) => buildContactItem(
-                contact,
-                theme,
-                viewModel.selectedContact == contact,
-                () => viewModel.selectContact(contact),
-              ),
-            ),
-            buildAddContactItem(theme, () => viewModel.addNewContact(context)),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
 Widget buildAmountInput(
   Map<String, dynamic> theme,
   SendMoneyViewModel viewModel,

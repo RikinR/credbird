@@ -86,23 +86,26 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                   key: _formKey,
                   child: ListView(
                     children: [
-                      DropdownButtonFormField<String>(
-                        value: _remitterTypeController.text,
-                        items:
-                            ['Self', 'Guardian']
-                                .map(
-                                  (String value) => DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            _remitterTypeController.text = newValue!;
-                          });
-                        },
-                        decoration: _dropdownDecoration(theme, 'Remitter Type'),
+                      SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+                        child: DropdownButtonFormField<String>(
+                          value: _remitterTypeController.text,
+                          items:
+                              ['Self', 'Guardian']
+                                  .map(
+                                    (String value) => DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              _remitterTypeController.text = newValue!;
+                            });
+                          },
+                          decoration: _dropdownDecoration(theme, 'Remitter Type'),
+                        ),
                       ),
                       _buildField("PAN Number", _panController, theme),
                       _buildField("Account Number", _accountController, theme),

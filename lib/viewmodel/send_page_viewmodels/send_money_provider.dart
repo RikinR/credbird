@@ -3,6 +3,7 @@
 import 'package:credbird/model/remittance/transaction_create_model.dart';
 import 'package:credbird/model/remittance/transaction_model.dart';
 import 'package:credbird/repositories/remitence_repository/remittance_repository.dart';
+import 'package:credbird/view/send_page_views/remittance_view/initate_remittance_views/documents_upload_view.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/beneficiary_provider.dart';
 import 'package:flutter/material.dart';
@@ -161,38 +162,6 @@ class SendMoneyViewModel extends ChangeNotifier {
     return true;
   }
 
-  Future<void> addNewContact(BuildContext context) async {
-    final nameController = TextEditingController();
-    final result = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Add New Contact"),
-            content: TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                hintText: "Enter full name",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Cancel"),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text("Add"),
-              ),
-            ],
-          ),
-    );
-
-    if (result == true && nameController.text.isNotEmpty) {
-      addRecipient(nameController.text.trim());
-    }
-  }
-
   void addRecipient(String name) {
     if (name.isNotEmpty && !_recentContacts.contains(name)) {
       _recentContacts.add(name);
@@ -270,6 +239,8 @@ class SendMoneyViewModel extends ChangeNotifier {
     transactionError = null;
     notifyListeners();
 
+    final isEducationType =
+        selectedRemittanceTypeId == "6332c5c737a25f1236f9f841";
     List<String> missingFields = [];
 
     if (selectedRemitterId == null) missingFields.add("Remitter");
@@ -281,28 +252,22 @@ class SendMoneyViewModel extends ChangeNotifier {
     if (purpose.isEmpty) missingFields.add("Purpose");
     if (_nostroCharge.isEmpty) missingFields.add("Nostro Charge");
 
-    if (invoices.isEmpty && !educationDeclaration) {
+    if (invoices.isEmpty && !(educationDeclaration && isEducationType)) {
       missingFields.add("Invoice or Education Declaration");
     }
 
-    if (educationDeclaration &&
-        (educationDeclarationNumber == null ||
-            educationDeclarationNumber!.isEmpty)) {
-      missingFields.add("Education Declaration Number");
+    if (educationDeclaration && isEducationType) {
+      if (educationDeclarationNumber == null ||
+          educationDeclarationNumber!.isEmpty) {
+        missingFields.add("Education Declaration Number");
+      }
+      if (educationDeclarationAmount <= 0) {
+        missingFields.add("Education Declaration Amount");
+      }
     }
 
     if (missingFields.isNotEmpty) {
       transactionError = "Missing: ${missingFields.join(', ')}";
-      isLoading = false;
-      notifyListeners();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(transactionError!)));
-      return;
-    }
-
-    if (invoices.isEmpty && lrsList.isEmpty) {
-      transactionError = "Please add either an invoice or LRS information.";
       isLoading = false;
       notifyListeners();
       ScaffoldMessenger.of(
@@ -358,14 +323,30 @@ class SendMoneyViewModel extends ChangeNotifier {
         nostroCharge: _nostroCharge,
         invoices: invoiceModels,
         lrsList: lrsModels,
-        //   educationDeclaration: educationDeclaration,
-        //   educationDeclarationNumber:
-        //       educationDeclaration ? educationDeclarationNumber : null,
-        //   educationDeclarationAmount:
-        //       educationDeclaration ? educationDeclarationAmount : null,
+        educationDeclaration: isEducationType ? educationDeclaration : null,
+        educationDeclarationNumber:
+            (educationDeclaration && isEducationType)
+                ? educationDeclarationNumber
+                : null,
+        educationDeclarationAmount:
+            (educationDeclaration && isEducationType)
+                ? educationDeclarationAmount
+                : null,
       );
 
       final response = await _repo.createTransaction(model);
+      final transactionId = response["_id"];
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => UploadDocumentsView(
+                transactionId: transactionId,
+                esign: true,
+              ),
+        ),
+      );
 
       print('✅ Transaction created: $response');
       ScaffoldMessenger.of(context).showSnackBar(

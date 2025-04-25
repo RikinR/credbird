@@ -1,5 +1,6 @@
 // ignore_for_file: unused_local_variable
 
+import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
@@ -24,10 +25,12 @@ class _InvoiceDetailsStepState extends State<InvoiceDetailsStep> {
       TextEditingController();
   final TextEditingController _educationDeclarationAmountController =
       TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<SendMoneyViewModel>(context);
-    final theme = Theme.of(context);
+
+    final theme = Provider.of<ThemeProvider>(context).themeConfig;
     final isOverseasEducation =
         viewModel.selectedRemittanceTypeId == "6332c5c737a25f1236f9f841";
 
@@ -81,8 +84,32 @@ class _InvoiceDetailsStepState extends State<InvoiceDetailsStep> {
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme["buttonHighlight"],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 26,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                     onPressed: _addInvoice,
-                    child: const Text("Add Invoice"),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.add, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Add Invoice",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: theme["backgroundColor"],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -161,16 +188,49 @@ class _InvoiceDetailsStepState extends State<InvoiceDetailsStep> {
             ),
           const SizedBox(height: 24),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Expanded(
-                child: OutlinedButton(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme["buttonHighlight"],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   onPressed: widget.onBack,
-                  child: const Text("Back"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Back",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme["backgroundColor"],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme["buttonHighlight"],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 26,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   onPressed:
                       _invoices.isEmpty && !_educationDeclaration
                           ? null
@@ -220,7 +280,19 @@ class _InvoiceDetailsStepState extends State<InvoiceDetailsStep> {
 
                             viewModel.createRemittanceTransaction(context);
                           },
-                  child: const Text("Create Transaction"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Create Transaction",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme["backgroundColor"],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

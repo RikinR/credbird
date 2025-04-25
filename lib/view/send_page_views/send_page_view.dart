@@ -45,23 +45,16 @@ class _SendPageViewState extends State<SendPageView> {
         elevation: 0,
         foregroundColor: theme["textColor"],
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddBeneficiaryPage(),
+          _buildStyledButton(
+            context,
+            icon: Icons.add,
+            label: "Add Beneficary",
+            onTap:
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddBeneficiaryPage()),
                 ),
-              );
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Add Benefiicary',
-              style: TextStyle(fontFamily: 'Roboto'),
-            ),
+            theme: theme,
           ),
         ],
       ),
@@ -69,72 +62,115 @@ class _SendPageViewState extends State<SendPageView> {
         padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
         child: Column(
           children: [
+            const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.paypal_rounded),
-                    label: const Text("See invoices"),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const InvoiceListView(),
+                  _buildStyledButton(
+                    context,
+                    icon: Icons.paypal_rounded,
+                    label: "See Invoices",
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const InvoiceListView(),
+                          ),
                         ),
-                      );
-                    },
+                    theme: theme,
                   ),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.person_add),
-                    label: const Text("Add Remitter"),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AddRemitterScreen(),
+                  _buildStyledButton(
+                    context,
+                    icon: Icons.person_add,
+                    label: "Add Remitter",
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AddRemitterScreen(),
+                          ),
                         ),
-                      );
-                    },
+                    theme: theme,
                   ),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.account_balance),
-                    label: const Text("Add Intermediary"),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AddIntermediaryScreen(),
+                  _buildStyledButton(
+                    context,
+                    icon: Icons.account_balance,
+                    label: "Add Intermediary",
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AddIntermediaryScreen(),
+                          ),
                         ),
-                      );
-                    },
+                    theme: theme,
                   ),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.send),
-                    label: const Text("Remitt Money! "),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const RemittanceFlow(),
+                  _buildStyledButton(
+                    context,
+                    icon: Icons.send,
+                    label: "Remit Money",
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const RemittanceFlow(),
+                          ),
                         ),
-                      );
-                    },
+                    theme: theme,
                   ),
                 ],
               ),
             ),
-
+            const SizedBox(height: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   buildBeneficiarySelector(context, beneficiaryProvider, theme),
+                  const SizedBox(height: 12),
                   buildAmountInput(theme, viewModel),
+                  const SizedBox(height: 12),
                   buildNumberPad(theme, viewModel),
+                  const SizedBox(height: 16),
                   buildConfirmButton(context, theme, viewModel),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStyledButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Map<String, dynamic> theme,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: theme["buttonHighlight"],
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: onTap,
+        child: Row(
+          children: [
+            Icon(icon, color: theme["backgroundColor"]),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: theme["backgroundColor"],
               ),
             ),
           ],

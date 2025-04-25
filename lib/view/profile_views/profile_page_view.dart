@@ -6,22 +6,57 @@ import 'package:credbird/view/profile_views/business_details_view.dart';
 import 'package:credbird/view/profile_views/edit_account_view.dart';
 import 'package:credbird/view/registration_views/gst_registration_view.dart';
 import 'package:credbird/view/profile_views/kyc_view.dart';
-import 'package:credbird/view/registration_views/registration_view.dart';
 import 'package:credbird/view/profile_views/transaction_screen_view.dart';
 import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/home_provider.dart';
+import 'package:credbird/viewmodel/profile_providers/kyc_provider.dart';
+import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class ProfilePageView extends StatelessWidget {
+class ProfilePageView extends StatefulWidget {
   const ProfilePageView({super.key});
+
+  @override
+  State<ProfilePageView> createState() => _ProfilePageViewState();
+}
+
+class _ProfilePageViewState extends State<ProfilePageView> {
+  bool _kycCheckComplete = false;
+  bool _kycVerified = false;
+
+  Future<void> _checkKYCStatus() async {
+    final kycProvider = Provider.of<KYCProvider>(context, listen: false);
+    await kycProvider.checkKYCStatus();
+    setState(() {
+      _kycVerified = kycProvider.isKYCDone;
+      _kycCheckComplete = true;
+    });
+
+    if (_kycVerified) {
+      Provider.of<SendMoneyViewModel>(
+        context,
+        listen: false,
+      ).loadDropdownData();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkKYCStatus();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
     final authViewModel = Provider.of<AuthViewModel>(context);
     final homeViewModel = Provider.of<HomeViewModel>(context);
+
+    if (!_kycCheckComplete) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       backgroundColor: theme["scaffoldBackground"],
@@ -145,21 +180,7 @@ class ProfilePageView extends StatelessWidget {
                       },
                       theme,
                     ),
-                    const Divider(height: 1, indent: 16),
-                    _buildProfileOption(
-                      context,
-                      Icons.account_balance_outlined,
-                      "Registration",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegistrationView(),
-                          ),
-                        );
-                      },
-                      theme,
-                    ),
+
                     const Divider(height: 1, indent: 16),
                     _buildProfileOption(
                       context,
@@ -175,21 +196,25 @@ class ProfilePageView extends StatelessWidget {
                       },
                       theme,
                     ),
-                    const Divider(height: 1, indent: 16),
-                    _buildProfileOption(
-                      context,
-                      Icons.verified_user_outlined,
-                      "KYC Verification",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const KYCView(),
-                          ),
-                        );
-                      },
-                      theme,
-                    ),
+                    if (!_kycVerified) ...[
+                      const Divider(height: 1, indent: 16),
+
+                      _buildProfileOption(
+                        context,
+                        Icons.verified_user_outlined,
+                        "KYC Verification",
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const KYCView(),
+                            ),
+                          );
+                        },
+                        theme,
+                      ),
+                    ],
+
                     const Divider(height: 1, indent: 16),
                     Container(
                       decoration: BoxDecoration(
