@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 import 'package:credbird/repositories/remitence_repository/document_repository.dart';
 import 'package:flutter/material.dart';
@@ -59,6 +61,7 @@ class DocumentViewModel with ChangeNotifier {
                 'id': doc['_id'],
                 'label': detail?['documentName'] ?? 'Document',
                 'required': doc['isRequired'] ?? true,
+                'status': doc['status'] ?? 'PENDING',
               };
             }).toList();
       }
@@ -109,7 +112,7 @@ class DocumentViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> startESignProcess({
+  Future<Map<String, dynamic>> startESignProcess({
     required String transactionId,
     required String callBackUrl,
   }) async {
@@ -117,23 +120,36 @@ class DocumentViewModel with ChangeNotifier {
     _clearError();
 
     try {
-      _eSignData = await _repository.initiateESign(
+      final response = await _repository.initiateESign(
         transactionId: transactionId,
         callBackUrl: callBackUrl,
       );
+      _eSignData = response;
+      return {"success": true, "data": response};
     } catch (e) {
       _setError(e.toString());
+      return {"success": false};
     } finally {
       _setLoading(false);
     }
   }
 
-  Future<void> checkESignStatus(String transactionID) async {
+  Future<void> checkESignStatus(String clientId) async {
     _setLoading(true);
     _clearError();
 
     try {
-      _eSignStatus = await _repository.checkESignStatus(transactionID);
+      final response = await _repository.checkESignStatus(clientId);
+
+      _eSignStatus = response;
+
+      final statusString = response['data']['data'];
+
+      if (statusString == "completed" || statusString == "COMPLETED") {
+        print("E-Sign completed for $clientId");
+      } else {
+        print("E-Sign still pending for $clientId, status: $statusString");
+      }
     } catch (e) {
       _setError(e.toString());
     } finally {

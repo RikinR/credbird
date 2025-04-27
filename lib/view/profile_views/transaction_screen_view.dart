@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:credbird/model/user_models/api_transaction_model.dart';
 import 'package:credbird/utils/transaction_detail_dialog.dart';
+import 'package:credbird/view/send_page_views/remittance_view/initate_remittance_views/documents_upload_view.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/transaction_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -150,11 +153,58 @@ class _TransactionScreenViewState extends State<TransactionScreenView> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              
             ],
           ),
         ),
-        onTap: () => showTransactionDetailDialog(context, transaction),
+        onTap: () async {
+          final transactionVM = Provider.of<TransactionViewModel>(
+            context,
+            listen: false,
+          );
+
+          final transactionDetail = await transactionVM
+              .fetchTransactionDetailById(transaction.id);
+
+          if (transactionDetail == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Failed to fetch transaction details."),
+              ),
+            );
+            return;
+          }
+
+          final invoices =
+              transactionDetail['invoices'] as List<dynamic>? ?? [];
+          bool hasPendingDocuments = false;
+
+          for (var invoice in invoices) {
+            final docs = invoice['document'] as List<dynamic>? ?? [];
+            for (var doc in docs) {
+              final status = doc['status']?.toString().toLowerCase();
+              if (status == 'pending') {
+                hasPendingDocuments = true;
+                break;
+              }
+            }
+            if (hasPendingDocuments) break;
+          }
+
+          if (hasPendingDocuments) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (_) => UploadDocumentsView(
+                      transactionId: transaction.id,
+                      esign: true,
+                    ),
+              ),
+            );
+          } else {
+            showTransactionDetailDialog(context, transaction);
+          }
+        },
       ),
     );
   }

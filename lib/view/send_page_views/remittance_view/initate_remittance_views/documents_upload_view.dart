@@ -80,20 +80,7 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
 
     if (missingRequiredDocs.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Missing required documents: ${missingRequiredDocs.map((d) => d['label']).join(', ')}",
-          ),
-        ),
-      );
-      return;
-    }
-
-    if (widget.esign && !_consentGiven) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please provide your consent to proceed with e-sign."),
-        ),
+        const SnackBar(content: Text("Please upload all required documents.")),
       );
       return;
     }
@@ -103,7 +90,6 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
             .map((doc) {
               final docId = doc['id'];
               final url = _uploadedUrlsMap[docId];
-
               return {
                 "_id": docId,
                 "documentUrl": url != null ? [url] : [],
@@ -114,58 +100,102 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
 
     try {
       if (widget.esign) {
-        if (widget.esign) {
+        await _docVM.submitDocuments(
+          transactionId: widget.transactionId,
+          documents: documents,
+          isDraft: true,
+        );
+
+        final esignResponse = await _docVM.startESignProcess(
+          transactionId: widget.transactionId,
+          callBackUrl: "https://google.com",
+        );
+
+        if (esignResponse['success'] == true) {
           await _docVM.submitDocuments(
             transactionId: widget.transactionId,
             documents: documents,
-            isDraft: true,
+            isDraft: false,
           );
 
-          await _docVM.fetchTransactionDocuments(widget.transactionId);
+          _startPaymentLinkFlow();
 
-          await _docVM.startESignProcess(
-            transactionId: widget.transactionId,
-            callBackUrl: "www.google.com",
+          _showValidationPopupAndNavigate();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Some error occurred, please try again later."),
+            ),
           );
         }
-      }
-      if (!widget.esign) {
-        final paymentVM = Provider.of<PaymentViewModel>(context, listen: false);
-        await paymentVM.startPayment(widget.transactionId);
-
-        showDialog(
-          context: context,
-          builder:
-              (context) => AlertDialog(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Lottie.asset('assets/email.json', width: 150),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "We've emailed the payment link to your registered email.",
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("OK"),
-                  ),
-                ],
-              ),
+      } else {
+        await _docVM.submitDocuments(
+          transactionId: widget.transactionId,
+          documents: documents,
+          isDraft: false,
         );
-      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Documents submitted successfully!")),
-      );
-      Navigator.pop(context);
+        _startPaymentLinkFlow();
+        _showValidationPopupAndNavigate();
+      }
     } catch (e) {
+      print('Submit Document error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error submitting documents: ${e.toString()}")),
+        const SnackBar(
+          content: Text("Some error occurred, please try again later."),
+        ),
       );
     }
+  }
+
+  void _showValidationPopupAndNavigate() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Please Wait"),
+            content: const Text(
+              "Validation is in progress. You will receive the payment link on your email shortly.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _startPaymentLinkFlow() async {
+    final paymentVM = Provider.of<PaymentViewModel>(context, listen: false);
+    await paymentVM.startPayment(widget.transactionId);
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset('assets/email.json', width: 150),
+                const SizedBox(height: 16),
+                const Text(
+                  "We've emailed the payment link to your registered email.",
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
@@ -250,6 +280,10 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
                             itemCount: vm.requiredDocuments.length,
                             itemBuilder: (context, index) {
                               final doc = vm.requiredDocuments[index];
+                              final isUploaded =
+                                  doc['status'] == 'UPLOADED' ||
+                                  _uploadedUrlsMap.containsKey(doc['id']);
+
                               return Card(
                                 child: ListTile(
                                   title: Text(doc['label']),
@@ -265,17 +299,24 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      if (_uploadedUrlsMap.containsKey(
-                                        doc['id'],
-                                      ))
-                                        const Icon(
-                                          Icons.check_circle,
-                                          color: Colors.green,
-                                        ),
-                                      IconButton(
-                                        icon: const Icon(Icons.upload_file),
-                                        onPressed: () => _uploadPDF(doc['id']),
-                                      ),
+                                      isUploaded
+                                          ? ElevatedButton.icon(
+                                            onPressed: null,
+                                            icon: const Icon(
+                                              Icons.check_circle,
+                                              color: Colors.white,
+                                            ),
+                                            label: const Text("Uploaded"),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          )
+                                          : ElevatedButton.icon(
+                                            onPressed:
+                                                () => _uploadPDF(doc['id']),
+                                            icon: const Icon(Icons.upload_file),
+                                            label: const Text("Upload"),
+                                          ),
                                     ],
                                   ),
                                 ),
@@ -283,7 +324,6 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
                             },
                           ),
                 ),
-
                 if (widget.esign)
                   CheckboxListTile(
                     value: _consentGiven,

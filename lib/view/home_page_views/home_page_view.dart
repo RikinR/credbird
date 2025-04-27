@@ -495,7 +495,7 @@ class _HomePageViewState extends State<HomePageView>
               Text(dateFormat.format(transaction.createdAt ?? DateTime.now())),
               Chip(
                 label: Text(
-                  transaction.status ?? 'Unknown',
+                  transaction.status.toLowerCase() ?? 'Unknown',
                   style: const TextStyle(color: Colors.white),
                 ),
                 backgroundColor: statusColor,
@@ -517,7 +517,6 @@ class _HomePageViewState extends State<HomePageView>
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              
             ],
           ),
         ),
@@ -659,7 +658,7 @@ class _HomePageViewState extends State<HomePageView>
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
 
     return SizedBox(
-      height: 50, 
+      height: 50,
       child: ListTile(
         leading: Icon(icon, color: theme["textColor"]),
         title: Text(

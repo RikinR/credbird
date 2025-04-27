@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:credbird/model/remittance/transaction_response_model.dart';
 import 'package:credbird/repositories/user_repository/transaction_repository.dart';
 import 'package:flutter/material.dart';
@@ -75,4 +77,15 @@ class TransactionViewModel extends ChangeNotifier {
     _searchQuery = '';
     loadTransactions(refresh: true);
   }
+
+  Future<Map<String, dynamic>?> fetchTransactionDetailById(String id) async {
+  try {
+    final detail = await _repository.getTransactionById(id);
+    return detail;
+  } catch (e) {
+    print('Error fetching transaction by ID: $e');
+    return null;
+  }
+}
+
 }
