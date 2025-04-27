@@ -343,7 +343,7 @@ class SendMoneyViewModel extends ChangeNotifier {
           builder:
               (_) => UploadDocumentsView(
                 transactionId: transactionId,
-                esign: true,
+                esign: false,
               ),
         ),
       );

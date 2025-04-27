@@ -8,6 +8,7 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/send_page_viewmodels/document_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UploadDocumentsView extends StatefulWidget {
   final String transactionId;
@@ -27,6 +28,8 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
   bool _consentGiven = false;
   late final DocumentViewModel _docVM;
   final Map<String, String> _uploadedUrlsMap = {};
+  String? _eSignClientId;
+  String? _eSignUrl;
 
   @override
   void initState() {
@@ -85,6 +88,13 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
       return;
     }
 
+    if (widget.esign && !_consentGiven) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please consent to e-sign terms.")),
+      );
+      return;
+    }
+
     final documents =
         _docVM.requiredDocuments
             .map((doc) {
@@ -108,25 +118,27 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
 
         final esignResponse = await _docVM.startESignProcess(
           transactionId: widget.transactionId,
-          callBackUrl: "https://google.com",
+          callBackUrl:
+              "https://google.com", 
         );
 
         if (esignResponse['success'] == true) {
-          await _docVM.submitDocuments(
-            transactionId: widget.transactionId,
-            documents: documents,
-            isDraft: false,
-          );
+          setState(() {
+            _eSignClientId = esignResponse['data']['client_id'];
+            _eSignUrl = esignResponse['data']['url'];
+            _docVM.setESignInProgress(true);
+          });
 
-          _startPaymentLinkFlow();
-
-          _showValidationPopupAndNavigate();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Some error occurred, please try again later."),
-            ),
-          );
+          if (_eSignUrl != null) {
+            if (await canLaunchUrl(Uri.parse(_eSignUrl!))) {
+              await launchUrl(
+                Uri.parse(_eSignUrl!),
+                mode: LaunchMode.externalApplication,
+              );
+            } else {
+              throw 'Could not launch $_eSignUrl';
+            }
+          }
         }
       } else {
         await _docVM.submitDocuments(
@@ -134,15 +146,61 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
           documents: documents,
           isDraft: false,
         );
-
         _startPaymentLinkFlow();
         _showValidationPopupAndNavigate();
       }
     } catch (e) {
-      print('Submit Document error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+    }
+  }
+
+  Future<void> _checkESignStatus() async {
+    if (_eSignClientId == null) return;
+
+    try {
+      await _docVM.checkESignStatus(_eSignClientId!);
+
+      if (_docVM.eSignStatus?['data'].toString().toLowerCase() ==
+          "esign_completed") {
+        final documents =
+            _docVM.requiredDocuments
+                .map((doc) {
+                  final docId = doc['id'];
+                  final url = _uploadedUrlsMap[docId];
+                  print(
+                    "Document ID: ${doc['id']} (Type: ${doc['id'].runtimeType})",
+                  );
+
+                  return {
+                    "_id": docId,
+                    "documentUrl": url != null ? [url] : [],
+                  };
+                })
+                .where((d) => d['documentUrl']!.isNotEmpty)
+                .toList();
+
+        await _docVM.completeESignFlow(
+          transactionId: widget.transactionId,
+          documents: documents,
+        );
+
+        _startPaymentLinkFlow();
+        _showValidationPopupAndNavigate();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "E-Sign not completed yet. Please complete the process in the browser.",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Some error occurred, please try again later."),
+        SnackBar(
+          content: Text("Error checking e-sign status: ${e.toString()}"),
         ),
       );
     }
@@ -265,7 +323,10 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
                 SwitchListTile(
                   title: const Text("Use E-Sign"),
                   value: widget.esign,
-                  onChanged: (val) => setState(() => widget.esign = val),
+                  onChanged:
+                      vm.isESignInProgress
+                          ? null
+                          : (val) => setState(() => widget.esign = val),
                 ),
 
                 Expanded(
@@ -313,7 +374,10 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
                                           )
                                           : ElevatedButton.icon(
                                             onPressed:
-                                                () => _uploadPDF(doc['id']),
+                                                vm.isESignInProgress
+                                                    ? null
+                                                    : () =>
+                                                        _uploadPDF(doc['id']),
                                             icon: const Icon(Icons.upload_file),
                                             label: const Text("Upload"),
                                           ),
@@ -324,7 +388,8 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
                             },
                           ),
                 ),
-                if (widget.esign)
+
+                if (widget.esign && !vm.isESignInProgress)
                   CheckboxListTile(
                     value: _consentGiven,
                     onChanged:
@@ -335,39 +400,7 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
                   ),
                 const SizedBox(height: 16),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme["buttonHighlight"],
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 26,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: _submitDocuments,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.done, color: Colors.white),
-                        const SizedBox(width: 8),
-                        Text(
-                          widget.esign
-                              ? "Start E-Sign Flow"
-                              : "Submit Documents",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: theme["backgroundColor"],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildMainActionButton(vm, theme),
 
                 if (vm.errorMessage.isNotEmpty)
                   Padding(
@@ -381,6 +414,95 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildMainActionButton(
+    DocumentViewModel vm,
+    Map<String, dynamic> theme,
+  ) {
+    if (vm.isESignInProgress) {
+      return Column(
+        children: [
+          const Text(
+            "Please complete the e-sign process in your browser",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: _checkESignStatus,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.refresh, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Check E-Sign Status",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () {
+              if (_eSignUrl != null) {
+                launchUrl(
+                  Uri.parse(_eSignUrl!),
+                  mode: LaunchMode.externalApplication,
+                );
+              }
+            },
+            child: const Text("Open E-Sign Page Again"),
+          ),
+        ],
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: theme["buttonHighlight"],
+          padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: _submitDocuments,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.done, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(
+              widget.esign ? "Start E-Sign Flow" : "Submit Documents",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: theme["backgroundColor"],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

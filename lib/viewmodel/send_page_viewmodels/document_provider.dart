@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
 import 'dart:io';
 import 'package:credbird/repositories/remitence_repository/document_repository.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,13 @@ class DocumentViewModel with ChangeNotifier {
   List<Map<String, dynamic>> _requiredDocuments = [];
 
   List<Map<String, dynamic>> get requiredDocuments => _requiredDocuments;
+  bool _isESignInProgress = false;
+  bool get isESignInProgress => _isESignInProgress;
+
+  void setESignInProgress(bool value) {
+    _isESignInProgress = value;
+    notifyListeners();
+  }
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -39,6 +47,27 @@ class DocumentViewModel with ChangeNotifier {
 
   void _clearError() {
     _errorMessage = '';
+  }
+
+  Future<void> completeESignFlow({
+    required String transactionId,
+    required List<Map<String, dynamic>> documents,
+  }) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _repository.uploadTransactionDocuments(
+        transactionId: transactionId,
+        documents: documents,
+      );
+
+    } catch (e) {
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
   }
 
   Future<void> fetchTransactionDocuments(String transactionId) async {
@@ -140,17 +169,24 @@ class DocumentViewModel with ChangeNotifier {
 
     try {
       final response = await _repository.checkESignStatus(clientId);
+      print("heree 1");
 
       _eSignStatus = response;
+      print("heree 2");
 
-      final statusString = response['data']['data'];
+      final statusString = response['data'] ?? '';
 
-      if (statusString == "completed" || statusString == "COMPLETED") {
+      print("heree 3");
+
+      if (statusString.toString().toLowerCase() == "esign_completed" ||
+          statusString == "COMPLETED") {
         print("E-Sign completed for $clientId");
       } else {
         print("E-Sign still pending for $clientId, status: $statusString");
       }
     } catch (e) {
+      print("heree");
+      print(e.toString());
       _setError(e.toString());
     } finally {
       _setLoading(false);
