@@ -226,7 +226,7 @@ class _ProfilePageViewState extends State<ProfilePageView> {
                           _buildProfileOption(
                             context,
                             Icons.credit_card_outlined,
-                            "Virtual Cards",
+                            "Card Options",
                             () {
                               _showCardsDialog(context, theme);
                             },

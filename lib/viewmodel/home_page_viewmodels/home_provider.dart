@@ -180,7 +180,7 @@ class HomeViewModel extends ChangeNotifier {
 
   void requestVirtualCard(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Virtual card request initiated')),
+      const SnackBar(content: Text('Card Options request initiated')),
     );
   }
 

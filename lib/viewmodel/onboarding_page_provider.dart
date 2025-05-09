@@ -44,8 +44,8 @@ class OnboardPageProvider extends ChangeNotifier {
       ),
     ),
     PageViewModel(
-      title: "Virtual Cards",
-      body: "Generate virtual cards for secure online payments",
+      title: "Card Options",
+      body: "Generate Card Options for secure online payments",
       image: Center(
         child: Image.asset('assets/mastercardLogo.png', height: 250),
       ),

@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -142,9 +142,9 @@ class _SplashScreenState extends State<SplashScreen>
                             ],
                           ),
                           child: Image.asset(
-                            'assets/appLogo.png',
-                            width: 90,
-                            height: 90,
+                            'assets/Bird Animation.gif',
+                            width: 120,
+                            height: 120,
                           ),
                         ),
                       );

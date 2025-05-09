@@ -258,7 +258,7 @@ class _HomePageViewState extends State<HomePageView>
                           ),
                           _buildActionButton(
                             context,
-                            "Virtual Card",
+                            "Card Options",
                             FontAwesomeIcons.creditCard,
                             theme,
                             onPressed: () {
@@ -276,7 +276,7 @@ class _HomePageViewState extends State<HomePageView>
                           ),
                           _buildActionButton(
                             context,
-                            "International Tourist",
+                            " E-Wallet",
                             FontAwesomeIcons.earthAsia,
                             theme,
                             onPressed: () {
@@ -296,7 +296,7 @@ class _HomePageViewState extends State<HomePageView>
                           ),
                           _buildActionButton(
                             context,
-                            "Forex",
+                            "Live Forex",
                             FontAwesomeIcons.chartLine,
                             theme,
                             onPressed: () {

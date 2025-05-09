@@ -390,7 +390,7 @@ void showCountrySelectionDialog(BuildContext context) {
     context: context,
     builder:
         (context) => AlertDialog(
-          title: const Text('Select Country for Virtual Card'),
+          title: const Text('Select Country for Card Options'),
           content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
@@ -405,7 +405,7 @@ void showCountrySelectionDialog(BuildContext context) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Virtual card for ${countries[index]} generated',
+                          'Card Options for ${countries[index]} generated',
                         ),
                         behavior: SnackBarBehavior.floating,
                       ),
