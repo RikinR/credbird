@@ -8,6 +8,9 @@ class KYCProvider with ChangeNotifier {
   final Map<String, File?> _selectedFiles = {};
   bool _loading = false;
 
+  bool _isSubmitted = false;
+  bool get isSubmitted => _isSubmitted;
+
   List<dynamic> get pendingDocs => _pendingDocs;
   Map<String, File?> get selectedFiles => _selectedFiles;
   bool get isLoading => _loading;
@@ -52,6 +55,7 @@ class KYCProvider with ChangeNotifier {
         registrationId: registrationId,
         documents: finalDocuments,
       );
+      _isSubmitted = true;
     } finally {
       _loading = false;
       notifyListeners();

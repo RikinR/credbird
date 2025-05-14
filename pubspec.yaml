@@ -62,6 +62,8 @@ flutter:
     - assets\loading.json
     - assets\Bird Animation.gif
     - assets\applogo.jpeg
+    - assets\animations\send_email.json
+    - assets\animations\waiting_verification.json
 
 
 flutter_native_splash:

@@ -311,7 +311,6 @@ onStepContinue: () async {
         onChanged: onChanged,
         keyboardType: type,
         enabled: enabled,
-        textCapitalization: TextCapitalization.characters,
         decoration: InputDecoration(
           labelText: label,
           filled: true,

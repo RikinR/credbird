@@ -87,7 +87,7 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                   child: ListView(
                     children: [
                       SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
+                        width: MediaQuery.of(context).size.width * 0.8,
                         child: DropdownButtonFormField<String>(
                           value: _remitterTypeController.text,
                           items:
@@ -104,7 +104,10 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                               _remitterTypeController.text = newValue!;
                             });
                           },
-                          decoration: _dropdownDecoration(theme, 'Remitter Type'),
+                          decoration: _dropdownDecoration(
+                            theme,
+                            'Remitter Type',
+                          ),
                         ),
                       ),
                       _buildField("PAN Number", _panController, theme),
@@ -129,13 +132,13 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                           _placeOfIssueController,
                           theme,
                         ),
-                        _buildField(
-                          "Date of Issue (YYYY-MM-DD)",
+                        _buildDateField(
+                          "Date of Issue",
                           _dateOfIssueController,
                           theme,
                         ),
-                        _buildField(
-                          "Date of Expiry (YYYY-MM-DD)",
+                        _buildDateField(
+                          "Date of Expiry",
                           _dateOfExpiryController,
                           theme,
                         ),
@@ -160,13 +163,13 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                           _studentPlaceOfIssueController,
                           theme,
                         ),
-                        _buildField(
-                          "Student Date of Issue (YYYY-MM-DD)",
+                        _buildDateField(
+                          "Student Date of Issue",
                           _studentDateOfIssueController,
                           theme,
                         ),
-                        _buildField(
-                          "Student Date of Expiry (YYYY-MM-DD)",
+                        _buildDateField(
+                          "Student Date of Expiry",
                           _studentDateOfExpiryController,
                           theme,
                         ),
@@ -257,6 +260,76 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                   ),
                 ),
               ),
+    );
+  }
+
+  Widget _buildDateField(
+    String label,
+    TextEditingController controller,
+    ThemeData theme,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: theme.primaryColor),
+          filled: true,
+          fillColor: theme.cardColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onTap: () async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(1900),
+            lastDate: DateTime(2100),
+          );
+          if (picked != null) {
+            controller.text =
+                "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+          }
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select $label';
+          }
+
+          
+          if (label.contains('Issue')) {
+            controller.text = value;
+          }
+
+          if (label.contains('Expiry')) {
+            try {
+              final issueStr =
+                  label.contains('Student')
+                      ? _studentDateOfIssueController.text
+                      : _dateOfIssueController.text;
+
+              final expiryStr = value;
+              if (issueStr.isEmpty || expiryStr.isEmpty) return null;
+
+              final issueDate = DateTime.parse(issueStr);
+              final expiryDate = DateTime.parse(expiryStr);
+              final diff = expiryDate.difference(issueDate).inDays;
+
+              if (diff < 9 * 365 || diff > 10 * 365 + 183) {
+                return 'Passport validity should be about 10 years';
+              }
+            } catch (_) {
+              return 'Invalid date format';
+            }
+          }
+
+          return null;
+        },
+      ),
     );
   }
 

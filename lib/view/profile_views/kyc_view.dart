@@ -1,12 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'package:credbird/view/initial_views/landing_page_view.dart';
+import 'package:credbird/viewmodel/authentication_provider.dart';
 import 'package:credbird/viewmodel/profile_providers/kyc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
-import 'package:lottie/lottie.dart'; 
+import 'package:lottie/lottie.dart';
 
 class KYCView extends StatefulWidget {
   const KYCView({super.key});
@@ -19,9 +22,12 @@ class _KYCViewState extends State<KYCView> {
   String? registrationId;
   bool isSubmitted = false;
   bool _initialCheckComplete = false;
+
   @override
   void initState() {
     super.initState();
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+    authViewModel.fetchUserDetails();
     _loadRegistrationId();
     _checkInitialKYCStatus();
   }
@@ -47,6 +53,13 @@ class _KYCViewState extends State<KYCView> {
     ).loadPendingDocuments();
   }
 
+  Future<void> _checkInitialKYCStatus() async {
+    await Provider.of<KYCProvider>(context, listen: false).checkKYCStatus();
+    setState(() {
+      _initialCheckComplete = true;
+    });
+  }
+
   Future<void> _pickFile(String documentId) async {
     if (isSubmitted) return;
 
@@ -64,15 +77,9 @@ class _KYCViewState extends State<KYCView> {
     }
   }
 
-  Future<void> _checkInitialKYCStatus() async {
-    await Provider.of<KYCProvider>(context, listen: false).checkKYCStatus();
-    setState(() {
-      _initialCheckComplete = true;
-    });
-  }
-
   @override
-  Widget build(BuildContext context) { final theme = Provider.of<ThemeProvider>(context).themeConfig;
+  Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context).themeConfig;
     final kycProvider = Provider.of<KYCProvider>(context);
 
     if (!_initialCheckComplete) {
@@ -82,53 +89,14 @@ class _KYCViewState extends State<KYCView> {
     }
 
     if (kycProvider.isKYCDone) {
-      return Scaffold(
-        backgroundColor: theme["scaffoldBackground"],
-        appBar: AppBar(
-          title: const Text("KYC Verification"),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          foregroundColor: theme["textColor"],
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Lottie.asset(
-                'assets/animation.json', 
-                width: 200,
-                height: 200,
-                repeat: false,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                "KYC Verification Complete",
-                style: TextStyle(
-                  color: theme["textColor"],
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme["textColor"],
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                ),
-                child: Text(
-                  "Continue",
-                  style: TextStyle(
-                    color: theme["backgroundColor"],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      return _buildKYCCompletedScreen(theme);
+    }
+
+    final kycInProgress =
+        !kycProvider.isKYCDone && kycProvider.pendingDocs.isEmpty;
+
+    if (kycInProgress || isSubmitted) {
+      return _buildKYCInProgressScreen(theme);
     }
 
     return Scaffold(
@@ -244,9 +212,6 @@ class _KYCViewState extends State<KYCView> {
                                   setState(() {
                                     isSubmitted = true;
                                   });
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
-                                  }
                                 },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme["textColor"],
@@ -268,6 +233,97 @@ class _KYCViewState extends State<KYCView> {
                   ],
                 ),
               ),
+    );
+  }
+
+  Widget _buildKYCCompletedScreen(Map<String, dynamic> theme) {
+    return Scaffold(
+      backgroundColor: theme["scaffoldBackground"],
+      appBar: AppBar(
+        title: const Text("KYC Verification"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: theme["textColor"],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset(
+              'assets/animation.json',
+              width: 200,
+              height: 200,
+              repeat: false,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              "KYC Verification Complete",
+              style: TextStyle(
+                color: theme["textColor"],
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme["textColor"],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
+              ),
+              child: Text(
+                "Continue",
+                style: TextStyle(color: theme["backgroundColor"]),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKYCInProgressScreen(Map<String, dynamic> theme) {
+    return Scaffold(
+      backgroundColor: theme["scaffoldBackground"],
+      appBar: AppBar(
+        title: const Text("KYC Verification"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: theme["textColor"],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset(
+              'assets/processing.json',
+              width: 200,
+              height: 200,
+              repeat: true,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              "KYC Verification In Progress",
+              style: TextStyle(
+                color: theme["textColor"],
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Please wait while we validate your documents.",
+              style: TextStyle(color: theme["secondaryText"], fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

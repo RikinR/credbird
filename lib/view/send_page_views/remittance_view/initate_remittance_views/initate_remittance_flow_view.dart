@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:credbird/view/send_page_views/remittance_view/initate_remittance_views/invoice_details_view.dart';
 import 'package:credbird/view/send_page_views/remittance_view/initate_remittance_views/lrs_info_view.dart';
 import 'package:credbird/view/send_page_views/remittance_view/initate_remittance_views/transaction_details_step_view.dart';

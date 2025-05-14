@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable, use_build_context_synchronously
+// ignore_for_file: must_be_immutable, use_build_context_synchronously, avoid_print
 
 import 'dart:io';
 import 'package:credbird/viewmodel/send_page_viewmodels/payment_viewmodel.dart';
@@ -395,7 +395,7 @@ class _UploadDocumentsViewState extends State<UploadDocumentsView> {
                     onChanged:
                         (val) => setState(() => _consentGiven = val ?? false),
                     title: const Text(
-                      "I consent to the use of my Aadhar details for e-sign purposes...",
+                      "I consent to the use of my Aadhar details for e-sign purposes.",
                     ),
                   ),
                 const SizedBox(height: 16),

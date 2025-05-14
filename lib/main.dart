@@ -32,6 +32,7 @@ import 'package:credbird/viewmodel/send_page_viewmodels/send_money_provider.dart
 import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:credbird/viewmodel/usage_provider.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

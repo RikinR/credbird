@@ -481,21 +481,21 @@ class _HomePageViewState extends State<HomePageView>
     DateFormat dateFormat,
     ThemeData theme,
   ) {
-    final isCompleted = (transaction.status ?? '').toLowerCase() == 'completed';
+    final isCompleted = (transaction.status).toLowerCase() == 'completed';
     final statusColor = isCompleted ? Colors.green : Colors.orange;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        title: Text(transaction.beneficiaryName ?? 'N/A'),
+        title: Text(transaction.beneficiaryName),
         subtitle: Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(dateFormat.format(transaction.createdAt ?? DateTime.now())),
+              Text(dateFormat.format(transaction.createdAt)),
               Chip(
                 label: Text(
-                  transaction.status.toLowerCase() ?? 'Unknown',
+                  transaction.status.toLowerCase(),
                   style: const TextStyle(color: Colors.white),
                 ),
                 backgroundColor: statusColor,
@@ -512,7 +512,7 @@ class _HomePageViewState extends State<HomePageView>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${transaction.currency ?? ''} ${transaction.netAmount?.toStringAsFixed(2) ?? '0.00'}',
+                '${transaction.currency} ${transaction.netAmount.toStringAsFixed(2)}',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:convert';
 import 'package:credbird/model/user_models/dashboard_count.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

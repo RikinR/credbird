@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class PaymentViewModel extends ChangeNotifier {
   final _repo = PaymentRepository();
   bool isLoading = false;
+  bool linkSent = false;
 
   Future<void> startPayment(String transactionId) async {
     try {
@@ -11,6 +12,7 @@ class PaymentViewModel extends ChangeNotifier {
       notifyListeners();
 
       await _repo.initiatePayment(transactionId: transactionId);
+      linkSent = true;
 
       isLoading = false;
       notifyListeners();

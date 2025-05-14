@@ -1,7 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:credbird/model/user_models/api_transaction_model.dart';
 import 'package:credbird/utils/transaction_detail_dialog.dart';
+import 'package:credbird/view/send_page_views/payment_link_view.dart';
 import 'package:credbird/view/send_page_views/remittance_view/initate_remittance_views/documents_upload_view.dart';
 import 'package:credbird/viewmodel/home_page_viewmodels/transaction_view_model.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class _TransactionScreenViewState extends State<TransactionScreenView> {
   @override
   void initState() {
     super.initState();
+    print("transaction_screen_view");
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<TransactionViewModel>(
         context,
@@ -119,20 +121,24 @@ class _TransactionScreenViewState extends State<TransactionScreenView> {
     DateFormat dateFormat,
     ThemeData theme,
   ) {
-    final isCompleted = (transaction.status ?? '').toLowerCase() == 'completed';
-    final statusColor = isCompleted ? Colors.green : Colors.orange;
+    final statusColor =
+        transaction.status == 'VERIFIED'
+            ? Colors.green
+            : transaction.status == 'PENDING'
+            ? Colors.orange
+            : Colors.red;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        title: Text(transaction.beneficiaryName ?? 'N/A'),
+        title: Text(transaction.beneficiaryName),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(dateFormat.format(transaction.createdAt ?? DateTime.now())),
+            Text(dateFormat.format(transaction.createdAt)),
             Chip(
               label: Text(
-                transaction.status ?? 'Unknown',
+                transaction.status,
                 style: const TextStyle(color: Colors.white),
               ),
               backgroundColor: statusColor,
@@ -148,7 +154,7 @@ class _TransactionScreenViewState extends State<TransactionScreenView> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${transaction.currency ?? ''} ${transaction.netAmount?.toStringAsFixed(2) ?? '0.00'}',
+                '${transaction.currency} ${transaction.netAmount.toStringAsFixed(2)}',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -190,7 +196,19 @@ class _TransactionScreenViewState extends State<TransactionScreenView> {
             if (hasPendingDocuments) break;
           }
 
-          if (hasPendingDocuments) {
+          final status = (transaction.status).toLowerCase();
+          if (status == 'pending' || status == 'verified') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (_) => PaymentLinkScreen(
+                      transactionId: transaction.id,
+                      status: status,
+                    ),
+              ),
+            );
+          } else if (hasPendingDocuments) {
             Navigator.push(
               context,
               MaterialPageRoute(

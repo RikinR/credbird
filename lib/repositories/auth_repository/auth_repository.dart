@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, non_constant_identifier_names
+// ignore_for_file: avoid_print, non_constant_identifier_names, no_leading_underscores_for_local_identifiers
 
 import 'dart:convert';
 import 'package:credbird/model/auth_models/user_model.dart';

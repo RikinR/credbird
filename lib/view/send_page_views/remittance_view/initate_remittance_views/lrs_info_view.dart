@@ -82,7 +82,7 @@ class _LRSInformationStepState extends State<LRSInformationStep> {
                   TextFormField(
                     controller: _amountInrController,
                     decoration: const InputDecoration(
-                      labelText: "Amount in INR (\$)",
+                      labelText: "Amount in INR ",
                     ),
                     keyboardType: TextInputType.number,
                   ),
