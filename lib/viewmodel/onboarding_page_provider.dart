@@ -6,17 +6,22 @@ class OnboardPageProvider extends ChangeNotifier {
     PageViewModel(
       title: "Welcome to Credbird!",
       body: "Your trusted financial companion for seamless transactions",
-      image: Center(child: Image.asset('assets/appLogo.png', height: 250)),
+      image: Center(
+        child: Container(
+          color: const Color.fromARGB(255, 10, 31, 60),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset('assets/appLogo.png', height: 250),
+          ),
+        ),
+      ),
       decoration: const PageDecoration(
         titleTextStyle: TextStyle(
           fontSize: 28.0,
           fontWeight: FontWeight.bold,
-          color: Colors.black, 
+          color: Colors.black,
         ),
-        bodyTextStyle: TextStyle(
-          fontSize: 16.0,
-          color: Colors.black87, 
-        ),
+        bodyTextStyle: TextStyle(fontSize: 16.0, color: Colors.black87),
         bodyAlignment: Alignment.center,
         titlePadding: EdgeInsets.only(top: 40),
         imagePadding: EdgeInsets.only(top: 80),
@@ -33,10 +38,7 @@ class OnboardPageProvider extends ChangeNotifier {
           fontWeight: FontWeight.bold,
           color: Colors.black,
         ),
-        bodyTextStyle: TextStyle(
-          fontSize: 16.0,
-          color: Colors.black87, 
-        ),
+        bodyTextStyle: TextStyle(fontSize: 16.0, color: Colors.black87),
         bodyAlignment: Alignment.center,
         titlePadding: EdgeInsets.only(top: 40),
         imagePadding: EdgeInsets.only(top: 80),
@@ -53,12 +55,9 @@ class OnboardPageProvider extends ChangeNotifier {
         titleTextStyle: TextStyle(
           fontSize: 28.0,
           fontWeight: FontWeight.bold,
-          color: Colors.black, 
+          color: Colors.black,
         ),
-        bodyTextStyle: TextStyle(
-          fontSize: 16.0,
-          color: Colors.black87, 
-        ),
+        bodyTextStyle: TextStyle(fontSize: 16.0, color: Colors.black87),
         bodyAlignment: Alignment.center,
         titlePadding: EdgeInsets.only(top: 40),
         imagePadding: EdgeInsets.only(top: 80),
@@ -73,12 +72,9 @@ class OnboardPageProvider extends ChangeNotifier {
         titleTextStyle: TextStyle(
           fontSize: 28.0,
           fontWeight: FontWeight.bold,
-          color: Colors.black, 
+          color: Colors.black,
         ),
-        bodyTextStyle: TextStyle(
-          fontSize: 16.0,
-          color: Colors.black87, 
-        ),
+        bodyTextStyle: TextStyle(fontSize: 16.0, color: Colors.black87),
         bodyAlignment: Alignment.center,
         titlePadding: EdgeInsets.only(top: 40),
         imagePadding: EdgeInsets.only(top: 80),

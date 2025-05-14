@@ -143,8 +143,8 @@ class _SplashScreenState extends State<SplashScreen>
                           ),
                           child: Image.asset(
                             'assets/Bird Animation.gif',
-                            width: 120,
-                            height: 120,
+                            width: 200,
+                            height: 200,
                           ),
                         ),
                       );

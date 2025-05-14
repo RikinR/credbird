@@ -64,11 +64,12 @@ flutter:
     - assets\applogo.jpeg
     - assets\animations\send_email.json
     - assets\animations\waiting_verification.json
+    - assets\logo.jpg
 
 
 flutter_native_splash:
   color: "#BB86FC"
-  image: assets/appLogo.png
+  image: assets\logo.jpg
   android: true
   ios: true
   web: false
@@ -78,4 +79,4 @@ flutter_native_splash:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/applogo.jpeg"
+  image_path: "assets/logo.jpg"
