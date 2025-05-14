@@ -65,6 +65,7 @@ flutter:
     - assets\animations\send_email.json
     - assets\animations\waiting_verification.json
     - assets\logo.jpg
+    - assets\payments.png
 
 
 flutter_native_splash:

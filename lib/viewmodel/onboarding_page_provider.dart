@@ -6,15 +6,7 @@ class OnboardPageProvider extends ChangeNotifier {
     PageViewModel(
       title: "Welcome to Credbird!",
       body: "Your trusted financial companion for seamless transactions",
-      image: Center(
-        child: Container(
-          color: const Color.fromARGB(255, 10, 31, 60),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset('assets/appLogo.png', height: 250),
-          ),
-        ),
-      ),
+      image: Center(child: Image.asset('assets/appLogo.png', height: 250)),
       decoration: const PageDecoration(
         titleTextStyle: TextStyle(
           fontSize: 28.0,
@@ -25,13 +17,13 @@ class OnboardPageProvider extends ChangeNotifier {
         bodyAlignment: Alignment.center,
         titlePadding: EdgeInsets.only(top: 40),
         imagePadding: EdgeInsets.only(top: 80),
-        pageColor: Colors.white,
+        pageColor: Colors.transparent,
       ),
     ),
     PageViewModel(
       title: "Payments Made Easy",
       body: "Send and receive money with just a few taps",
-      image: Center(child: Image.asset('assets/payments.jpg', height: 250)),
+      image: Center(child: Image.asset('assets/payments.png', height: 250)),
       decoration: const PageDecoration(
         titleTextStyle: TextStyle(
           fontSize: 28.0,
@@ -42,7 +34,7 @@ class OnboardPageProvider extends ChangeNotifier {
         bodyAlignment: Alignment.center,
         titlePadding: EdgeInsets.only(top: 40),
         imagePadding: EdgeInsets.only(top: 80),
-        pageColor: Colors.white,
+        pageColor: Colors.transparent,
       ),
     ),
     PageViewModel(
@@ -61,7 +53,7 @@ class OnboardPageProvider extends ChangeNotifier {
         bodyAlignment: Alignment.center,
         titlePadding: EdgeInsets.only(top: 40),
         imagePadding: EdgeInsets.only(top: 80),
-        pageColor: Colors.white,
+        pageColor: Colors.transparent,
       ),
     ),
     PageViewModel(
@@ -78,7 +70,7 @@ class OnboardPageProvider extends ChangeNotifier {
         bodyAlignment: Alignment.center,
         titlePadding: EdgeInsets.only(top: 40),
         imagePadding: EdgeInsets.only(top: 80),
-        pageColor: Colors.white,
+        pageColor: Colors.transparent,
       ),
     ),
   ];
