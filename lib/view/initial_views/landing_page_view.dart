@@ -15,55 +15,61 @@ class LandingPageView extends StatelessWidget {
     final theme = themeProvider.themeConfig;
     final pagesProvider = Provider.of<PagesProvider>(context);
 
-    return Stack(
-      children: [
-        pagesProvider.pages[pagesProvider.selectedIndex],
-        Positioned(
-          left: 32,
-          right: 32,
-          bottom: 16,
-          child: Container(
-            height: 60,
-            decoration: BoxDecoration(
-              color: theme["buttonHighlight"],
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (int i = 0; i < 4; i++)
-                  _buildNavigationItem(
-                    icon:
-                        i == 0
-                            ? Icons.home_outlined
-                            : i == 1
-                            ? Icons.send_rounded
-                            : i == 2
-                            ? Icons.payments_outlined
-                            : Icons.credit_card_outlined,
-                    label:
-                        i == 0
-                            ? 'Home'
-                            : i == 1
-                            ? 'Send'
-                            : i == 2
-                            ? 'Receive'
-                            : 'Card',
-                    isSelected: pagesProvider.selectedIndex == i,
-                    onTap: () => pagesProvider.onPageTapped(i),
+    return Scaffold(
+      body: Stack(
+        children: [
+          pagesProvider.pages[pagesProvider.selectedIndex],
+          Positioned(
+            left: 32,
+            right: 32,
+            bottom: 16,
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: theme["buttonHighlight"],
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
-              ],
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (int i = 0; i < 4; i++)
+                    _buildNavigationItem(
+                      icon:
+                          i == 0
+                              ? Icons.home_outlined
+                              : i == 1
+                              ? Icons.send_rounded
+                              : i == 2
+                              ? Icons.payments_outlined
+                              : Icons.credit_card_outlined,
+                      label:
+                          i == 0
+                              ? 'Home'
+                              : i == 1
+                              ? 'Send'
+                              : i == 2
+                              ? 'Receive'
+                              : 'Card',
+                      isSelected: pagesProvider.selectedIndex == i,
+                      onTap: () => pagesProvider.onPageTapped(i),
+                    ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+      // Add SnackBar margin to avoid bottom navigation bar
+      bottomNavigationBar: Container(height: 0),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      resizeToAvoidBottomInset: true,
     );
   }
 

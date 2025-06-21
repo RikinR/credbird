@@ -10,10 +10,14 @@ class RemitterProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String? _remitterId;
+  String? _panName;
+  String? _accountHolderName;
 
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get remitterId => _remitterId;
+  String? get panName => _panName;
+  String? get accountHolderName => _accountHolderName;
 
   Future<void> createRemitter({
     required String remitterType,
@@ -46,6 +50,9 @@ class RemitterProvider extends ChangeNotifier {
     try {
       final panData = await _regRepo.verifyPan(pan);
       final bankData = await _regRepo.verifyBankDetails(accountNumber, ifsc);
+
+      _panName = panData['full_name'];
+      _accountHolderName = bankData['full_name'];
 
       final remitter = RemitterModel(
         remitterType: remitterType,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/viewmodel/profile_providers/registration_provider.dart';
 import 'package:credbird/viewmodel/theme_provider.dart';
+import 'package:flutter/services.dart';
 
 class RegistrationView extends StatelessWidget {
   const RegistrationView({super.key});
@@ -33,8 +34,49 @@ class RegistrationView extends StatelessWidget {
   }
 }
 
-class _RegistrationStepper extends StatelessWidget {
+class _RegistrationStepper extends StatefulWidget {
   const _RegistrationStepper();
+
+  @override
+  State<_RegistrationStepper> createState() => _RegistrationStepperState();
+}
+
+class _RegistrationStepperState extends State<_RegistrationStepper> {
+  final _basicDetailsFormKey = GlobalKey<FormState>();
+  final _panFormKey = GlobalKey<FormState>();
+  final _bankFormKey = GlobalKey<FormState>();
+  final _contactFormKey = GlobalKey<FormState>();
+
+  // Controllers for Basic Details
+  final _passportController = TextEditingController();
+  final _mobileController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _pinController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _stateController = TextEditingController();
+  final _countryController = TextEditingController();
+
+  // Controllers for Contact Details
+  final _contactNameController = TextEditingController();
+  final _contactMobileController = TextEditingController();
+  final _contactEmailController = TextEditingController();
+
+  @override
+  void dispose() {
+    _passportController.dispose();
+    _mobileController.dispose();
+    _emailController.dispose();
+    _addressController.dispose();
+    _pinController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _countryController.dispose();
+    _contactNameController.dispose();
+    _contactMobileController.dispose();
+    _contactEmailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,25 +85,50 @@ class _RegistrationStepper extends StatelessWidget {
 
     return Stepper(
       currentStep: provider.currentStep,
-onStepContinue: () async {
-  if (provider.currentStep == 0) {
-    provider.goToStep(1);
-  } else if (provider.currentStep == 1) {
-    await provider.verifyPan();
-  } else if (provider.currentStep == 2) {
-    await provider.verifyBankDetails();
-  } else if (provider.currentStep == 3) {
-    bool success = await provider.submitRegistration();
-    if (success && context.mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const KYCView(),
-        ),
-      );
-    }
-  }
-},
+      onStepContinue: () async {
+        final provider =
+            Provider.of<RegistrationProvider>(context, listen: false);
+        if (provider.currentStep == 0) {
+          if (_basicDetailsFormKey.currentState!.validate()) {
+            provider.updateBasicDetails(
+              passport: _passportController.text,
+              mobile: _mobileController.text,
+              email: _emailController.text,
+              address: _addressController.text,
+              pin: _pinController.text,
+              city: _cityController.text,
+              state: _stateController.text,
+              country: _countryController.text.toUpperCase(),
+            );
+            provider.goToStep(1);
+          }
+        } else if (provider.currentStep == 1) {
+          if (_panFormKey.currentState!.validate()) {
+            await provider.verifyPan();
+          }
+        } else if (provider.currentStep == 2) {
+          if (_bankFormKey.currentState!.validate()) {
+            await provider.verifyBankDetails();
+          }
+        } else if (provider.currentStep == 3) {
+          if (_contactFormKey.currentState!.validate()) {
+            provider.updateContact(
+              _contactNameController.text,
+              _contactMobileController.text,
+              _contactEmailController.text,
+            );
+            bool success = await provider.submitRegistration();
+            if (success && mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const KYCView(),
+                ),
+              );
+            }
+          }
+        }
+      },
       onStepCancel: () {
         if (provider.currentStep > 0) {
           provider.goToStep(provider.currentStep - 1);
@@ -94,18 +161,17 @@ onStepContinue: () async {
                     backgroundColor: theme["textColor"],
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child:
-                      provider.isLoading
-                          ? CircularProgressIndicator(
+                  child: provider.isLoading
+                      ? CircularProgressIndicator(
+                          color: theme["backgroundColor"],
+                        )
+                      : Text(
+                          provider.currentStep == 3 ? "SUBMIT" : "NEXT",
+                          style: TextStyle(
                             color: theme["backgroundColor"],
-                          )
-                          : Text(
-                            provider.currentStep == 3 ? "SUBMIT" : "NEXT",
-                            style: TextStyle(
-                              color: theme["backgroundColor"],
-                              fontWeight: FontWeight.bold,
-                            ),
+                            fontWeight: FontWeight.bold,
                           ),
+                        ),
                 ),
               ),
             ],
@@ -124,56 +190,80 @@ onStepContinue: () async {
   Step _basicStep(BuildContext context) {
     final provider = Provider.of<RegistrationProvider>(context);
 
-    final TextEditingController passport = TextEditingController();
-    final TextEditingController mobile = TextEditingController();
-    final TextEditingController email = TextEditingController();
-    final TextEditingController address = TextEditingController();
-    final TextEditingController pin = TextEditingController();
-    final TextEditingController city = TextEditingController();
-    final TextEditingController state = TextEditingController();
-    final TextEditingController country = TextEditingController();
-
     return Step(
       title: const Text("Basic Details"),
       state: provider.currentStep > 0 ? StepState.complete : StepState.indexed,
-      content: Column(
-        children: [
-          _buildTextField(context, "Passport", passport),
-          _buildTextField(
-            context,
-            "Mobile (+91)",
-            mobile,
-            type: TextInputType.phone,
-          ),
-          _buildTextField(
-            context,
-            "Email",
-            email,
-            type: TextInputType.emailAddress,
-          ),
-          _buildTextField(context, "Address", address),
-          _buildTextField(context, "PIN Code", pin, type: TextInputType.number),
-          _buildTextField(context, "City", city),
-          _buildTextField(context, "State", state),
-          _buildTextField(context, "Country (IN UPPERCASE)", country),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: () {
-              provider.updateBasicDetails(
-                passport: passport.text,
-                mobile: mobile.text,
-                email: email.text,
-                address: address.text,
-                pin: pin.text,
-                city: city.text,
-                state: state.text,
-                country: country.text.toUpperCase(),
-              );
-              provider.goToStep(1);
-            },
-            child: const Text("Save & Continue"),
-          ),
-        ],
+      content: Form(
+        key: _basicDetailsFormKey,
+        child: Column(
+          children: [
+            _buildTextField(
+              context,
+              "Passport Number",
+              _passportController,
+              maxLength: 9,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                LengthLimitingTextInputFormatter(9),
+                UpperCaseTextFormatter(),
+              ],
+              textCapitalization: TextCapitalization.characters,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Passport number is required';
+                }
+                if (value.length < 8) {
+                  return 'Passport number must be at least 8 characters';
+                }
+                return null;
+              },
+            ),
+            _buildTextField(
+              context,
+              "Mobile (+91)",
+              _mobileController,
+              type: TextInputType.phone,
+              maxLength: 10,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Mobile number is required';
+                }
+                if (value.length != 10) {
+                  return 'Mobile number must be 10 digits';
+                }
+                return null;
+              },
+            ),
+            _buildTextField(
+              context,
+              "Email",
+              _emailController,
+              type: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Email required';
+                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value)) {
+                  return 'Invalid email';
+                }
+                return null;
+              },
+            ),
+            _buildTextField(context, "Address", _addressController),
+            _buildTextField(context, "PIN Code", _pinController,
+                type: TextInputType.number),
+            _buildTextField(context, "City", _cityController),
+            _buildTextField(context, "State", _stateController),
+            _buildTextField(
+              context,
+              "Country (IN UPPERCASE)",
+              _countryController,
+              textCapitalization: TextCapitalization.characters,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -185,32 +275,51 @@ onStepContinue: () async {
     return Step(
       title: const Text("PAN Verification"),
       state: provider.currentStep > 1 ? StepState.complete : StepState.indexed,
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTextField(
-            context,
-            "PAN Number",
-            null,
-            onChanged: provider.updatePan,
-            enabled: provider.registrationData.fullName == null,
-          ),
-          if (provider.registrationData.fullName != null) ...[
-            Text(
-              "Name: ${provider.registrationData.fullName}",
-              style: TextStyle(color: theme["textColor"]),
+      content: Form(
+        key: _panFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTextField(
+              context,
+              "PAN Number",
+              null,
+              maxLength: 10,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                LengthLimitingTextInputFormatter(10),
+                UpperCaseTextFormatter(),
+              ],
+              textCapitalization: TextCapitalization.characters,
+              onChanged: provider.updatePan,
+              enabled: provider.registrationData.fullName == null,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'PAN number is required';
+                }
+                if (!RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$').hasMatch(value)) {
+                  return 'Invalid PAN number format';
+                }
+                return null;
+              },
             ),
-            Text(
-              "TCS Rate: ${provider.registrationData.tcsRate}%",
-              style: TextStyle(color: theme["textColor"]),
-            ),
+            if (provider.registrationData.fullName != null) ...[
+              Text(
+                "Name: ${provider.registrationData.fullName}",
+                style: TextStyle(color: theme["textColor"]),
+              ),
+              Text(
+                "TCS Rate: ${provider.registrationData.tcsRate}%",
+                style: TextStyle(color: theme["textColor"]),
+              ),
+            ],
+            if (provider.errorMessage != null)
+              Text(
+                provider.errorMessage!,
+                style: TextStyle(color: theme["negativeAmount"]),
+              ),
           ],
-          if (provider.errorMessage != null)
-            Text(
-              provider.errorMessage!,
-              style: TextStyle(color: theme["negativeAmount"]),
-            ),
-        ],
+        ),
       ),
     );
   }
@@ -222,35 +331,54 @@ onStepContinue: () async {
     return Step(
       title: const Text("Bank Verification"),
       state: provider.currentStep > 2 ? StepState.complete : StepState.indexed,
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTextField(
-            context,
-            "Account Number",
-            null,
-            onChanged: provider.updateAccountNumber,
-            enabled: provider.registrationData.bankDetails.isEmpty,
-          ),
-          _buildTextField(
-            context,
-            "IFSC",
-            null,
-            onChanged: provider.updateIfsc,
-            enabled: provider.registrationData.bankDetails.isEmpty,
-          ),
-
-          if (provider.registrationData.bankDetails.isNotEmpty)
-            Text(
-              "Account Name: ${provider.registrationData.bankDetails.first.accountName}",
-              style: TextStyle(color: theme["textColor"]),
+      content: Form(
+        key: _bankFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTextField(
+              context,
+              "Account Number",
+              null,
+              maxLength: 18,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(18),
+              ],
+              onChanged: provider.updateAccountNumber,
+              enabled: provider.registrationData.bankDetails.isEmpty,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Account number is required';
+                }
+                return null;
+              },
             ),
-          if (provider.errorMessage != null)
-            Text(
-              provider.errorMessage!,
-              style: TextStyle(color: theme["negativeAmount"]),
+            _buildTextField(
+              context,
+              "IFSC",
+              null,
+              onChanged: provider.updateIfsc,
+              enabled: provider.registrationData.bankDetails.isEmpty,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'IFSC code is required';
+                }
+                return null;
+              },
             ),
-        ],
+            if (provider.registrationData.bankDetails.isNotEmpty)
+              Text(
+                "Account Name: ${provider.registrationData.bankDetails.first.accountName}",
+                style: TextStyle(color: theme["textColor"]),
+              ),
+            if (provider.errorMessage != null)
+              Text(
+                provider.errorMessage!,
+                style: TextStyle(color: theme["negativeAmount"]),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -259,73 +387,101 @@ onStepContinue: () async {
     final provider = Provider.of<RegistrationProvider>(context);
     final theme = Provider.of<ThemeProvider>(context).themeConfig;
 
-    final TextEditingController name = TextEditingController();
-    final TextEditingController mobile = TextEditingController();
-    final TextEditingController email = TextEditingController();
-
     return Step(
       title: const Text("Contact Detail"),
-      content: Column(
-        children: [
-          _buildTextField(context, "Full Name", name),
-          _buildTextField(context, "Mobile", mobile, type: TextInputType.phone),
-          _buildTextField(
-            context,
-            "Email",
-            email,
-            type: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              provider.updateContact(name.text, mobile.text, email.text);
-              provider.submitRegistration();
-            },
-            child: const Text("Submit Registration"),
-          ),
-          if (provider.errorMessage != null)
-            Text(
-              provider.errorMessage!,
-              style: TextStyle(color: theme["negativeAmount"]),
+      content: Form(
+        key: _contactFormKey,
+        child: Column(
+          children: [
+            _buildTextField(context, "Full Name", _contactNameController,
+                validator: (v) =>
+                    v!.isEmpty ? "Contact name cannot be empty" : null),
+            _buildTextField(context, "Mobile", _contactMobileController,
+                type: TextInputType.phone,
+                validator: (v) =>
+                    v!.isEmpty ? "Contact mobile cannot be empty" : null),
+            _buildTextField(
+              context,
+              "Email",
+              _contactEmailController,
+              type: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Email required';
+                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value)) {
+                  return 'Invalid email';
+                }
+                return null;
+              },
             ),
-        ],
+            if (provider.errorMessage != null)
+              Text(
+                provider.errorMessage!,
+                style: TextStyle(color: theme["negativeAmount"]),
+              ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildTextField(
-    BuildContext context,
-    String label,
-    TextEditingController? controller, {
-    TextInputType type = TextInputType.text,
-    Function(String)? onChanged,
-    bool enabled = true,
-  }) {
+      BuildContext context,
+      String label,
+      TextEditingController? controller, {
+        TextInputType type = TextInputType.text,
+        Function(String)? onChanged,
+        bool enabled = true,
+        int? maxLength,
+        List<TextInputFormatter>? inputFormatters,
+        String? Function(String?)? validator,
+        TextCapitalization textCapitalization = TextCapitalization.none,
+      }) {
     final theme =
         Provider.of<ThemeProvider>(context, listen: false).themeConfig;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(
+            color: (theme["textColor"] as Color).withOpacity(0.5),
+            width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+        color: theme["cardBackground"],
+      ),
+      child: TextFormField(
         controller: controller,
         onChanged: onChanged,
         keyboardType: type,
         enabled: enabled,
+        maxLength: maxLength,
+        inputFormatters: inputFormatters,
+        textCapitalization: textCapitalization,
+        validator: validator,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
           labelText: label,
+          labelStyle: TextStyle(color: theme["textColor"]),
+          border: InputBorder.none,
           filled: true,
-          fillColor: theme["cardBackground"],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
+          fillColor: Colors.transparent,
+          counterText: '',
         ),
         style: TextStyle(color: theme["textColor"]),
       ),
+    );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }

@@ -57,8 +57,8 @@ class AuthRepository {
         _saveToken(user.token);
         return user;
       } else {
-        print('[login] Login failed: ${responseData['message']}');
-        throw Exception(responseData['message'] ?? 'Login failed');
+        print('[login] Login failed: ${jsonEncode(responseData)}');
+        throw Exception(jsonEncode(responseData));
       }
     } catch (e) {
       print('[login] Error occurred: $e');
@@ -94,8 +94,8 @@ class AuthRepository {
         print('[signup] Signup successful for email: $email');
         return User.fromJson(responseData['data']);
       } else {
-        print('[signup] Signup failed: ${responseData['message']}');
-        throw Exception(responseData['message'] ?? 'Signup failed');
+        print('[signup] Signup failed: ${jsonEncode(responseData)}');
+        throw Exception(jsonEncode(responseData));
       }
     } catch (e) {
       print('[signup] Error occurred: $e');
@@ -167,9 +167,9 @@ class AuthRepository {
         return User.fromJson(responseData['data']);
       } else {
         print(
-          '[signupwithoutOtp] Signup (no OTP) failed: ${responseData['message']}',
+          '[signupwithoutOtp] Signup (no OTP) failed: ${jsonEncode(responseData)}',
         );
-        throw Exception(responseData['message'] ?? 'Signup failed');
+        throw Exception(jsonEncode(responseData));
       }
     } catch (e) {
       print('[signupwithoutOtp] Error occurred: $e');

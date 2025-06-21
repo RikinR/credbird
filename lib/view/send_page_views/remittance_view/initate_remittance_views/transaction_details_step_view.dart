@@ -149,13 +149,18 @@ class TransactionDetailsStep extends StatelessWidget {
           ),
         ),
         isExpanded: true,
-        items:
-            items.map((item) {
-              final displayText =
-                  item[labelKey] ??
+        items: items.map((item) {
+          String displayText;
+          if (label == "Remitter") {
+            final name = item["remitterName"] ?? "Unnamed";
+            final ifsc = item["ifsc"] ?? "";
+            displayText = "$name (IFSC: $ifsc)";
+          } else {
+            displayText = item[labelKey] ??
                   item["benificiaryName"] ??
                   item["remitterName"] ??
                   "Unnamed";
+          }
               return DropdownMenuItem<T>(
                 value: item["_id"] as T?,
                 child: Text(displayText),

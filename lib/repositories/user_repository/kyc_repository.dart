@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 class KYCRepository {
   late final String baseUrl;
@@ -43,8 +44,12 @@ class KYCRepository {
     final responseData = json.decode(response.body);
 
     if (response.statusCode == 200 && responseData['success'] == true) {
-      print('Documents fetched: ${responseData['data'].length}');
-      return responseData['data'];
+      print('Documents fetched: ${responseData['data']?.length ?? 0}');
+      return responseData['data'] ?? [];
+    } else if (response.statusCode == 500) {
+      // If server returns 500, it means no documents are found yet
+      print('No documents found yet');
+      return [];
     } else {
       final msg = responseData['message'] ?? 'Failed to fetch documents';
       print('Error fetching documents: $msg');
@@ -168,6 +173,27 @@ class KYCRepository {
     } else {
       final msg = responseData['message'] ?? 'Failed to check KYC status';
       throw Exception(msg);
+    }
+  }
+
+  Future<void> uploadDocument(String registrationId, String documentId, File file) async {
+    try {
+      // First upload the file to get the URL
+      final uploadedUrls = await uploadFile(file);
+      
+      // Then create the document entry
+      final documents = [{
+        "documentId": documentId,
+        "documentUrl": uploadedUrls,
+      }];
+
+      await uploadRegistrationDocuments(
+        registrationId: registrationId,
+        documents: documents,
+      );
+    } catch (e) {
+      debugPrint('Error uploading document: $e');
+      rethrow;
     }
   }
 }

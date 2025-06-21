@@ -96,7 +96,7 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(elevation: 0),
         ),
         appBarTheme: const AppBarTheme(elevation: 0, scrolledUnderElevation: 0),
-        cardTheme: const CardTheme(elevation: 0),
+        cardTheme: const CardThemeData(elevation: 0),
       ),
       theme: ThemeData.light().copyWith(
         textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
@@ -108,7 +108,7 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(elevation: 0),
         ),
         appBarTheme: const AppBarTheme(elevation: 0, scrolledUnderElevation: 0),
-        cardTheme: const CardTheme(elevation: 0),
+        cardTheme: const CardThemeData(elevation: 0),
       ),
       themeMode:
           context.watch<ThemeProvider>().isDarkMode

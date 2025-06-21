@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:credbird/viewmodel/send_page_viewmodels/remitter_provider.dart';
+import 'package:credbird/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
 class AddRemitterScreen extends StatefulWidget {
   const AddRemitterScreen({super.key});
@@ -86,46 +88,136 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                   key: _formKey,
                   child: ListView(
                     children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.8,
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: theme.primaryColor.withOpacity(0.5), width: 1.5),
+                          borderRadius: BorderRadius.circular(12),
+                          color: theme.cardColor,
+                        ),
                         child: DropdownButtonFormField<String>(
-                          value: _remitterTypeController.text,
-                          items:
-                              ['Self', 'Guardian']
-                                  .map(
-                                    (String value) => DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
+                          isExpanded: true,
+                          value: ['Self', 'Guardian'].contains(_remitterTypeController.text) ? _remitterTypeController.text : 'Self',
+                          items: ['Self', 'Guardian']
+                              .map((String value) => DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: theme.textTheme.bodyLarge?.color,
+                                          fontSize: 16,
+                                        ),
+                                      ),
                                     ),
-                                  )
-                                  .toList(),
+                                  ))
+                              .toList(),
                           onChanged: (newValue) {
                             setState(() {
                               _remitterTypeController.text = newValue!;
                             });
                           },
-                          decoration: _dropdownDecoration(
-                            theme,
-                            'Remitter Type',
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            labelText: 'Remitter Type',
+                            labelStyle: TextStyle(color: theme.primaryColor),
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            border: InputBorder.none,
+                            filled: true,
+                            fillColor: Colors.transparent,
                           ),
+                          icon: Icon(Icons.arrow_drop_down, color: theme.primaryColor),
+                          dropdownColor: theme.cardColor,
                         ),
                       ),
-                      _buildField("PAN Number", _panController, theme),
+                      _buildField("PAN Number", _panController, theme,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                          LengthLimitingTextInputFormatter(10),
+                          UpperCaseTextFormatter(),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Please enter PAN Number';
+                          if (!RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}\$').hasMatch(value)) return 'Invalid PAN format';
+                          return null;
+                        },
+                        textCapitalization: TextCapitalization.characters,
+                      ),
+                      if (remitterProvider.panName != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            "PAN Name: ${remitterProvider.panName}",
+                            style: TextStyle(
+                              color: theme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       _buildField("Account Number", _accountController, theme),
+                      if (remitterProvider.accountHolderName != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            "Account Holder Name: ${remitterProvider.accountHolderName}",
+                            style: TextStyle(
+                              color: theme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       _buildField("IFSC Code", _ifscController, theme),
-                      _buildField("Email", _emailController, theme),
-                      _buildField("Mobile", _mobileController, theme),
+                      _buildField("Email", _emailController, theme,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Please enter Email';
+                          if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value)) return 'Invalid email';
+                          return null;
+                        },
+                      ),
+                      _buildField("Mobile", _mobileController, theme,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Please enter Mobile';
+                          if (value.length != 10) return 'Mobile must be 10 digits';
+                          return null;
+                        },
+                      ),
                       _buildField("Address", _addressController, theme),
                       _buildField("City", _cityController, theme),
                       _buildField("State", _stateController, theme),
-                      _buildField("Country", _countryController, theme),
-                      _buildField("PIN", _pinController, theme),
+                      _buildField("Country", _countryController, theme, textCapitalization: TextCapitalization.characters),
+                      _buildField("PIN", _pinController, theme,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(6),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Please enter PIN';
+                          if (value.length != 6) return 'PIN must be 6 digits';
+                          return null;
+                        },
+                      ),
 
                       if (_remitterTypeController.text == 'Self') ...[
                         _buildField(
                           "Passport Number",
                           _remitterAddressProofController,
                           theme,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                            LengthLimitingTextInputFormatter(9),
+                            UpperCaseTextFormatter(),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return 'Please enter Passport Number';
+                            if (!RegExp(r'^[A-Z0-9]{6,9}$').hasMatch(value)) return 'Invalid Passport Number';
+                            return null;
+                          },
+                          textCapitalization: TextCapitalization.characters,
                         ),
                         _buildField(
                           "Place of Issue",
@@ -143,10 +235,30 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                           theme,
                         ),
                       ] else ...[
-                        _buildField(
-                          "Relationship",
-                          _relationshipController,
-                          theme,
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: DropdownButtonFormField<String>(
+                            value: _relationshipController.text.isNotEmpty ? _relationshipController.text : null,
+                            items: [
+                              'MOTHER',
+                              'FATHER',
+                              'GUARDIAN',
+                              'BROTHER',
+                              'SISTER',
+                              'SPOUSE',
+                              'OTHER',
+                            ].map((String value) => DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                )).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _relationshipController.text = newValue!;
+                              });
+                            },
+                            decoration: _dropdownDecoration(theme, 'Relationship'),
+                            validator: (value) => value == null || value.isEmpty ? 'Please select Relationship' : null,
+                          ),
                         ),
                         _buildField(
                           "Traveler Full Name",
@@ -182,6 +294,15 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                           "Aadhaar Number",
                           _remitterAddressProofController,
                           theme,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(16),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return 'Please enter Aadhaar Number';
+                            if (value.length != 16) return 'Aadhaar must be 16 digits';
+                            return null;
+                          },
                         ),
                       ],
 
@@ -228,20 +349,15 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
                             );
 
                             if (remitterProvider.error != null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "Error: ${remitterProvider.error}",
-                                  ),
-                                  backgroundColor: Colors.red,
-                                ),
+                              SnackBarUtils.showSnackBar(
+                                context,
+                                message: "Error: ${remitterProvider.error}",
+                                isError: true,
                               );
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Remitter added successfully"),
-                                  backgroundColor: Colors.green,
-                                ),
+                              SnackBarUtils.showSnackBar(
+                                context,
+                                message: "Remitter added successfully",
                               );
                               Navigator.pop(context);
                             }
@@ -299,34 +415,15 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
           if (value == null || value.isEmpty) {
             return 'Please select $label';
           }
-
-          
-          if (label.contains('Issue')) {
-            controller.text = value;
+          final now = DateTime.now();
+          final date = DateTime.tryParse(value);
+          if (date == null) return 'Invalid date';
+          if (label.contains('Issue') && date.isAfter(now)) {
+            return 'Date of Issue cannot be in the future';
           }
-
-          if (label.contains('Expiry')) {
-            try {
-              final issueStr =
-                  label.contains('Student')
-                      ? _studentDateOfIssueController.text
-                      : _dateOfIssueController.text;
-
-              final expiryStr = value;
-              if (issueStr.isEmpty || expiryStr.isEmpty) return null;
-
-              final issueDate = DateTime.parse(issueStr);
-              final expiryDate = DateTime.parse(expiryStr);
-              final diff = expiryDate.difference(issueDate).inDays;
-
-              if (diff < 9 * 365 || diff > 10 * 365 + 183) {
-                return 'Passport validity should be about 10 years';
-              }
-            } catch (_) {
-              return 'Invalid date format';
-            }
+          if (label.contains('Expiry') && date.isBefore(now)) {
+            return 'Date of Expiry cannot be in the past';
           }
-
           return null;
         },
       ),
@@ -337,24 +434,30 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
     String label,
     TextEditingController controller,
     ThemeData theme,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+    {List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.primaryColor.withOpacity(0.5), width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+        color: theme.cardColor,
+      ),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: theme.primaryColor),
+          border: InputBorder.none,
           filled: true,
-          fillColor: theme.cardColor,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
+          fillColor: Colors.transparent,
         ),
-        validator:
-            (value) =>
-                (value == null || value.isEmpty) ? 'Please enter $label' : null,
+        inputFormatters: inputFormatters,
+        validator: validator,
+        textCapitalization: textCapitalization,
       ),
     );
   }
@@ -363,12 +466,26 @@ class _AddRemitterScreenState extends State<AddRemitterScreen> {
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: theme.primaryColor),
+      floatingLabelBehavior: label == 'Remitter Type' ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto,
       filled: true,
       fillColor: theme.cardColor,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
+    );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }

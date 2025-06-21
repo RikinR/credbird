@@ -1,4 +1,3 @@
-
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
@@ -55,9 +54,16 @@ class PaymentRepository {
     print('Payment response → ${response.statusCode}');
     print('Payment body → ${response.body}');
 
-    if (response.statusCode != 200) {
-      final msg = json.decode(response.body)['message'] ?? 'Payment initiation failed';
+    final responseData = json.decode(response.body);
+    
+    if (response.statusCode != 200 || responseData['success'] != true) {
+      final msg = responseData['message'] ?? 'Payment initiation failed';
       throw Exception(msg);
+    }
+
+    // Check if payment link was generated successfully
+    if (responseData['data'] == null || responseData['data']['paymentLink'] == null) {
+      throw Exception('Payment link generation failed');
     }
   }
 }

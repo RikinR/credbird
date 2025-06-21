@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:credbird/view/initial_views/landing_page_view.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
+import 'package:flutter/services.dart';
+import 'dart:convert';
 
 class LoginSignupView extends StatefulWidget {
   const LoginSignupView({super.key});
@@ -230,6 +232,11 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                       prefixIcon: Icons.phone,
                                       theme: theme,
                                       keyboardType: TextInputType.phone,
+                                      maxLength: 10,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                        LengthLimitingTextInputFormatter(10),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -412,12 +419,17 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                       );
                                     }
                                   } catch (e) {
-                                    String errorMessage =
-                                        e.toString().contains(
-                                              "Invalid Email Id or Password",
-                                            )
-                                            ? "Login failed. Please try again later."
-                                            : "Invalid email or password.";
+                                    String errorMessage = "An unknown error occurred.";
+                                    try {
+                                      final errorBody = jsonDecode(e.toString().replaceFirst("Exception: ", ""));
+                                      if (errorBody['error'] != null && errorBody['error']['msg'] != null) {
+                                        errorMessage = errorBody['error']['msg'];
+                                      } else if (errorBody['message'] != null) {
+                                        errorMessage = errorBody['message'];
+                                      }
+                                    } catch (_) {
+                                       errorMessage = e.toString().replaceFirst("Exception: ", "");
+                                    }
                                     _showErrorSnackbar(context, errorMessage);
                                   }
                                 } else {
@@ -488,12 +500,17 @@ class _LoginSignupViewState extends State<LoginSignupView>
                                         ),
                                       );
                                     } catch (e) {
-                                      String errorMessage =
-                                          e.toString().contains(
-                                                "Email Already Exists",
-                                              )
-                                              ? "Email already exists. Try another."
-                                              : "Signup failed. Please try again.";
+                                      String errorMessage = "An unknown error occurred.";
+                                      try {
+                                        final errorBody = jsonDecode(e.toString().replaceFirst("Exception: ", ""));
+                                        if (errorBody['error'] != null && errorBody['error']['msg'] != null) {
+                                          errorMessage = errorBody['error']['msg'];
+                                        } else if (errorBody['message'] != null) {
+                                          errorMessage = errorBody['message'];
+                                        }
+                                      } catch (_) {
+                                        errorMessage = e.toString().replaceFirst("Exception: ", "");
+                                      }
                                       _showErrorSnackbar(context, errorMessage);
                                     }
                                   }
@@ -594,30 +611,32 @@ class _LoginSignupViewState extends State<LoginSignupView>
     required String hintText,
     required IconData prefixIcon,
     required ThemeData theme,
-    TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffixIcon,
+    TextInputType? keyboardType,
+    int? maxLength,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.white),
       obscureText: obscureText,
       keyboardType: keyboardType,
+      maxLength: maxLength,
+      inputFormatters: inputFormatters,
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(color: Colors.grey.shade500),
         prefixIcon: Icon(prefixIcon, color: Colors.grey.shade400),
         suffixIcon: suffixIcon,
-        hintText: hintText,
-        hintStyle: TextStyle(color: Colors.grey.shade600),
         filled: true,
         fillColor: Colors.grey.shade900.withOpacity(0.5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        counterText: '',
       ),
     );
   }

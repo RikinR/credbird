@@ -76,11 +76,17 @@ class ApiTransaction {
       currencyName: safeString(currencyData['currencyName']),
       beneficiaryName: safeString(beneficiaryData['benificiaryName']),
       status: safeString(json['status'], 'pending'),
-      netAmount: safeDouble(json['netAmount']),
+      netAmount: json['invoices']?.isNotEmpty == true 
+          ? safeDouble(json['invoices'][0]['amountPaid'])
+          : safeDouble(json['netAmount']),
       createdAt: safeDate(json['createdAt']),
       remittanceType: safeString(remittanceData['name']),
-      invoiceId: null, 
-      invoiceAmount: null, 
+      invoiceId: json['invoices']?.isNotEmpty == true 
+          ? safeString(json['invoices'][0]['invoiceId']['invoiceId'])
+          : null,
+      invoiceAmount: json['invoices']?.isNotEmpty == true 
+          ? safeDouble(json['invoices'][0]['invoiceId']['totalAmount'])
+          : null,
       remitterName: safeString(userData['name']),
       remitterEmail: safeString(userData['email']),
       remitterPhone: safeString(

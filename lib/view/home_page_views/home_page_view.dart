@@ -185,7 +185,7 @@ class _HomePageViewState extends State<HomePageView>
               ),
             ),
           ),
-          Expanded(
+          Positioned.fill(
             child: ScrollConfiguration(
               behavior: ScrollConfiguration.of(context).copyWith(
                 physics: const BouncingScrollPhysics(
@@ -505,8 +505,8 @@ class _HomePageViewState extends State<HomePageView>
             ],
           ),
         ),
-        trailing: SizedBox(
-          width: 100,
+        trailing: Container(
+          width: 120,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -516,6 +516,8 @@ class _HomePageViewState extends State<HomePageView>
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ],
           ),

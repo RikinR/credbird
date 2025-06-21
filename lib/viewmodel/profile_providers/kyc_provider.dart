@@ -1,74 +1,80 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:credbird/repositories/user_repository/kyc_repository.dart';
-import 'package:flutter/material.dart';
 
 class KYCProvider with ChangeNotifier {
   final _repository = KYCRepository();
   List<dynamic> _pendingDocs = [];
   final Map<String, File?> _selectedFiles = {};
-  bool _loading = false;
-
+  bool _isLoading = false;
   bool _isSubmitted = false;
-  bool get isSubmitted => _isSubmitted;
 
   List<dynamic> get pendingDocs => _pendingDocs;
   Map<String, File?> get selectedFiles => _selectedFiles;
-  bool get isLoading => _loading;
+  bool get isLoading => _isLoading;
+  bool get isSubmitted => _isSubmitted;
 
   bool _kycDone = false;
   bool get isKYCDone => _kycDone;
 
+  bool get hasUploadedDocuments => _pendingDocs.any((doc) => doc['status'] == "UPLOADED");
+  bool get hasVerifiedDocuments => _pendingDocs.any((doc) => doc['status'] == "VERIFIED");
+  bool get isKYCComplete => _pendingDocs.every((doc) => doc['status'] == "VERIFIED");
+
   Future<void> loadPendingDocuments() async {
-    _loading = true;
+    _isLoading = true;
     notifyListeners();
     try {
       final allDocs = await _repository.getPendingDocuments();
-      _pendingDocs =
-          allDocs.where((doc) => doc['status'] != 'VERIFIED').toList();
+      _pendingDocs = allDocs.where((doc) => doc['status'] != 'VERIFIED').toList();
+    } catch (e) {
+      debugPrint('Error loading pending documents: $e');
     } finally {
-      _loading = false;
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  void selectFile(String documentId, File file) {
-    _selectedFiles[documentId] = file;
+  void selectFile(String docId, File file) {
+    _selectedFiles[docId] = file;
     notifyListeners();
   }
 
   Future<void> uploadAllDocuments(String registrationId) async {
-    _loading = true;
+    _isLoading = true;
     notifyListeners();
 
     try {
-      List<Map<String, dynamic>> finalDocuments = [];
-
-      for (var entry in _selectedFiles.entries) {
-        final uploadedUrls = await _repository.uploadFile(entry.value!);
-        finalDocuments.add({
-          "documentId": entry.key,
-          "documentUrl": uploadedUrls,
-        });
+      for (var doc in _pendingDocs) {
+        final docId = doc['documentId']['_id'];
+        final file = _selectedFiles[docId];
+        if (file != null) {
+          await _repository.uploadDocument(registrationId, docId, file);
+        }
       }
-
-      await _repository.uploadRegistrationDocuments(
-        registrationId: registrationId,
-        documents: finalDocuments,
-      );
       _isSubmitted = true;
+      await loadPendingDocuments(); // Refresh the documents list
+    } catch (e) {
+      debugPrint('Error uploading documents: $e');
     } finally {
-      _loading = false;
+      _isLoading = false;
       notifyListeners();
     }
   }
 
   Future<void> checkKYCStatus() async {
-    _loading = true;
+    _isLoading = true;
     notifyListeners();
+
     try {
       _kycDone = await _repository.checkKYCStatus();
+      if (!_kycDone) {
+        await loadPendingDocuments();
+      }
+    } catch (e) {
+      debugPrint('Error checking KYC status: $e');
     } finally {
-      _loading = false;
+      _isLoading = false;
       notifyListeners();
     }
   }

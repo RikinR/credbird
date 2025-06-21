@@ -342,7 +342,7 @@ class AuthViewModel extends ChangeNotifier {
       _userEmail = userData['email'];
       _phone = userData['phone']?.toString();
       _userType = userData['userType'];
-      _userId = response['findRegistration']['_id'];
+      _userId = userData['_id'];
 
       if (contactData != null) {
         _contactId = contactData['_id'];
