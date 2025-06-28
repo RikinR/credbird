@@ -19,7 +19,13 @@ class KYCProvider with ChangeNotifier {
 
   bool get hasUploadedDocuments => _pendingDocs.any((doc) => doc['status'] == "UPLOADED");
   bool get hasVerifiedDocuments => _pendingDocs.any((doc) => doc['status'] == "VERIFIED");
-  bool get isKYCComplete => _pendingDocs.every((doc) => doc['status'] == "VERIFIED");
+  bool get isKYCComplete => _pendingDocs.isNotEmpty && _pendingDocs.every((doc) => doc['status'] == "VERIFIED");
+
+  // New: True if all docs are PENDING (under review)
+  bool get isUnderReview => _pendingDocs.isNotEmpty && _pendingDocs.every((doc) => doc['status'] == "PENDING");
+
+  // New: True if any doc is not PENDING or VERIFIED (needs upload)
+  bool get needsToUpload => _pendingDocs.any((doc) => doc['status'] != "PENDING" && doc['status'] != "VERIFIED");
 
   Future<void> loadPendingDocuments() async {
     _isLoading = true;

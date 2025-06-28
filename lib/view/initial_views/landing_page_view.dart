@@ -5,9 +5,36 @@ import 'package:credbird/viewmodel/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:credbird/view/profile_views/kyc_view.dart';
+import 'package:credbird/viewmodel/profile_providers/kyc_provider.dart';
 
-class LandingPageView extends StatelessWidget {
+class LandingPageView extends StatefulWidget {
   const LandingPageView({super.key});
+
+  @override
+  State<LandingPageView> createState() => _LandingPageViewState();
+}
+
+class _LandingPageViewState extends State<LandingPageView> {
+  @override
+  void initState() {
+    super.initState();
+    _checkKYCAndNavigate();
+  }
+
+  Future<void> _checkKYCAndNavigate() async {
+    final kycProvider = Provider.of<KYCProvider>(context, listen: false);
+    await kycProvider.loadPendingDocuments();
+    if (kycProvider.needsToUpload) {
+      // User needs to upload KYC documents
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const KYCView()),
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
